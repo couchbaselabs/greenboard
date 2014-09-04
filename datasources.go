@@ -3,17 +3,18 @@ package main
 import (
 	"encoding/json"
 	"log"
-	"sort"
-
+    "strings"
 	"github.com/couchbaselabs/go-couchbase"
+	"github.com/hoisie/web"
 )
 
 var ddocs = map[string]string{
 	"jenkins": `{
 		"views": {
 			"data_by_build": {
-				"map": "function (doc, meta) {emit(doc.build, [doc.failCount, doc.totalCount, doc.os, doc.priority, doc.component]);}"
-			}
+				"map": "function (doc, meta) {emit([doc.build, doc.os, doc.component], [doc.failCount, doc.totalCount, doc.priority, doc.name, doc.result, doc.url, doc.build_id]);}",
+                "reduce" : "function (key, values, rereduce) {var fAbs = 0;var pAbs = 0;for(i=0;i < values.length; i++) {fAbs = fAbs + values[i][0];pAbs = pAbs + values[i][1];} var total = fAbs + pAbs; var pRel = 100.0*pAbs/total; var fRel = 100.0*fAbs/total; return([pAbs, -fAbs, pRel, fRel]);}"
+            }
 		}
 	}`,
 }
@@ -39,10 +40,10 @@ func (ds *DataSource) QueryView(b *couchbase.Bucket, ddoc, view string,
 	params["stale"] = "false"
 	vr, err := b.View(ddoc, view, params)
 	if err != nil {
-       log.Println("dats too bad bruh - i gotchu");
+       log.Println(err);
 	   ds.installDDoc(ddoc)
 	}
-	return vr.Rows
+    return vr.Rows
 }
 
 func (ds *DataSource) installDDoc(ddoc string) {
@@ -58,12 +59,22 @@ var TIMELINE_SIZE = 40
 var VIEW = map[string]int{
 	"failCount":  0,
 	"totalCount": 1,
-	"Platform":   2,
-	"Priority":   3,
-	"Category":   4,
+	"priority":   2,
+	"name":       3,
+	"result":     4,
+	"url":        5,
+	"bid":        6,
+}
+
+var REDUCE = map[string]int{
+    "absPassed": 0,
+    "absFailed": 1,
+    "relPassed": 2,
+    "relFailed": 3,
 }
 
 type MapBuild struct {
+	Version string
 	Passed   float64
 	Failed   float64
 	Category string
@@ -76,15 +87,22 @@ type Breakdown struct {
 	Failed float64
 }
 
+type Job struct {
+	Passed   float64
+	Total float64
+	Priority string
+    Name string
+    Result string
+    Url string
+    Bid float64
+}
+
 type ReduceBuild struct {
-	Version    string
+	Version string
 	AbsPassed  float64
 	AbsFailed  float64
 	RelPassed  float64
 	RelFailed  float64
-	ByCategory map[string]Breakdown
-	ByPlatform map[string]Breakdown
-	ByPriority map[string]Breakdown
 }
 
 type FullSet struct {
@@ -110,158 +128,145 @@ func posInSlice(slice []string, s string) int {
 	return -1
 }
 
-func (ds *DataSource) GetTimeline() []byte {
+
+func (ds *DataSource) GetJobs(ctx *web.Context) []byte {
 	b := ds.GetBucket("jenkins")
-	params := map[string]interface{}{"startkey": ds.Release}
+    var platforms string
+    var categories string
+    var version string
+    for k,v := range ctx.Params {
+        if k == "categories" {
+            categories = v;
+        }
+        if k == "platforms" {
+            platforms = v;
+        }
+        if k == "build" {
+            version = v;
+        }
+    }
+
+
+    jobs := []Job{}
+    platformArray := strings.Split(platforms, ",")
+    categoryArray := strings.Split(categories, ",")
+    for _, platform := range platformArray{
+        for _, category := range categoryArray{
+            params := map[string]interface{}{
+            "key":  []interface{}{version,platform,category},
+            "inclusive_end": true,
+            "reduce": false,
+            "stale": false,
+            }
+            rows := ds.QueryView(b, "jenkins", "data_by_build", params)
+            for _, row := range rows {
+
+                value := row.Value.([]interface{})
+                failed := value[VIEW["failed"]].(float64)
+                total  := value[VIEW["totalCount"]].(float64)
+                priority := value[VIEW["priority"]].(string)
+                name := value[VIEW["name"]].(string)
+                result := value[VIEW["result"]].(string)
+                url := value[VIEW["url"]].(string)
+                bid := value[VIEW["bid"]].(float64)
+                passed := total - failed
+
+                jobs = append(jobs, Job{
+                   passed,
+                   total,
+                   priority,
+                   name,
+                   result,
+                   url,
+                   bid,
+                })
+            }
+        }
+    }
+
+	j, _ := json.Marshal(jobs)
+	return j
+}
+
+func (ds *DataSource) GetBreakdown(ctx *web.Context) []byte {
+	b := ds.GetBucket("jenkins")
+    version := ds.Release;
+    for k,v := range ctx.Params {
+        if k == "build" {
+            version = v;
+        }
+    }
+    params := map[string]interface{}{
+    "start_key":  []interface{}{version},
+    "end_key":  []interface{}{version+"_"},
+    "group_level" : 3,
+    }
 	rows := ds.QueryView(b, "jenkins", "data_by_build", params)
 
 	/***************** MAP *****************/
-	mapBuilds := map[string][]MapBuild{}
+	mapBuilds := []MapBuild{}
 	for _, row := range rows {
-		version := row.Key.(string)
+		meta := row.Key.([]interface{})
 
 		value := row.Value.([]interface{})
-		failed, ok := value[VIEW["failCount"]].(float64)
+		failed, ok := value[REDUCE["absFailed"]].(float64)
 		if !ok {
 			continue
 		}
-		total, ok := value[VIEW["totalCount"]].(float64)
+        if failed < 0 {
+            failed = failed * -1
+        }
+		passed , ok := value[REDUCE["absPassed"]].(float64)
 		if !ok {
 			continue
 		}
-		category := value[VIEW["Category"]].(string)
-		platform := value[VIEW["Platform"]].(string)
-		priority := value[VIEW["Priority"]].(string)
+		version  := meta[0].(string)
+		platform := meta[1].(string)
+		category := meta[2].(string)
 
-		mapBuilds[version] = append(mapBuilds[version], MapBuild{
-			total - failed,
+		mapBuilds = append(mapBuilds, MapBuild{
+            version,
+			passed,
 			failed,
 			category,
 			platform,
-			priority,
+			"na",
 		})
 	}
 
-	/***************** REDUCE *****************/
-	versions := []string{}
-	for version, _ := range mapBuilds {
-		versions = append(versions, version)
-	}
-	sort.Strings(versions)
 
-	fullSet := map[string]FullSet{}
-	allCategories := []string{}
-	reduceBuilds := []ReduceBuild{}
+	j, _ := json.Marshal(mapBuilds)
+	return j
+}
 
-	skip := len(versions) - TIMELINE_SIZE
-	for _, version := range versions[skip:] {
-		currCategories := []string{}
+func (ds *DataSource) GetTimeline() []byte {
+	b := ds.GetBucket("jenkins")
+    log.Println(ds.Release)
+    params := map[string]interface{}{
+        "start_key":  []interface{}{ds.Release},
+        "group_level" : 1,
+    }
+	rows := ds.QueryView(b, "jenkins", "data_by_build", params)
 
-		reduce := ReduceBuild{}
-		reduce.Version = version
-		reduce.ByCategory = map[string]Breakdown{}
-		reduce.ByPlatform = map[string]Breakdown{}
-		reduce.ByPriority = map[string]Breakdown{}
-
-		for _, build := range mapBuilds[version] {
-			// Totals
-			reduce.AbsPassed += build.Passed
-			reduce.AbsFailed -= build.Failed
-
-			// By Category
-			passed := build.Passed
-			failed := build.Failed
-			if _, ok := reduce.ByCategory[build.Category]; ok {
-				passed += reduce.ByCategory[build.Category].Passed
-				failed += reduce.ByCategory[build.Category].Failed
-			}
-			reduce.ByCategory[build.Category] = Breakdown{passed, failed}
-
-			// By Platform
-			passed = build.Passed
-			failed = build.Failed
-			if _, ok := reduce.ByPlatform[build.Platform]; ok {
-				passed += reduce.ByPlatform[build.Platform].Passed
-				failed += reduce.ByPlatform[build.Platform].Failed
-			}
-			reduce.ByPlatform[build.Platform] = Breakdown{passed, failed}
-
-			// By Priority
-			passed = build.Passed
-			failed = build.Failed
-			if _, ok := reduce.ByPriority[build.Priority]; ok {
-				passed += reduce.ByPriority[build.Priority].Passed
-				failed += reduce.ByPriority[build.Priority].Failed
-			}
-			reduce.ByPriority[build.Priority] = Breakdown{passed, failed}
-
-			// Full Set
-			if posInSlice(currCategories, build.Category) == -1 {
-				byPlatform := map[string]Breakdown{
-					build.Platform: Breakdown{build.Passed, build.Failed},
-				}
-				byPriority := map[string]Breakdown{
-					build.Priority: Breakdown{build.Passed, build.Failed},
-				}
-				fullSet[build.Category] = FullSet{byPlatform, byPriority}
-			} else {
-				// By Platform
-				passed := build.Passed + fullSet[build.Category].ByPlatform[build.Platform].Passed
-				failed := build.Failed + fullSet[build.Category].ByPlatform[build.Platform].Failed
-				fullSet[build.Category].ByPlatform[build.Platform] = Breakdown{passed, failed}
-
-				// By Priority
-				passed = build.Passed + fullSet[build.Category].ByPriority[build.Priority].Passed
-				failed = build.Failed + fullSet[build.Category].ByPriority[build.Priority].Failed
-				fullSet[build.Category].ByPriority[build.Priority] = Breakdown{passed, failed}
-			}
-
-			// Categories
-			currCategories = appendIfUnique(currCategories, build.Category)
-			allCategories = appendIfUnique(allCategories, build.Category)
-		}
-
-		/***************** BACKFILL *****************/
-		for _, category := range allCategories {
-			totalPassed := float64(0)
-			totalFailed := float64(0)
-			if _, ok := reduce.ByCategory[category]; !ok {
-				for platform, breakdown := range fullSet[category].ByPlatform {
-					totalPassed += breakdown.Passed
-					totalFailed += breakdown.Failed
-
-					passed := breakdown.Passed
-					failed := breakdown.Failed
-					if _, ok := reduce.ByPlatform[platform]; ok {
-						passed += reduce.ByPlatform[platform].Passed
-						failed += reduce.ByPlatform[platform].Failed
-
-					}
-					reduce.ByPlatform[platform] = Breakdown{passed, failed}
-				}
-
-				for priority, breakdown := range fullSet[category].ByPriority {
-					passed := breakdown.Passed
-					failed := breakdown.Failed
-					if _, ok := reduce.ByPriority[priority]; ok {
-						passed += reduce.ByPriority[priority].Passed
-						failed += reduce.ByPriority[priority].Failed
-					}
-					reduce.ByPriority[priority] = Breakdown{passed, failed}
-				}
-
-				reduce.AbsPassed += totalPassed
-				reduce.AbsFailed -= totalFailed
-				reduce.ByCategory[category] = Breakdown{totalPassed, totalFailed}
-			}
-		}
-
-		total := reduce.AbsPassed - reduce.AbsFailed
-		reduce.RelPassed = 100.0 * reduce.AbsPassed / total
-		reduce.RelFailed = -100.0 * reduce.AbsFailed / total
-		reduceBuilds = append(reduceBuilds, reduce)
+	/***************** Query Reduce Views*****************/
+	reduceBuild := []ReduceBuild{}
+	for _, row := range rows {
+		rowKey := row.Key.([]interface{})
+        version := rowKey[0].(string)
+        if version == "0.0.0-xxxx" {
+            continue
+        }
+		value := row.Value.([]interface{})
+		reduceBuild = append(reduceBuild,
+            ReduceBuild{
+                version,
+                value[REDUCE["absPassed"]].(float64),
+                value[REDUCE["absFailed"]].(float64),
+                value[REDUCE["relPassed"]].(float64),
+                value[REDUCE["relFailed"]].(float64),
+            })
 	}
 
-	j, _ := json.Marshal(reduceBuilds)
+	j, _ := json.Marshal(reduceBuild)
 	return j
 }

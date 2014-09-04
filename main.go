@@ -40,5 +40,7 @@ func main() {
 	data_source = DataSource{config.CouchbaseAddress, config.Release}
 	web.Get("/", index)
 	web.Get("/timeline", data_source.GetTimeline)
+	web.Get("/breakdown", data_source.GetBreakdown)
+	web.Get("/jobs", data_source.GetJobs)
 	web.Run(config.ListenAddress)
 }

@@ -1,27 +1,11 @@
-function DisplayJobController($scope, $http){
-    $scope.headers = ["Status", "Passed", "Total", "Rate", "Job"];
-
-    var queryResultHandler = function(data, status, headers, config){
-        x=23;
-    }
-    var url = '/timeline';
-    $http.get(url)
-        .success(queryResultHandler);
-
-
-}
-
-
-
-function SidebarCtl($scope, SelectedBuild){
-    x=23;
-}
-
 function Timeline($scope, $http, SelectedBuild) {
 	"use strict";
 
+    $scope.predicate = "result";
+    $scope.reverse = true;
 	$http.get('/timeline').success(function(data) {
 		$scope.timelineData = data;
+
 		$scope.timelineRelData = [{
 			"key": "Passed, %",
 			"values": []
@@ -39,14 +23,20 @@ function Timeline($scope, $http, SelectedBuild) {
 		}];
 
 		data.forEach(function(build) {
-			$scope.timelineRelData[0].values.push([build.Version, build.RelPassed]);
-			$scope.timelineRelData[1].values.push([build.Version, build.RelFailed]);
-			$scope.timelineAbsData[0].values.push([build.Version, build.AbsPassed]);
-			$scope.timelineAbsData[1].values.push([build.Version, build.AbsFailed]);
+			$scope.timelineRelData[0]
+                .values.push([build.Version, build.RelPassed]);
+			$scope.timelineRelData[1]
+                .values.push([build.Version, build.RelFailed]);
+			$scope.timelineAbsData[0]
+                .values.push([build.Version, build.AbsPassed]);
+			$scope.timelineAbsData[1]
+                .values.push([build.Version, build.AbsFailed]);
 		});
 
-		updateBreakDown(data.length - 1);
+        var build = $scope.timelineData[data.length - 1].Version;
+        showBuild(build);
 	});
+
 
 	var format = d3.format('f');
 	$scope.yAxisTickFormatFunction = function(){
@@ -72,7 +62,8 @@ function Timeline($scope, $http, SelectedBuild) {
 	};
 
 	$scope.$on('barClick', function(event, data) {
-		updateBreakDown(data.pointIndex);
+        var build = $scope.timelineData[data.pointIndex].Version;
+		showBuild(build);
 	});
 
 	$scope.xFunction = function(){
@@ -83,62 +74,151 @@ function Timeline($scope, $http, SelectedBuild) {
 		return function(d){ return d.value; };
 	};
 
-	var updateBreakDown = function(seq_id) {
-        SelectedBuild.build = $scope.timelineData[seq_id].Version;
-		$scope.build = {"Version": $scope.timelineData[seq_id].Version,
-                        "Passed":  0,
-                        "Failed": 0,
-                        "Status": "bg-success"};
+    var showBuild = function(build){
+        $scope.build = {"Version": build,
+                        "Passed" : 0,
+                        "Failed" : 0,
+                        "Status" : "bg-success"};
+        $scope.byCategory = {};
+        $scope.byPlatform = {};
+		updateBreakDown();
+    }
 
-		/****************************** ByPlatform ******************************/
-		var data = $scope.timelineData[seq_id].ByPlatform;
-		$scope.byPlatform = [];
+    var resetTotals = function() {
+        $scope.build.Passed = 0;
+        $scope.build.Failed = 0;
+        Object.keys($scope.byCategory).forEach(function(k){
+            $scope.byCategory[k].Passed = 0;
+            $scope.byCategory[k].Failed = 0;
+        });
+        Object.keys($scope.byPlatform).forEach(function(k){
+            $scope.byPlatform[k].Passed = 0;
+            $scope.byPlatform[k].Failed = 0;
+        });
+    }
 
 
-		Object.keys(data).forEach(function(platform) {
-            var Passed = data[platform].Passed;
-            var Failed = data[platform].Failed;
-            var Status = "bg-success";
+    var displayJobs = function (categories, platforms){
 
-            if (Failed > 0){
-                Status = "bg-danger";
-            }
-            $scope.byPlatform.push({
-                "Platform": platform,
-                "Passed": Passed,
-                "Failed": Failed,
-                "Status": Status,
-                "checked": "fa-check"
+        $scope.jobs = [];
+        $http.get('/jobs', {
+                params: { build: $scope.build.Version,
+                          categories: categories.toString(),
+                          platforms: platforms.toString()}
+        }).success(function(data) {
+            data.forEach(function(job){
+
+                $scope.jobs.push({
+                   "name": job.Name,
+                   "passed": job.Passed,
+                   "total": job.Total,
+                   "result": job.Result,
+                   "priority": job.Priority,
+                   "url": job.Url,
+                   "bid": job.Bid,
+                });
             });
-            $scope.build.Passed = $scope.build.Passed + Passed;
-            $scope.build.Failed = $scope.build.Failed + Failed;
-		});
+        });
 
-        if ($scope.build.Failed > 0){
-            $scope.build.Status = "bg-danger";
+    }
+
+    var updateStatuses = function (build){
+
+        var danger = "bg-danger";
+        var success = "bg-success";
+
+        if ($scope.byPlatform[build.Platform].Status != "greyed") {
+            if ($scope.byPlatform[build.Platform].Failed > 0){
+                $scope.byPlatform[build.Platform].Status = danger;
+            } else {
+                $scope.byPlatform[build.Platform].Status = success;
+            }
         }
 
-		/****************************** ByCategory ******************************/
-		data = $scope.timelineData[seq_id].ByCategory;
-		$scope.byCategory = [];
-		Object.keys(data).forEach(function(category) {
-
-            var Passed = data[category].Passed;
-            var Failed = data[category].Failed;
-            var Status = "bg-success";
-
-            if (Failed > 0){
-                Status = "bg-danger";
+        if ($scope.byCategory[build.Category].Status != "greyed") {
+            if ($scope.byCategory[build.Category].Failed > 0){
+                $scope.byCategory[build.Category].Status = danger;
+            } else {
+                $scope.byCategory[build.Category].Status = success;
             }
+        }
 
-			$scope.byCategory.push({
-                "Feature": category,
-                "Passed": Passed,
-                "Failed": Failed,
-                "Status": Status
+        if ($scope.build.Failed > 0){
+            $scope.build.Status = danger;
+        } else {
+            $scope.build.Status = success;
+        }
+    }
+
+    var updateTotals = function (build){
+        $scope.byCategory[build.Category].Passed += build.Passed;
+        $scope.byCategory[build.Category].Failed += build.Failed;
+        $scope.byPlatform[build.Platform].Passed += build.Passed;
+        $scope.byPlatform[build.Platform].Failed += build.Failed;
+        $scope.build.Passed += build.Passed;
+        $scope.build.Failed += build.Failed;
+    }
+
+	var updateBreakDown = function() {
+
+        resetTotals();
+        $http.get('/breakdown', {
+                params: { build : $scope.build.Version}
+        }).success(function(data) {
+
+            var categories = [];
+            var platforms = [];
+
+            data.forEach(function(build) {
+
+                if (build.Category in $scope.byCategory) {
+                    if ($scope.byCategory[build.Category].Status == "greyed"){
+                        updateStatuses(build);
+                        return;
+                    }
+                } else {
+                    $scope.byCategory[build.Category] = {
+                        "Category": build.Category,
+                        "Passed": 0,
+                        "Failed": 0,
+                        "Status": "bg-success",
+                        "checked": "fa-check",
+                    };
+                }
+                if (categories.indexOf(build.Category) < 0){
+                    categories.push(build.Category);
+                }
+                if (build.Platform in $scope.byPlatform){
+                    if ($scope.byPlatform[build.Platform].Status == "greyed"){
+                        updateStatuses(build);
+                        return;
+                    }
+                } else {
+                    $scope.byPlatform[build.Platform] = {
+                        "Platform": build.Platform,
+                        "Passed": 0,
+                        "Failed": 0,
+                        "Status": "bg-success",
+                        "checked": "fa-check",
+                    };
+                }
+
+                if (platforms.indexOf(build.Platform) < 0){
+                    platforms.push(build.Platform);
+                }
+                // totals
+                updateTotals(build);
+
+                // status bars
+                updateStatuses(build);
+
             });
 
-		});
+            // display jobs
+            displayJobs(categories, platforms);
+
+        });
+
 
 		if(!$scope.$$phase) {
 			$scope.$apply();
@@ -152,19 +232,31 @@ function Timeline($scope, $http, SelectedBuild) {
 		};
 	};
 
-    $scope.filterPlatform = function(index){
-        var selected = $scope.byPlatform[index];
-        if (selected.checked == "fa-check"){
-            // toggle checked of all others
-            $scope.byPlatform.forEach(function(os) {
-                if (os.Platform != selected.Platform){
-                    os.checked = "";
-                }
-            });
+    $scope.filterItem= function(key, itype){
 
+        var selected;
+        var item;
+        if (itype == "c"){
+            item = key.Category;
+            selected = $scope.byCategory[item];
+        }
+        else {
+            item = key.Platform;
+            selected = $scope.byPlatform[item];
+        }
+
+        if (selected.checked == "fa-check"){
+            selected.checked = "";
+            selected.Status = "greyed";
         } else {
             selected.checked = "fa-check";
+            selected.Status = "";
         }
+        updateBreakDown();
+		if(!$scope.$$phase) {
+			$scope.$apply();
+		}
+
     }
 }
 
@@ -172,6 +264,4 @@ app.factory('SelectedBuild', function(){
     return { build: "3.0.0-1173" };
 });
 
-app.controller(['DisplayJobController']);
 app.controller(['Timeline']);
-app.controller(['SidebarCtl']);
