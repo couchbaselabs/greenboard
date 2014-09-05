@@ -1,18 +1,28 @@
-function Timeline($scope, $http, SelectedBuild) {
+$('[data-slider]').on('change.fndtn.slider', function(){
+  // do something when the value changes
+});
+
+function Timeline($scope, $http){
+
+	_timeline($scope, $http, null, null);
+}
+
+function _timeline($scope, $http, rangeLow, rangeHigh) {
 	"use strict";
+
 
     $scope.predicate = "result";
     $scope.reverse = true;
-	$http.get('/timeline').success(function(data) {
-		$scope.timelineData = data;
+	$http.get('/timeline',{
+              params: { low: rangeLow,
+                       high: rangeHigh }
+                }).success(function(data) {
 
-		$scope.timelineRelData = [{
-			"key": "Passed, %",
-			"values": []
-		}, {
-			"key": "Failed, %",
-			"values": []
-		}];
+		$scope.timelineData = data;
+        $scope.timelineCursor = {
+            "lpos": 0,
+            "rpos": data.length - 1
+        }
 
 		$scope.timelineAbsData = [{
 			"key": "Passed",
@@ -21,16 +31,24 @@ function Timeline($scope, $http, SelectedBuild) {
 			"key": "Failed",
 			"values": []
 		}];
+		$scope.timelineRelData = [{
+			"key": "Passed, %",
+			"values": []
+		}, {
+			"key": "Failed, %",
+			"values": []
+		}];
+
 
 		data.forEach(function(build) {
+			$scope.timelineAbsData[0]
+                .values.push([build.Version, build.AbsPassed]);
+			$scope.timelineAbsData[1]
+                .values.push([build.Version, -build.AbsFailed]);
 			$scope.timelineRelData[0]
                 .values.push([build.Version, build.RelPassed]);
 			$scope.timelineRelData[1]
                 .values.push([build.Version, build.RelFailed]);
-			$scope.timelineAbsData[0]
-                .values.push([build.Version, build.AbsPassed]);
-			$scope.timelineAbsData[1]
-                .values.push([build.Version, build.AbsFailed]);
 		});
 
         var build = $scope.timelineData[data.length - 1].Version;
@@ -124,12 +142,20 @@ function Timeline($scope, $http, SelectedBuild) {
 
     var updateStatuses = function (build){
 
-        var danger = "bg-danger";
         var success = "bg-success";
+        var warning = "bg-warning";
+        var danger = "bg-danger";
 
         if ($scope.byPlatform[build.Platform].Status != "greyed") {
             if ($scope.byPlatform[build.Platform].Failed > 0){
-                $scope.byPlatform[build.Platform].Status = danger;
+		var fAbs = $scope.byPlatform[build.Platform].Failed;
+		var pAbs = $scope.byPlatform[build.Platform].Passed;
+		var fRel = 100.0*fAbs/(fAbs + pAbs);
+                if (fRel > 30){
+                   $scope.byPlatform[build.Platform].Status = danger;
+		} else {
+                   $scope.byPlatform[build.Platform].Status = warning;
+                }
             } else {
                 $scope.byPlatform[build.Platform].Status = success;
             }
@@ -137,16 +163,30 @@ function Timeline($scope, $http, SelectedBuild) {
 
         if ($scope.byCategory[build.Category].Status != "greyed") {
             if ($scope.byCategory[build.Category].Failed > 0){
-                $scope.byCategory[build.Category].Status = danger;
+		var fAbs = $scope.byCategory[build.Category].Failed;
+		var pAbs = $scope.byCategory[build.Category].Passed;
+		var fRel = 100.0*fAbs/(fAbs + pAbs);
+                if (fRel > 30){
+                   $scope.byCategory[build.Category].Status = danger;
+		} else {
+                   $scope.byCategory[build.Category].Status = warning;
+                }
             } else {
                 $scope.byCategory[build.Category].Status = success;
             }
         }
 
-        if ($scope.build.Failed > 0){
-            $scope.build.Status = danger;
-        } else {
+	if ($scope.build.Failed == 0){
             $scope.build.Status = success;
+        } else {
+		var fAbs = $scope.build.Failed;
+		var pAbs = $scope.build.Passed;
+		var fRel = 100.0*fAbs/(fAbs + pAbs);
+                if (fRel > 30){
+                   $scope.build.Status = danger;
+		} else {
+                   $scope.build.Status = warning;
+                }
         }
     }
 
@@ -258,10 +298,37 @@ function Timeline($scope, $http, SelectedBuild) {
 		}
 
     }
-}
 
-app.factory('SelectedBuild', function(){
-    return { build: "3.0.0-1173" };
-});
+    $scope.liClass = function(iscurrent){
+       if (iscurrent){
+          return "current";
+       }
+    }
+
+   $scope.shiftPager = function(dir){
+      var lpos = $scope.timelineCursor.lpos;
+      var rpos = $scope.timelineCursor.rpos;
+      var absHigh = $scope.timelineData.length - 1;
+      if(dir == "left"){
+         if ($scope.timelineCursor > 0){
+            lpos = parseInt(lpos * 0.10);
+         }
+       } else {
+         if (rpos < absHigh){
+            rpos = rpos * 10;
+            if (rpos > absHigh){
+                rpos = absHigh;
+            }
+         }
+       }
+
+       var left = $scope.timelineData[lpos].Version;
+       var right= $scope.timelineData[rpos].Version+"_";
+       $scope.timelineCursor.lpos = lpos;
+       $scope.timelineCursor.rpos = rpos;
+       _timeline($scope, $http, left, right);
+  }
+
+}
 
 app.controller(['Timeline']);

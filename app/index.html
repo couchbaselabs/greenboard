@@ -8,14 +8,16 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>Dashboard QE Functional TEsting</title>
+    <title>Greenboard</title>
 
     <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
     <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
-    <link href="css/main.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="foundation/css/foundation.css">
 
     <!-- d3 -->
-	<link rel="stylesheet" href="d3/css/nv.d3.css" />
+    <link rel="stylesheet" href="d3/css/nv.d3.css" />
+    <link href="css/main.css" rel="stylesheet">
 
 
   </head>
@@ -27,23 +29,26 @@
         <div class="navbar-header">
         </div>
         </div>
+          <a class="navbar-brand" href="">Greenboard</a>
       </div>
     </div>
 
+
+
+
     <div class="container-fluid" ng-controller="Timeline">
-
-
       <div class="row">
         <div class="col-sm-3 col-md-2 sidebar">
+	  <br/>
+	  <br/>
           <ul class="nav nav-sidebar">
             <li><h3>Build</h3></li>
               <p class="custom-list-group-item {{build.Status}}">
-                <i class="fa fa-check fa-fw "></i>{{build.Version}}
-                    <span class="testscore">{{build.Passed}}/{{build.Passed + build.Failed}}</span>
+                {{build.Version}}<span class="testscore">{{build.Passed}}/{{build.Passed + build.Failed}}</span>
               </p>
           </ul>
           <ul class="nav nav-sidebar">
-            <li><h3>OS</h3></li>
+            <li><h3>Platform</h3></li>
 
               <div  ng-repeat="os in byPlatform">
                   <a ng-click="filterItem(os, 'p')" class="custom-list-group-item {{os.Status}}" href="">
@@ -53,7 +58,7 @@
                   </a>
                </div>
           </ul>
-          <ul class="nav nav-sidebar">
+          <ul class="nav nav-sidebar feature">
             <li><h3>Feature</h3></li>
               <div  ng-repeat="category in byCategory">
                   <a ng-click="filterItem(category, 'c')" class="custom-list-group-item {{category.Status}}" href="">
@@ -66,9 +71,23 @@
 
         </div>
 
-        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-          <h1 class="page-header">QE Functional Tests</h1>
+        <!--<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">-->
 
+          <h1 class="page-header">QE Test Results</h1>
+
+          <div class="buildNav">
+              <ul class="pagination">
+                <li class="arrow"><a ng-click="shiftPager('left')" href="">&laquo;</a></li>
+                <li  ng-repeat="build in timelineData | limitTo:4">
+	              <a href="">{{build.Version}}</a>
+	         </li>
+                <li class="expand"><a href="">&hellip;</a></li>
+                <li ng-class='liClass($last)' ng-repeat="build in timelineData | limitTo:-4">
+	            <a  href="">{{build.Version}}</a>
+                </li>
+                <li class="arrow"><a ng-click="shiftPager('right')" href="">&raquo;</a></li>
+              </ul>
+          </div>
         <div class="row placeholders">
             <div >
                 <div id="timeline" class="section">
@@ -88,7 +107,7 @@
                                 color="['#3bc93b', '#de0000']"
                                 yAxisTickFormat="yAxisTickFormatFunction()"
                                 delay="750">
-                                    <svg></svg>
+                                 <svg></svg>
                             </nvd3-multi-bar-chart>
                         </div>
                     </div>
@@ -149,7 +168,6 @@
           </div>
         </div>
       </div>
-    </div>
 
     <!-- Bootstrap core JavaScript
     ================================================== -->
@@ -160,9 +178,16 @@
     <script src="js/controllers.js"></script>
     <script src="bootstrap/js/bootstrap.min.js"></script>
 
-	<script type="text/javascript" src="d3/js/d3.v2.min.js"></script>
-	<script type="text/javascript" src="d3/js/nv.d3.js"></script>
-	<script type="text/javascript" src="d3/js/angularjs-nvd3-directives.js"></script>
+     <script type="text/javascript" src="d3/js/d3.v2.min.js"></script>
+     <script type="text/javascript" src="d3/js/nv.d3.js"></script>
+     <script type="text/javascript" src="d3/js/angularjs-nvd3-directives.js"></script>
+
+     <script src="foundation/js/vendor/modernizr.js"></script>
+     <script src="foundation/js/foundation.min.js"></script>
+     <script>
+       $(document).foundation();
+     </script>
+
   </body>
 </html>
 
