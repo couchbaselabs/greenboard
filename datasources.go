@@ -12,8 +12,8 @@ var ddocs = map[string]string{
 	"jenkins": `{
 		"views": {
 			"data_by_build": {
-				"map": "function (doc, meta) {emit([doc.build, doc.os, doc.component], [doc.failCount, doc.totalCount, doc.priority, doc.name, doc.result, doc.url, doc.build_id]);}",
-                "reduce" : "function (key, values, rereduce) {var fAbs = 0;var pAbs = 0;for(i=0;i < values.length; i++) {fAbs = fAbs + values[i][0];pAbs = pAbs + values[i][1];} var total = fAbs + pAbs; var pRel = 100.0*pAbs/total; var fRel = 100.0*fAbs/total; return([pAbs, -fAbs, pRel, fRel]);}"
+				"map": "function(doc, meta){ emit([doc.build, doc.os, doc.component], [doc.totalCount - doc.failCount,doc.failCount,  doc.priority, doc.name, doc.result, doc.url, doc.build_id]);}",
+                                "reduce" : "function (key, values, rereduce) { var fAbs = 0; var pAbs = 0; for(i=0;i < values.length; i++) { pAbs = pAbs + values[i][0]; fAbs = fAbs + values[i][1]; } var total = fAbs + pAbs; var pRel = 100.0*pAbs/total; var fRel = 100.0*fAbs/total; return ([pAbs, fAbs, pRel, fRel]); }"
             }
 		}
 	}`,
@@ -57,8 +57,8 @@ func (ds *DataSource) installDDoc(ddoc string) {
 var TIMELINE_SIZE = 40
 
 var VIEW = map[string]int{
-	"failCount":  0,
-	"totalCount": 1,
+	"absPassed":  0,
+	"absFailed":  1,
 	"priority":   2,
 	"name":       3,
 	"result":     4,
@@ -88,9 +88,9 @@ type Breakdown struct {
 }
 
 type Job struct {
-	Passed   float64
-	Total float64
-	Priority string
+    Passed   float64
+    Total float64
+    Priority string
     Name string
     Result string
     Url string
@@ -162,18 +162,17 @@ func (ds *DataSource) GetJobs(ctx *web.Context) []byte {
             for _, row := range rows {
 
                 value := row.Value.([]interface{})
-                failed := value[VIEW["failed"]].(float64)
-                total  := value[VIEW["totalCount"]].(float64)
+                passed := value[VIEW["absPassed"]].(float64)
+                failed := value[VIEW["absFailed"]].(float64)
                 priority := value[VIEW["priority"]].(string)
                 name := value[VIEW["name"]].(string)
                 result := value[VIEW["result"]].(string)
                 url := value[VIEW["url"]].(string)
                 bid := value[VIEW["bid"]].(float64)
-                passed := total - failed
 
                 jobs = append(jobs, Job{
                    passed,
-                   total,
+                   passed + failed,
                    priority,
                    name,
                    result,
@@ -239,11 +238,25 @@ func (ds *DataSource) GetBreakdown(ctx *web.Context) []byte {
 	return j
 }
 
-func (ds *DataSource) GetTimeline() []byte {
+func (ds *DataSource) GetTimeline(ctx *web.Context) []byte {
 	b := ds.GetBucket("jenkins")
     log.Println(ds.Release)
+
+    start_key := ds.Release
+    end_key := "9999"
+    for k,v := range ctx.Params {
+        if k == "low" {
+            start_key = v;
+        }
+        if k == "high" {
+            end_key= v;
+        }
+    }
+
     params := map[string]interface{}{
-        "start_key":  []interface{}{ds.Release},
+        "start_key":  []interface{}{start_key},
+        "end_key":  []interface{}{end_key},
+        "inclusive_end": true,
         "group_level" : 1,
     }
 	rows := ds.QueryView(b, "jenkins", "data_by_build", params)
