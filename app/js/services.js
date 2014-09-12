@@ -37,8 +37,17 @@ serviceApp.service("ViewService",['$http',
               return Object.keys(data);
         });
       },
-      timeline: function(version, filterBy) {
-        return $http.get("/timeline", { cache: true}).then(function(response) {
+      timeline: function(version, filterBy, endVersion) {
+
+        var config = {"url": "/timeline",
+                      params: {"start_key": version},
+                      cache: true };
+
+        if (endVersion) {
+            config["params"]["end_key"] = endVersion;
+        }
+
+        return $http(config).then(function(response) {
 
           var data = response.data;
           var allBuilds, versions, versionBuilds, absData, relData;

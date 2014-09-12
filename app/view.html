@@ -1,0 +1,161 @@
+  <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="#">Greenboard</a>
+      </div>
+      <div class="navbar-collapse collapse">
+        <ul class="nav navbar-nav navbar-right">
+        </ul>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="container-fluid" ng-controller="TimelineCtrl">
+    <div class="row">
+      <div class="col-sm-3 col-md-2 sidebar">
+          <ul class="nav nav-sidebar">
+            <li><h3>Build</h3></li>
+              <p class="custom-list-group-item {{build.Status}}">
+              {{build.Version}}
+              <span class="testscore">{{build.Passed}}/{{build.Passed + build.Failed}}</span>
+              </p>
+          </ul>
+          <ul class="nav nav-sidebar">
+            <li><h3>Platform</h3></li>
+              <div  ng-repeat="os in Platforms">
+                <a ng-click="filterItem(os, 'p')" class="custom-list-group-item {{os.Status}}" href="">
+                     <i class="glyphicon glyphicon-{{os.checked}}"></i>
+                      {{os.Platform}}
+                      <span class="testscore">{{os.Passed}}/{{os.Failed + os.Passed}}</span>
+                 </a>
+              </div>
+          </ul>
+          <ul class="nav nav-sidebar feature">
+            <li><h3>Feature</h3></li>
+              <div  ng-repeat="category in Categories">
+                  <a ng-click="filterItem(category, 'c')" class="custom-list-group-item {{category.Status}}" href="">
+                     <i class="glyphicon glyphicon-{{category.checked}}"></i>
+                     {{category.Category}}
+                     <span class="testscore">{{category.Passed}}/{{category.Failed + category.Passed}}</span>
+                  </a>
+              </div>
+          </ul>
+
+      </div>
+      <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+        <h1 class="page-header">QE Testing Dashboard</h1>
+
+        <div >
+
+          <div class="col-sm-6">
+              <ul class="pagination">
+                <li id={{v}} ng-repeat="v in pagerBuilds" ng-class="{'active': v == selectedVersion}" class="pagecell">
+                   <a ng-click="didSelectVersion(v)" href="">{{ v }}</a>
+                 </li>
+               </ul>
+          </div>
+          <div class="col-sm-6">
+
+         </div>
+
+             <div class="btn-group">
+              <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                {{filterBy.title}} <span class="caret"></span>
+              </button>
+              <ul class="dropdown-menu dropdown-menu" role="menu">
+                <li ng-click="didSelectMenu(menu)" ng-repeat="menu in filterMenues">
+                  <a href="">{{menu.title}}</a>
+                </li>
+              </ul>
+              <ul class="pagination subpager">
+                <li ng-class="{'active': f == filterBy.value}" ng-repeat="f in filterBy.options">
+                  <a ng-click="didSelectFilter(f)" href="">{{f}}</a>
+                </li>
+              </ul>
+            </div>
+
+
+          <div id="timeline" class="section">
+              <div>
+                  <div class="timeline">
+                      <nvd3-multi-bar-chart
+                          id="absTimeline"
+                          data="timelineAbsData"
+                          margin="{left: 40, top: 0, bottom: 35, right: 20}"
+                          stacked="true"
+                          showLegend="true"
+                          showXAxis="true"
+                          showYAxis="true"
+                          reduceXTicks="true"
+                          tooltips="true"
+                          tooltipcontent="absToolTipContentFunction()"
+                          color="['#3bc93b', '#de0000']"
+                          yAxisTickFormat="yAxisTickFormatFunction()"
+                          delay="750">
+                              <svg></svg>
+                      </nvd3-multi-bar-chart>
+                  </div>
+              </div>
+            </div>
+
+            <hr class="separator">
+
+          <div class="row timeline">
+              <nvd3-multi-bar-chart
+                  id="relTimeline"
+                  data="timelineRelData"
+                  margin="{left: 40, top: 0, bottom: 35, right: 20}"
+                  stacked="true"
+                  showLegend="true"
+                  showXAxis="true"
+                  showYAxis="true"
+                  reduceXTicks="true"
+                  tooltips="true"
+                  tooltipcontent="relToolTipContentFunction()"
+                  color="['#3bc93b', '#de0000']"
+                  yAxisTickFormat="yAxisTickFormatFunction()"
+                  delay="750">
+                   <svg></svg>
+              </nvd3-multi-bar-chart>
+          </div>
+
+
+        </div>
+        <div>
+          <h2 class="sub-header">Job Details</h2>
+          <div class="table-responsive">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th><a href="" ng-click="predicate = 'name'; reverse=!reverse">Name <i class="fa fa-sort"></i></a></th>
+                  <th><a href="" ng-click="predicate = 'result'; reverse=!reverse">Result <i class="fa fa-sort"></i></a></th>
+                  <th><a href="" ng-click="predicate = 'passed'; reverse=!reverse">Passed <i class="fa fa-sort"></i></a></th>
+                  <th><a href="" ng-click="predicate = 'total'; reverse=!reverse">Total <i class="fa fa-sort"></i></a></th>
+                  <th><a href="" ng-click="predicate = 'priority'; reverse=!reverse">Priority <i class="fa fa-sort"></i></a></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr ng-repeat="job in jobs | orderBy:predicate:reverse">
+                  <td><a href={{job.url}}{{job.bid}}>{{job.name}}</a></td>
+                  <td><span class={{job.result}}>{{job.result}}</span></td>
+                  <td>{{job.passed}}</td>
+                  <td>{{job.total}}</td>
+                  <td>{{job.priority}}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <!--<div ng-view></div>-->
+
+      </div>
+    </div>
+  </div>
+

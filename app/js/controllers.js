@@ -111,10 +111,20 @@ controllersApp.controller('TimelineCtrl', ['$scope', 'ViewService', function ($s
         }
     }
 
+    var nextVersion = function(version){
+        var next;
+        var idx = $scope.versions.indexOf(version);
+        if ((idx > -1) && (idx < ($scope.versions.length - 1))){
+            next = $scope.versions[idx + 1];
+        }
+        return next;
+    }
+
     var getTimeline = function(selectedVersion){
 
       var filterBy = $scope.filterBy;
-      return ViewService.timeline(selectedVersion, filterBy).then(function(response){
+      var endVersion = nextVersion(selectedVersion);
+      return ViewService.timeline(selectedVersion, filterBy, endVersion).then(function(response){
 
         $scope.timelineAbsData = response.absData;
         $scope.timelineRelData = response.relData;

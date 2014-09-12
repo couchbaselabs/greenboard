@@ -9,7 +9,7 @@ app.config(['$routeProvider',
   function($routeProvider){
     $routeProvider.
       when('/', {
-        templateUrl: 'partials/jobs.html'
+        templateUrl: 'view.html'
       }).
       otherwise({
         redirectTo: '/'

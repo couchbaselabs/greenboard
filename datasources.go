@@ -2,9 +2,10 @@ package main
 
 import (
 	"encoding/json"
-	"log"
-        "strings"
 	"io/ioutil"
+	"log"
+	"strings"
+
 	"github.com/couchbaselabs/go-couchbase"
 	"github.com/hoisie/web"
 )
@@ -20,11 +21,10 @@ var ddocs = map[string]string{
 	}`,
 }
 
-
 type DataSource struct {
 	CouchbaseAddress string
 	Release          string
-        AllVersions      map[string]bool
+	AllVersions      map[string]bool
 }
 
 func (ds *DataSource) GetBucket(bucket string) *couchbase.Bucket {
@@ -40,13 +40,13 @@ func (ds *DataSource) GetBucket(bucket string) *couchbase.Bucket {
 
 func (ds *DataSource) QueryView(b *couchbase.Bucket, ddoc, view string,
 	params map[string]interface{}) []couchbase.ViewRow {
-	params["stale"] = "false"
+	params["stale"] = "update_after"
 	vr, err := b.View(ddoc, view, params)
 	if err != nil {
-       log.Println(err);
-	   ds.installDDoc(ddoc)
+		log.Println(err)
+		ds.installDDoc(ddoc)
 	}
-    return vr.Rows
+	return vr.Rows
 }
 
 func (ds *DataSource) installDDoc(ddoc string) {
@@ -60,24 +60,24 @@ func (ds *DataSource) installDDoc(ddoc string) {
 var TIMELINE_SIZE = 40
 
 var VIEW = map[string]int{
-	"absPassed":  0,
-	"absFailed":  1,
-	"priority":   2,
-	"name":       3,
-	"result":     4,
-	"url":        5,
-	"bid":        6,
+	"absPassed": 0,
+	"absFailed": 1,
+	"priority":  2,
+	"name":      3,
+	"result":    4,
+	"url":       5,
+	"bid":       6,
 }
 
 var REDUCE = map[string]int{
-    "absPassed": 0,
-    "absFailed": 1,
-    "relPassed": 2,
-    "relFailed": 3,
+	"absPassed": 0,
+	"absFailed": 1,
+	"relPassed": 2,
+	"relFailed": 3,
 }
 
 type MapBuild struct {
-	Version string
+	Version  string
 	Passed   float64
 	Failed   float64
 	Category string
@@ -91,26 +91,25 @@ type Breakdown struct {
 }
 
 type Job struct {
-    Passed   float64
-    Total float64
-    Priority string
-    Name string
-    Result string
-    Url string
-    Bid float64
-    Version string
-    Platform string
-    Category string
+	Passed   float64
+	Total    float64
+	Priority string
+	Name     string
+	Result   string
+	Url      string
+	Bid      float64
+	Version  string
+	Platform string
+	Category string
 }
 
 type ReduceBuild struct {
-	Version string
-	AbsPassed  float64
-	AbsFailed  float64
-	RelPassed  float64
-	RelFailed  float64
+	Version   string
+	AbsPassed float64
+	AbsFailed float64
+	RelPassed float64
+	RelFailed float64
 }
-
 
 func appendIfUnique(slice []string, s string) []string {
 	for i := range slice {
@@ -130,74 +129,72 @@ func posInSlice(slice []string, s string) int {
 	return -1
 }
 
-
 func (ds *DataSource) GetJobs(ctx *web.Context) []byte {
-    b := ds.GetBucket("jenkins")
+	b := ds.GetBucket("jenkins")
 
-    var version string
-    for k,v := range ctx.Params {
-        if k == "build" {
-            version = v;
-        }
-    }
-    params := map[string]interface{}{
-       "start_key":  []interface{}{version},
-       "end_key":  []interface{}{version+"_"},
-       "reduce": false,
-       "stale": false,
-    }
+	var version string
+	for k, v := range ctx.Params {
+		if k == "build" {
+			version = v
+		}
+	}
+	params := map[string]interface{}{
+		"start_key": []interface{}{version},
+		"end_key":   []interface{}{version + "_"},
+		"reduce":    false,
+		"stale":     "update_after",
+	}
 
+	jobs := []Job{}
+	rows := ds.QueryView(b, "jenkins", "data_by_build", params)
+	for _, row := range rows {
+		meta := row.Key.([]interface{})
+		jversion := meta[0].(string)
+		platform := meta[1].(string)
+		category := meta[2].(string)
 
-    jobs := []Job{}
-    rows := ds.QueryView(b, "jenkins", "data_by_build", params)
-    for _, row := range rows {
-	meta := row.Key.([]interface{})
-	jversion := meta[0].(string)
-	platform := meta[1].(string)
-	category := meta[2].(string)
+		if jversion == version {
+			value := row.Value.([]interface{})
+			passed := value[VIEW["absPassed"]].(float64)
+			failed := value[VIEW["absFailed"]].(float64)
+			priority := value[VIEW["priority"]].(string)
+			name := value[VIEW["name"]].(string)
+			result := value[VIEW["result"]].(string)
+			url := value[VIEW["url"]].(string)
+			bid := value[VIEW["bid"]].(float64)
 
-        if jversion == version {
-           value := row.Value.([]interface{})
-           passed := value[VIEW["absPassed"]].(float64)
-           failed := value[VIEW["absFailed"]].(float64)
-           priority := value[VIEW["priority"]].(string)
-           name := value[VIEW["name"]].(string)
-           result := value[VIEW["result"]].(string)
-           url := value[VIEW["url"]].(string)
-           bid := value[VIEW["bid"]].(float64)
+			jobs = append(jobs, Job{
+				passed,
+				passed + failed,
+				priority,
+				name,
+				result,
+				url,
+				bid,
+				jversion,
+				platform,
+				category,
+			})
+		}
+	}
 
-           jobs = append(jobs, Job{
-              passed,
-              passed + failed,
-              priority,
-              name,
-              result,
-              url,
-              bid,
-              jversion,
-              platform,
-              category,
-           })
-        }
-    }
-
-    j, _ := json.Marshal(jobs)
-    return j
+	j, _ := json.Marshal(jobs)
+	return j
 }
 
 func (ds *DataSource) GetBreakdown(ctx *web.Context) []byte {
 	b := ds.GetBucket("jenkins")
-    version := ds.Release;
-    for k,v := range ctx.Params {
-        if k == "build" {
-            version = v;
-        }
-    }
-    params := map[string]interface{}{
-    "start_key":  []interface{}{version},
-    "end_key":  []interface{}{version+"_"},
-    "group_level" : 3,
-    }
+	version := ds.Release
+	for k, v := range ctx.Params {
+		if k == "build" {
+			version = v
+		}
+	}
+	params := map[string]interface{}{
+		"start_key":   []interface{}{version},
+		"end_key":     []interface{}{version + "_"},
+		"group_level": 3,
+	}
 	rows := ds.QueryView(b, "jenkins", "data_by_build", params)
 
 	/***************** MAP *****************/
@@ -210,19 +207,19 @@ func (ds *DataSource) GetBreakdown(ctx *web.Context) []byte {
 		if !ok {
 			continue
 		}
-        if failed < 0 {
-            failed = failed * -1
-        }
-		passed , ok := value[REDUCE["absPassed"]].(float64)
+		if failed < 0 {
+			failed = failed * -1
+		}
+		passed, ok := value[REDUCE["absPassed"]].(float64)
 		if !ok {
 			continue
 		}
-		version  := meta[0].(string)
+		version := meta[0].(string)
 		platform := meta[1].(string)
 		category := meta[2].(string)
 
 		mapBuilds = append(mapBuilds, MapBuild{
-            version,
+			version,
 			passed,
 			failed,
 			category,
@@ -231,82 +228,84 @@ func (ds *DataSource) GetBreakdown(ctx *web.Context) []byte {
 		})
 	}
 
-
 	j, _ := json.Marshal(mapBuilds)
 	return j
 }
 
 func (ds *DataSource) GetTimeline(ctx *web.Context) []byte {
 
-    var start_key string
-    var end_key string
-    for k,v := range ctx.Params {
-        if k == "low" {
-            start_key = v;
-        }
-        if k == "high" {
-            end_key= v;
-        }
-    }
+	var start_key string
+	var end_key string
+	for k, v := range ctx.Params {
+		if k == "start_key" {
+			start_key = v
+		}
+		if k == "end_key" {
+			end_key = v
+		}
+	}
 
-    return ds._GetTimeline(start_key, end_key)
+	return ds._GetTimeline(start_key, end_key)
 }
 
-func (ds *DataSource) _GetTimeline(start_key string, end_key string) []byte{
+func (ds *DataSource) _GetTimeline(start_key string, end_key string) []byte {
 
-    if start_key =="" {
-        start_key = " "
-    }
-    if end_key == ""{
-       end_key = "9999"
-    }
+	if start_key == "" {
+		start_key = " "
+	}
+	if end_key == "" {
+		end_key = "9999"
+	}
 
-    b := ds.GetBucket("jenkins")
-    params := map[string]interface{}{
-        "start_key":  []interface{}{start_key},
-        "end_key":  []interface{}{end_key},
-        "inclusive_end": true,
-        "group_level" : 1,
-    }
+	b := ds.GetBucket("jenkins")
+	params := map[string]interface{}{
+		"start_key":     []interface{}{start_key},
+		"end_key":       []interface{}{end_key},
+		"inclusive_end": true,
+		"stale":         "update_after",
+		"group_level":   1,
+	}
+	log.Println(params)
+
 	rows := ds.QueryView(b, "jenkins", "data_by_build", params)
 
 	/***************** Query Reduce Views*****************/
 	reduceBuild := []ReduceBuild{}
 	for _, row := range rows {
 		rowKey := row.Key.([]interface{})
-        version := rowKey[0].(string)
-        if version == "0.0.0-xxxx" {
-            continue
-        }
+		version := rowKey[0].(string)
+		if version == "0.0.0-xxxx" {
+			continue
+		}
 
-        versionMain := strings.Split(version,"-")[0]
-        ds.AllVersions[versionMain] = true
-         value := row.Value.([]interface{})
-         reduceBuild = append(reduceBuild,
-                ReduceBuild{
-                version,
-                value[REDUCE["absPassed"]].(float64),
-                value[REDUCE["absFailed"]].(float64),
-                value[REDUCE["relPassed"]].(float64),
-                value[REDUCE["relFailed"]].(float64),
-            })
+		versionMain := strings.Split(version, "-")[0]
+		ds.AllVersions[versionMain] = true
+		value := row.Value.([]interface{})
+		reduceBuild = append(reduceBuild,
+			ReduceBuild{
+				version,
+				value[REDUCE["absPassed"]].(float64),
+				value[REDUCE["absFailed"]].(float64),
+				value[REDUCE["relPassed"]].(float64),
+				value[REDUCE["relFailed"]].(float64),
+			})
 	}
 
 	j, _ := json.Marshal(reduceBuild)
 	return j
 }
 
-func (ds *DataSource)GetAllVersions() []byte{
-    j, _ := json.Marshal(ds.AllVersions)
-    return j
+func (ds *DataSource) GetAllVersions() []byte {
+	j, _ := json.Marshal(ds.AllVersions)
+	return j
 }
 
-func (ds *DataSource)BootStrap() {
-  ds.AllVersions = make(map[string]bool)
-  ds._GetTimeline("","")
+func (ds *DataSource) BootStrap() {
+	ds.AllVersions = make(map[string]bool)
+	ds._GetTimeline("", "")
 }
 
-func (ds *DataSource)GetIndex() []byte {
-  content, _ := ioutil.ReadFile(pckgDir + "app/index.html")
-  return content
+func (ds *DataSource) GetIndex() []byte {
+	content, _ := ioutil.ReadFile(pckgDir + "app/index.html")
+	return content
 }
