@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+
 	"github.com/hoisie/web"
 )
 
@@ -12,14 +13,12 @@ var pckgDir string
 
 var data_source *DataSource
 
-
-
 type Config struct {
 	CouchbaseAddress, ListenAddress, Release string
 }
 
 func main() {
-	pckgDir = os.Getenv("GOPATH") + "/src/github.com/tahmmee/greenboard-ng/"
+	pckgDir = os.Getenv("GOPATH") + "/src/github.com/tahmmee/greenboard/"
 	web.Config.StaticDir = pckgDir + "app"
 
 	configFile, err := ioutil.ReadFile(pckgDir + "config.json")
@@ -34,9 +33,9 @@ func main() {
 	}
 
 	data_source = new(DataSource)
-        data_source.CouchbaseAddress = config.CouchbaseAddress
-        data_source.Release = config.Release
-        data_source.BootStrap()
+	data_source.CouchbaseAddress = config.CouchbaseAddress
+	data_source.Release = config.Release
+	data_source.BootStrap()
 	web.Get("/", data_source.GetIndex)
 	web.Get("/timeline", data_source.GetTimeline)
 	web.Get("/breakdown", data_source.GetBreakdown)
