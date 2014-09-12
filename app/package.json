@@ -1,0 +1,24 @@
+{
+  "name": "greenboard",
+  "version": "1.0.0",
+  "description": "functional test qe dashboard",
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "bower": "^1.3.1",
+    "grunt": "^0.4.5",
+    "grunt-cli": "^0.1.13",
+    "grunt-contrib-uglify": "^0.5.1",
+    "http-server": "^0.6.1",
+    "karma": "^0.12.16",
+    "karma-chrome-launcher": "^0.1.4",
+    "karma-jasmine": "^0.1.5"
+  },
+  "scripts": {
+    "prestart": "grunt default",
+    "start": "http-server -a 0.0.0.0 -p 8000",
+    "postinstall": "bower install",
+    "test": "node node_modules/karma/bin/karma start test/karma.conf.js"
+  }
+
+}
