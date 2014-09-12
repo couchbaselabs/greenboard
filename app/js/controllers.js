@@ -1,7 +1,7 @@
 //======TESTING=========
 //var app = angular.module('greenboardControllers', ['greenboardServices']);
 //======TESTING=========
-var app = angular.module('greenboardControllers', ['nvd3ChartDirectives', 'greenboardServices']);
+var controllersApp = angular.module('greenboardControllers', ['nvd3ChartDirectives', 'greenboardServices']);
 
 function lastEl(a){
   if(a.length > 0) {
@@ -10,7 +10,7 @@ function lastEl(a){
     return a[0];
   }
 }
-app.controller('TimelineCtrl', ['$scope', 'ViewService', function ($scope, ViewService){
+controllersApp.controller('TimelineCtrl', ['$scope', 'ViewService', function ($scope, ViewService){
 
 
       // d3

@@ -1,6 +1,6 @@
-var app = angular.module('greenboardServices', []);
+var serviceApp = angular.module('greenboardServices', []);
 
-app.service("ViewService",
+serviceApp.service("ViewService",['$http',
   function($http) {
 
     var mapReduceByCategoryPlatform = function(data, platforms, categories){
@@ -133,4 +133,4 @@ app.service("ViewService",
         });
       }
     };
-});
+}]);

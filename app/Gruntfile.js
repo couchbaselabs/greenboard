@@ -6,16 +6,25 @@ module.exports = function(grunt) {
             options: {
                 banner: '/*! <%= pkg.name %> <%= grunt.template.today("yyyy-mm-dd") %> */\n'
             },
-            build: {
-                src: 'js/<%= pkg.name %>.js',
-                dest: 'build/<%= pkg.name %>.min.js'
+            build : {
+                files: {'dist/<%= pkg.name %>.min.js': 'dist/<%= pkg.name %>.js',
+                        'dist/angularjs-nvd3-directives.min.js': 'dist/angularjs-nvd3-directives.js'}
             }
+        },
+        concat: {
+            dist: {
+              src: ['js/app.js', 'js/controllers.js', 'js/services.js'],
+              dest: 'dist/greenboard.js',
+            },
         }
     });
+
+    // concat tasks
+    grunt.loadNpmTasks('grunt-contrib-concat');
 
     // Load the plugin that provides the "uglify" task.
     grunt.loadNpmTasks('grunt-contrib-uglify');
 
     // Default task(s).
-    grunt.registerTask('default', ['uglify']);
+    grunt.registerTask('default', ['concat', 'uglify']);
 }
