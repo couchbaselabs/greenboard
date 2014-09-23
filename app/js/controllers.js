@@ -41,6 +41,8 @@ controllersApp.controller('TimelineCtrl', ['$scope', 'ViewService', function ($s
         var build = $scope.versionBuilds[data.pointIndex].Version;
         $scope.Categories = {};
         $scope.Platforms = {};
+        $scope.showAllPlatforms = true;
+        $scope.showAllCategories = true;
         $scope.build = findBuildInVersions(build);
         getBreakdown(build);
     });
@@ -186,6 +188,7 @@ controllersApp.controller('TimelineCtrl', ['$scope', 'ViewService', function ($s
         // reset totals and setup by inclusive categories and platforms
         $scope.build.Passed = 0;
         $scope.build.Failed = 0;
+        $scope.build.Status = "bg-success";
 
         var platforms = [];
         var categories = [];
@@ -194,22 +197,36 @@ controllersApp.controller('TimelineCtrl', ['$scope', 'ViewService', function ($s
           var item = $scope.Categories[k];
           item.Passed = 0;
           item.Failed = 0;
-          if (item.Status != "greyed"){
+          if (item.Status == "greyed"){
             if (categories.indexOf(k) < 0){
                 categories.push(k);
             }
+          } else {
+            item.Status = "bg-success";
           }
         });
         Object.keys($scope.Platforms).forEach(function(k){
           var item = $scope.Platforms[k];
           item.Passed = 0;
           item.Failed = 0;
-          if (item.Status != "greyed"){
+          if (item.Status == "greyed"){
             if (platforms.indexOf(k) < 0){
                 platforms.push(k);
             }
+          } else {
+            item.Status = "bg-success";
           }
         });
+
+        // if all platforms|categories excluded toggle showAll flags
+        if (platforms.length > 0 &&
+            (platforms.length == Object.keys($scope.Platforms).length)){
+          $scope.showAllPlatforms = false;
+        }
+        if (categories.length > 0 &&
+            (categories.length  == Object.keys($scope.Categories).length)){
+          $scope.showAllCategories = false;
+        }
 
         // query breakdown service
         ViewService.breakdown(selectedBuild, platforms, categories).then(function(response){
@@ -224,7 +241,7 @@ controllersApp.controller('TimelineCtrl', ['$scope', 'ViewService', function ($s
                     "Passed": 0,
                     "Failed": 0,
                     "Status": "bg-success",
-                    "checked": "ok",
+                    "checked": true,
                 };
             }
             if (!(build.Platform in $scope.Platforms)){
@@ -233,7 +250,7 @@ controllersApp.controller('TimelineCtrl', ['$scope', 'ViewService', function ($s
                     "Passed": 0,
                     "Failed": 0,
                     "Status": "bg-success",
-                    "checked": "ok",
+                    "checked": true,
                 };
             }
 
@@ -250,8 +267,48 @@ controllersApp.controller('TimelineCtrl', ['$scope', 'ViewService', function ($s
       });
     }
 
-    $scope.filterItem = function(key, itype){
+    $scope.toggleAll = function(itype){
 
+
+        var items;
+        if (itype == "c"){
+            items = $scope.Categories;
+            $scope.showAllCategories = !$scope.showAllCategories;
+        }
+        else {
+            items = $scope.Platforms;
+            $scope.showAllPlatforms = !$scope.showAllPlatforms;
+
+        }
+
+        Object.keys(items).forEach(function(item){
+          var key = items[item];
+          if (itype == "c"){
+            key.checked = !$scope.showAllCategories;
+          } else {
+            key.checked = !$scope.showAllPlatforms;
+          }
+          _toggleItem($scope, key, itype);
+
+        });
+
+        getBreakdown($scope.build.Version);
+        if(!$scope.$$phase) {
+          $scope.$apply();
+        }
+
+    }
+
+    $scope.toggleItem = function(key, itype){
+        _toggleItem($scope, key, itype);
+        getBreakdown($scope.build.Version);
+        if(!$scope.$$phase) {
+          $scope.$apply();
+        }
+
+    }
+
+    function _toggleItem($scope, key, itype){
         var selected;
         var item;
         if (itype == "c"){
@@ -262,19 +319,14 @@ controllersApp.controller('TimelineCtrl', ['$scope', 'ViewService', function ($s
             item = key.Platform;
             selected = $scope.Platforms[item];
         }
-
-        if (selected.checked == "ok"){
-            selected.checked = "";
+        if (selected.checked){
+            // toggle checked item to greyed state
             selected.Status = "greyed";
         } else {
-            selected.checked = "ok";
-            selected.Status = "";
-        }
-        getBreakdown($scope.build.Version);
-        if(!$scope.$$phase) {
-          $scope.$apply();
+            selected.Status = "bg-success";
         }
 
+        selected.checked = !selected.checked;
     }
 
     $scope.filterMenues = [{
@@ -317,6 +369,7 @@ controllersApp.controller('TimelineCtrl', ['$scope', 'ViewService', function ($s
 
     }
 
+
     var init = function(selectedVersion){
       ViewService.versions().then(function(versions){
           $scope.versions = versions;
@@ -331,6 +384,8 @@ controllersApp.controller('TimelineCtrl', ['$scope', 'ViewService', function ($s
           $scope.showPartitions = false;
           $scope.Platforms = {};
           $scope.Categories = {};
+          $scope.showAllPlatforms = true;
+          $scope.showAllCategories = true;
           return $scope.selectedVersion;
       }).then(getTimeline)
         .then(getBreakdown);
@@ -338,6 +393,7 @@ controllersApp.controller('TimelineCtrl', ['$scope', 'ViewService', function ($s
 
     // job sort var
     $scope.reverse = true;
+    $scope.allPlatforms = "-check";
 
     // init controller
     init();

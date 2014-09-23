@@ -27,28 +27,61 @@
               <span class="testscore">{{build.Passed}}/{{build.Passed + build.Failed}}</span>
               </p>
           </ul>
-          <ul class="nav nav-sidebar">
-            <li><h3>Platform</h3></li>
+
+          <div class="nav nav-sidebar">
+            <form>
+              <div class="nav-header">
+                <h3>Platforms</h3>
+                <input type="checkbox" ng-model="showAllPlatforms" ng-init="showAllPlatforms=true">
+                <a ng-click="toggleAll('p')" href="">
+                    <i ng-if="showAllPlatforms" class="fa fa-check-square-o"></i>
+                    <i ng-if="!showAllPlatforms"  class="fa fa-square-o"></i> all
+                </a>
+                <br/>
+              </div>
               <div  ng-repeat="os in Platforms">
-                <a ng-click="filterItem(os, 'p')" class="custom-list-group-item {{os.Status}}" href="">
-                     <i class="glyphicon glyphicon-{{os.checked}}"></i>
+                <input type="checkbox" ng-model="os.checked">
+                <a ng-click="toggleItem(os, 'p')" class="custom-list-group-item {{os.Status}}" href="">
+                     <i ng-if="os.checked" class="glyphicon glyphicon-check"></i>
+                     <i ng-if="!os.checked" class="glyphicon glyphicon-unchecked"></i>
                       {{os.Platform}}
                       <span class="testscore">{{os.Passed}}/{{os.Failed + os.Passed}}</span>
                  </a>
               </div>
-          </ul>
-          <ul class="nav nav-sidebar feature">
+            </form>
+         </div>
+            <form>
+              <div class="nav-header">
+                <h3>Features</h3>
+                <input type="checkbox" ng-model="showAllCategories" ng-init="showAllCategories=true">
+                <a ng-click="toggleAll('c')" href="">
+                    <i ng-if="showAllCategories" class="fa fa-check-square-o"></i>
+                    <i ng-if="!showAllCategories"  class="fa fa-square-o"></i> all
+                </a>
+                <br/>
+              </div>
+              <div  ng-repeat="category in Categories">
+                <input type="checkbox" ng-model="category.checked">
+                <a ng-click="toggleItem(category, 'c')" class="custom-list-group-item {{category.Status}}" href="">
+                     <i ng-if="category.checked" class="glyphicon glyphicon-check"></i>
+                     <i ng-if="!category.checked" class="glyphicon glyphicon-unchecked"></i>
+                      {{category.Category}}
+                      <span class="testscore">{{category.Passed}}/{{category.Failed + category.Passed}}</span>
+                 </a>
+              </div>
+            </form>
+        </div>
+          <!--<ul class="nav nav-sidebar feature">
             <li><h3>Feature</h3></li>
               <div  ng-repeat="category in Categories">
-                  <a ng-click="filterItem(category, 'c')" class="custom-list-group-item {{category.Status}}" href="">
+                  <a ng-click="toggleItem(category, 'c')" class="custom-list-group-item {{category.Status}}" href="">
                      <i class="glyphicon glyphicon-{{category.checked}}"></i>
                      {{category.Category}}
                      <span class="testscore">{{category.Passed}}/{{category.Failed + category.Passed}}</span>
                   </a>
               </div>
-          </ul>
+          </ul>-->
 
-      </div>
       <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
         <h1 class="page-header">QE Testing Dashboard</h1>
 

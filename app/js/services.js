@@ -5,27 +5,28 @@ serviceApp.service("ViewService",['$http',
 
     var mapReduceByCategoryPlatform = function(data, platforms, categories){
 
+          // filter out matching platforms
           if (platforms && platforms.length > 0){
-            // filter for inclusive match
-            data = data.filter(function(result){
-              return platforms.indexOf(result.Platform) > -1;
-            });
-          } else {
-            platforms = data.map(function(result){
-              return result.Platform;
-            });
-            platforms = platforms.filter(function(e, pos){
-              return platforms.indexOf(e) === pos;
+             data = data.filter(function(result){
+              if(platforms.indexOf(result.Platform) > -1) { // exists
+                return false; // exclude match
+              }
+              return true;
             });
           }
 
+          // filter out matching categories
           if (categories && categories.length > 0){
 
-            // filter for inclusive match
-            data = data.filter(function(result){
-              return categories.indexOf(result.Category) > -1;
+             data = data.filter(function(result){
+              if(categories.indexOf(result.Category) > -1) { // exists
+                return false; // exclude match
+              }
+              return true;
             });
+
           }
+
           return data;
 
     }
