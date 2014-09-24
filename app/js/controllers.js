@@ -144,10 +144,24 @@ controllersApp.controller('TimelineCtrl', ['$scope', 'ViewService', function ($s
     var updateTotals = function (build){
         $scope.Categories[build.Category].Passed += build.Passed;
         $scope.Categories[build.Category].Failed += build.Failed;
+        $scope.Categories[build.Category].Perc =
         $scope.Platforms[build.Platform].Passed += build.Passed;
         $scope.Platforms[build.Platform].Failed += build.Failed;
         $scope.build.Passed += build.Passed;
         $scope.build.Failed += build.Failed;
+    }
+
+    $scope.getPerc = function(item){
+      if (!item){
+        return 0;
+      }
+
+      var total = item.Passed + item.Failed;
+      if ((total) == 0){
+        return 0;
+      }
+
+      return item.Passed/total;
     }
 
     var displayJobs = function (build, categories, platforms){
@@ -222,11 +236,17 @@ controllersApp.controller('TimelineCtrl', ['$scope', 'ViewService', function ($s
         if (platforms.length > 0 &&
             (platforms.length == Object.keys($scope.Platforms).length)){
           $scope.showAllPlatforms = false;
+        } else if(platforms.length == 0){ // exclude none
+          $scope.showAllPlatforms = true;
         }
+
         if (categories.length > 0 &&
             (categories.length  == Object.keys($scope.Categories).length)){
           $scope.showAllCategories = false;
+        } else if(categories.length == 0){
+          $scope.showAllCategories = true;
         }
+
 
         // query breakdown service
         ViewService.breakdown(selectedBuild, platforms, categories).then(function(response){
@@ -300,6 +320,25 @@ controllersApp.controller('TimelineCtrl', ['$scope', 'ViewService', function ($s
     }
 
     $scope.toggleItem = function(key, itype){
+        // if all items are highlighted first do a toggle all
+        if (itype == "c"){
+          var categories = Object.keys($scope.Categories);
+          var sel = categories.filter(function(k){
+            return $scope.Categories[k].checked;
+          });
+          if (sel.length == categories.length){
+            $scope.toggleAll("c");
+          }
+        } else {
+          var platforms = Object.keys($scope.Platforms);
+          var sel = platforms.filter(function(k){
+            return $scope.Platforms[k].checked;
+          });
+          if (sel.length == platforms.length){
+            $scope.toggleAll("p");
+          }
+        }
+
         _toggleItem($scope, key, itype);
         getBreakdown($scope.build.Version);
         if(!$scope.$$phase) {
@@ -365,10 +404,9 @@ controllersApp.controller('TimelineCtrl', ['$scope', 'ViewService', function ($s
       init($scope.selectedVersion);
     }
 
-    $scope.toggleFilters = function(){
-
+    $scope.didClickSlider = function(){
+      $scope.showAsPerc = !$scope.showAsPerc;
     }
-
 
     var init = function(selectedVersion){
       ViewService.versions().then(function(versions){
@@ -393,7 +431,7 @@ controllersApp.controller('TimelineCtrl', ['$scope', 'ViewService', function ($s
 
     // job sort var
     $scope.reverse = true;
-    $scope.allPlatforms = "-check";
+    $scope.showAsPerc = true;
 
     // init controller
     init();

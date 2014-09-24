@@ -111,16 +111,30 @@ body {
     padding: 10px 15px;
     margin-bottom: -1px;
     border: 1px solid #ddd;
+    cursor: pointer;
+}
+
+.custom-list-group-item a{
+    text-decoration: none;
+}
+.custom-list-group-item a:hover {
+    text-decoration: none;
+}
+
+.sidebar-item-info {
+  color: #aaa;
+  margin-top:10px;
 }
 
 .testscore {
   float:right;
 }
 
-.greyed {
+.greyed a{
   color: #ddd;
 }
-.greyed:hover {
+
+.greyed a:hover {
   color: #ddd;
 }
 .SUCCESS {
@@ -146,6 +160,7 @@ body {
 .nav-header h3{
   display: inline;
 }
+
 .nav-header a{
   margin-left: 20px;
   text-decoration: none;

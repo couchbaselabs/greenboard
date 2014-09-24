@@ -20,13 +20,21 @@
   <div class="container-fluid" ng-controller="TimelineCtrl">
     <div class="row">
       <div class="col-sm-3 col-md-2 sidebar">
-          <ul class="nav nav-sidebar">
-            <li><h3>Build</h3></li>
-              <p class="custom-list-group-item {{build.Status}}">
-              {{build.Version}}
-              <span class="testscore">{{build.Passed}}/{{build.Passed + build.Failed}}</span>
-              </p>
-          </ul>
+          <div class="nav nav-sidebar">
+
+            <div class="nav-header">
+              <h3>Build</h3>
+              <span class="custom-list-group-item {{build.Status}}">
+                <p>{{build.Version}}
+                   <span ng-click="didClickSlider()">
+                     <span ng-if="showAsPerc" class="testscore">{{100*getPerc(build)| number:0}}% <i class="fa fa-toggle-off"></i></span>
+                     <span ng-if="!showAsPerc" class="testscore">{{build.Passed}}/{{build.Failed + build.Passed}} <i class="fa fa-toggle-on"></i></span>
+                   </span>
+                </span></p>
+                <!--<p class="sidebar-item-info">tests<span class="testscore">{{build.Passed}}/{{build.Failed + build.Passed}}</span></p>-->
+              </span>
+            </div>
+          </div>
 
           <div class="nav nav-sidebar">
             <form>
@@ -41,15 +49,21 @@
               </div>
               <div  ng-repeat="os in Platforms">
                 <input type="checkbox" ng-model="os.checked">
-                <a ng-click="toggleItem(os, 'p')" class="custom-list-group-item {{os.Status}}" href="">
-                     <i ng-if="os.checked" class="glyphicon glyphicon-check"></i>
-                     <i ng-if="!os.checked" class="glyphicon glyphicon-unchecked"></i>
-                      {{os.Platform}}
-                      <span class="testscore">{{os.Passed}}/{{os.Failed + os.Passed}}</span>
-                 </a>
+                <span  ng-click="toggleItem(os, 'p')" class="custom-list-group-item {{os.Status}}" >
+                  <a href="">
+                    <i ng-if="os.checked" class="glyphicon glyphicon-check"></i>
+                    <i ng-if="!os.checked" class="glyphicon glyphicon-unchecked"></i>
+                     {{os.Platform}}
+                    <span ng-if="os.checked">
+                      </i> <span ng-if="showAsPerc" class="testscore">{{100*getPerc(os)| number:0}}%</span>
+                      <span ng-if="!showAsPerc" class="testscore">{{os.Passed}}/{{os.Failed + os.Passed}}</span>
+                    </span>
+                  </a>
+                </span>
               </div>
             </form>
          </div>
+          <div class="nav nav-sidebar">
             <form>
               <div class="nav-header">
                 <h3>Features</h3>
@@ -62,14 +76,20 @@
               </div>
               <div  ng-repeat="category in Categories">
                 <input type="checkbox" ng-model="category.checked">
-                <a ng-click="toggleItem(category, 'c')" class="custom-list-group-item {{category.Status}}" href="">
-                     <i ng-if="category.checked" class="glyphicon glyphicon-check"></i>
-                     <i ng-if="!category.checked" class="glyphicon glyphicon-unchecked"></i>
-                      {{category.Category}}
-                      <span class="testscore">{{category.Passed}}/{{category.Failed + category.Passed}}</span>
+                <span ng-click="toggleItem(category, 'c')" class="custom-list-group-item {{category.Status}}">
+                <a href="">
+                  <i ng-if="category.checked" class="glyphicon glyphicon-check"></i>
+                  <i ng-if="!category.checked" class="glyphicon glyphicon-unchecked"></i>
+                   {{category.Category}}
+                  <span ng-if="category.checked">
+                    <span ng-if="showAsPerc" class="testscore">{{100*getPerc(category)| number:0}}%</span>
+                    <span ng-if="!showAsPerc" class="testscore">{{category.Failed}}/{{category.Failed + category.Passed}}</span>
+                  </span>
                  </a>
+                </span>
               </div>
             </form>
+           </div>
         </div>
 
       <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
