@@ -83,7 +83,7 @@
                    {{category.Category}}
                   <span ng-if="category.checked">
                     <span ng-if="showAsPerc" class="testscore">{{100*getPerc(category)| number:0}}%</span>
-                    <span ng-if="!showAsPerc" class="testscore">{{category.Failed}}/{{category.Failed + category.Passed}}</span>
+                    <span ng-if="!showAsPerc" class="testscore">{{category.Passed}}/{{category.Failed + category.Passed}}</span>
                   </span>
                  </a>
                 </span>
