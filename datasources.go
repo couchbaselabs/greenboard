@@ -16,7 +16,11 @@ var ddocs = map[string]string{
 			"data_by_build": {
 				"map": "function(doc, meta){ emit([doc.build, doc.os, doc.component], [doc.totalCount - doc.failCount,doc.failCount,  doc.priority, doc.name, doc.result, doc.url, doc.build_id]);}",
                                 "reduce" : "function (key, values, rereduce) { var fAbs = 0; var pAbs = 0; for(i=0;i < values.length; i++) { pAbs = pAbs + values[i][0]; fAbs = fAbs + values[i][1]; } var total = fAbs + pAbs; var pRel = 100.0*pAbs/total; var fRel = 100.0*fAbs/total; return ([pAbs, fAbs, pRel, fRel]); }"
-            }
+            },
+			"jobs_by_build": {
+				"map": "function(doc, meta){ emit(doc.build, [doc.name, doc.os, doc.component, doc.url, doc.priority]);}",
+				"reduce": "_count"
+			}
 		}
 	}`,
 }
@@ -25,6 +29,7 @@ type DataSource struct {
 	CouchbaseAddress string
 	Release          string
 	AllVersions      map[string]bool
+	JobsByVersion    map[string]float64
 }
 
 func (ds *DataSource) GetBucket(bucket string) *couchbase.Bucket {
@@ -104,11 +109,12 @@ type Job struct {
 }
 
 type ReduceBuild struct {
-	Version   string
-	AbsPassed float64
-	AbsFailed float64
-	RelPassed float64
-	RelFailed float64
+	Version     string
+	AbsPassed   float64
+	AbsFailed   float64
+	RelPassed   float64
+	RelFailed   float64
+	RelExecuted float64
 }
 
 func appendIfUnique(slice []string, s string) []string {
@@ -180,6 +186,123 @@ func (ds *DataSource) GetJobs(ctx *web.Context) []byte {
 
 	j, _ := json.Marshal(jobs)
 	return j
+}
+
+func (ds *DataSource) UpdateJobsByVersion() {
+
+	for version, _ := range ds.AllVersions {
+		ds.JobsByVersion[version] = ds.GetNumJobsByVersion(version)
+	}
+}
+
+func (ds *DataSource) GetMissingJobs(ctx *web.Context) []byte {
+
+	var build string
+	for k, v := range ctx.Params {
+		if k == "build" {
+			build = v
+		}
+	}
+
+	version := strings.Split(build, "-")[0]
+	missingJobs := []Job{}
+
+	// make sure jobs exists for this version
+	if _, ok := ds.JobsByVersion[version]; ok {
+		allJobs := ds.GetAllJobsByVersion(version)
+		buildJobs := ds.GetAllJobsByBuild(build)
+		for key, job := range allJobs {
+			if _, ok := buildJobs[key]; !ok {
+				// missing
+				missingJobs = append(missingJobs, job)
+			}
+		}
+	}
+
+	j, _ := json.Marshal(missingJobs)
+	return j
+}
+
+func (ds *DataSource) JobsFromRows(rows []couchbase.ViewRow) map[string]Job {
+
+	uniqJobs := make(map[string]Job)
+	for _, row := range rows {
+		value := row.Value.([]interface{})
+		name := value[0].(string)
+		platform := value[1].(string)
+		category := value[2].(string)
+		url := value[3].(string)
+		priority := value[4].(string)
+
+		uniqJobs[name] = Job{
+			0,
+			0,
+			priority,
+			name,
+			"NONE",
+			url,
+			-1,
+			"",
+			platform,
+			category}
+
+	}
+	return uniqJobs
+}
+
+func (ds *DataSource) GetAllJobsByBuild(version string) map[string]Job {
+	b := ds.GetBucket("jenkins")
+
+	params := map[string]interface{}{
+		"key":           version,
+		"inclusive_end": true,
+		"stale":         "update_after",
+		"reduce":        false,
+	}
+	log.Println(params)
+
+	rows := ds.QueryView(b, "jenkins", "jobs_by_build", params)
+	return ds.JobsFromRows(rows)
+}
+
+func (ds *DataSource) GetAllJobsByVersion(version string) map[string]Job {
+
+	b := ds.GetBucket("jenkins")
+
+	params := map[string]interface{}{
+		"start_key": version,
+		"end_key":   version + "z",
+		"stale":     "update_after",
+		"reduce":    false,
+	}
+	log.Println(params)
+
+	rows := ds.QueryView(b, "jenkins", "jobs_by_build", params)
+	return ds.JobsFromRows(rows)
+
+}
+
+func (ds *DataSource) GetNumJobsByVersion(version string) float64 {
+
+	jobs := ds.GetAllJobsByVersion(version)
+	return float64(len(jobs))
+
+}
+
+func (ds *DataSource) GetAllJobsByBuilds() map[string]float64 {
+
+	params := map[string]interface{}{
+		"group_level": 1,
+	}
+
+	b := ds.GetBucket("jenkins")
+	rows := ds.QueryView(b, "jenkins", "jobs_by_build", params)
+
+	res := make(map[string]float64)
+	for _, row := range rows {
+		res[row.Key.(string)] = row.Value.(float64)
+	}
+	return res
 }
 
 func (ds *DataSource) GetBreakdown(ctx *web.Context) []byte {
@@ -268,6 +391,7 @@ func (ds *DataSource) _GetTimeline(start_key string, end_key string) []byte {
 	log.Println(params)
 
 	rows := ds.QueryView(b, "jenkins", "data_by_build", params)
+	jobsByBuild := ds.GetAllJobsByBuilds()
 
 	/***************** Query Reduce Views*****************/
 	reduceBuild := []ReduceBuild{}
@@ -279,8 +403,16 @@ func (ds *DataSource) _GetTimeline(start_key string, end_key string) []byte {
 		}
 
 		versionMain := strings.Split(version, "-")[0]
+
 		ds.AllVersions[versionMain] = true
+		if _, ok := ds.JobsByVersion[versionMain]; !ok {
+			// get job totals for version
+			ds.JobsByVersion[versionMain] = ds.GetNumJobsByVersion(versionMain)
+		}
+
 		value := row.Value.([]interface{})
+		relExecuted := 100 * (jobsByBuild[version] / ds.JobsByVersion[versionMain])
+
 		reduceBuild = append(reduceBuild,
 			ReduceBuild{
 				version,
@@ -288,6 +420,7 @@ func (ds *DataSource) _GetTimeline(start_key string, end_key string) []byte {
 				value[REDUCE["absFailed"]].(float64),
 				value[REDUCE["relPassed"]].(float64),
 				value[REDUCE["relFailed"]].(float64),
+				relExecuted,
 			})
 	}
 
@@ -302,10 +435,12 @@ func (ds *DataSource) GetAllVersions() []byte {
 
 func (ds *DataSource) BootStrap() {
 	ds.AllVersions = make(map[string]bool)
+	ds.JobsByVersion = make(map[string]float64)
 	ds._GetTimeline("", "")
 }
 
 func (ds *DataSource) GetIndex() []byte {
+	go ds.UpdateJobsByVersion()
 	content, _ := ioutil.ReadFile(pckgDir + "app/index.html")
 	return content
 }

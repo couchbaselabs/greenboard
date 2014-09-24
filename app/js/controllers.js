@@ -23,7 +23,7 @@ controllersApp.controller('TimelineCtrl', ['$scope', 'ViewService', function ($s
 
     $scope.relToolTipContentFunction = function() {
       return function(key, build, num) {
-        return '<h4>' + num + '% Tests ' + key.replace(', %', '') + '</h4>' +
+        return '<h4>' + num + '% ' + key.replace(', %', '') + '</h4>' +
           '<p>Build ' + build + '</p>';
       };
     };
@@ -168,11 +168,14 @@ controllersApp.controller('TimelineCtrl', ['$scope', 'ViewService', function ($s
 
 
       $scope.jobs = [];
-      ViewService.jobs(build, platforms, categories).then(function(response){
+      $scope.missingJobs = [];
 
+      var pushToJobScope = function(response, ctx){
             response.forEach(function(job){
-
-                $scope.jobs.push({
+                if (job.Bid == -1){
+                  job.Bid = "";
+                }
+                ctx.push({
                    "name": job.Name,
                    "passed": job.Passed,
                    "total": job.Total,
@@ -182,6 +185,14 @@ controllersApp.controller('TimelineCtrl', ['$scope', 'ViewService', function ($s
                    "bid": job.Bid,
                 });
             });
+      }
+
+      ViewService.jobs(build, platforms, categories).then(function(response){
+        pushToJobScope(response, $scope.jobs);
+      });
+
+      ViewService.jobs_missing(build, [], []).then(function(response){
+        pushToJobScope(response, $scope.missingJobs);
       });
 
     }
@@ -326,7 +337,7 @@ controllersApp.controller('TimelineCtrl', ['$scope', 'ViewService', function ($s
           var sel = categories.filter(function(k){
             return $scope.Categories[k].checked;
           });
-          if (sel.length == categories.length){
+          if ((sel.length > 1) && (sel.length == categories.length)){
             $scope.toggleAll("c");
           }
         } else {
@@ -334,7 +345,7 @@ controllersApp.controller('TimelineCtrl', ['$scope', 'ViewService', function ($s
           var sel = platforms.filter(function(k){
             return $scope.Platforms[k].checked;
           });
-          if (sel.length == platforms.length){
+          if ((sel.length > 1) && (sel.length == platforms.length)){
             $scope.toggleAll("p");
           }
         }
@@ -371,12 +382,12 @@ controllersApp.controller('TimelineCtrl', ['$scope', 'ViewService', function ($s
     $scope.filterMenues = [{
         "title": "Total Passed",
         "key": "abspassed",
-        "value": 50,
+        "value": 100,
         "options": [0, 50, 100, 500]
       }, {
         "title": "Total Failed",
         "key": "absfailed",
-        "value": 10,
+        "value": 25,
         "options": [0, 10, 25, 50]
       }, {
         "title": "Perc. Passed",
@@ -409,6 +420,7 @@ controllersApp.controller('TimelineCtrl', ['$scope', 'ViewService', function ($s
     }
 
     var init = function(selectedVersion){
+      // init controller
       ViewService.versions().then(function(versions){
           $scope.versions = versions;
           $scope.pagerBuilds = versions;
@@ -429,11 +441,9 @@ controllersApp.controller('TimelineCtrl', ['$scope', 'ViewService', function ($s
         .then(getBreakdown);
     }
 
-    // job sort var
+    // init global state
     $scope.reverse = true;
     $scope.showAsPerc = true;
-
-    // init controller
     init();
 
   }

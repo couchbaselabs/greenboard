@@ -41,5 +41,6 @@ func main() {
 	web.Get("/breakdown", data_source.GetBreakdown)
 	web.Get("/jobs", data_source.GetJobs)
 	web.Get("/versions", data_source.GetAllVersions)
+	web.Get("/jobs_missing", data_source.GetMissingJobs)
 	web.Run(config.ListenAddress)
 }

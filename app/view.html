@@ -149,20 +149,20 @@
             </div>
 
             <hr class="separator">
-
           <div class="row timeline">
               <nvd3-multi-bar-chart
                   id="relTimeline"
                   data="timelineRelData"
                   margin="{left: 40, top: 0, bottom: 35, right: 20}"
-                  stacked="true"
+                  stacked="false"
                   showLegend="true"
                   showXAxis="true"
                   showYAxis="true"
                   reduceXTicks="true"
+                  showControls="true"
                   tooltips="true"
                   tooltipcontent="relToolTipContentFunction()"
-                  color="['#3bc93b', '#de0000']"
+                  color="['#de0000','#3bc93b', '#aec7e8']"
                   yAxisTickFormat="yAxisTickFormatFunction()"
                   delay="750">
                    <svg></svg>
@@ -172,28 +172,61 @@
 
         </div>
         <div>
-          <h2 class="sub-header">Job Details</h2>
-          <div class="table-responsive">
-            <table class="table table-striped">
-              <thead>
-                <tr>
-                  <th><a href="" ng-click="predicate = 'name'; reverse=!reverse">Name <i class="fa fa-sort"></i></a></th>
-                  <th><a href="" ng-click="predicate = 'result'; reverse=!reverse">Result <i class="fa fa-sort"></i></a></th>
-                  <th><a href="" ng-click="predicate = 'passed'; reverse=!reverse">Passed <i class="fa fa-sort"></i></a></th>
-                  <th><a href="" ng-click="predicate = 'total'; reverse=!reverse">Total <i class="fa fa-sort"></i></a></th>
-                  <th><a href="" ng-click="predicate = 'priority'; reverse=!reverse">Priority <i class="fa fa-sort"></i></a></th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr ng-repeat="job in jobs | orderBy:predicate:reverse">
-                  <td><a href={{job.url}}{{job.bid}}>{{job.name}}</a></td>
-                  <td><span class={{job.result}}>{{job.result}}</span></td>
-                  <td>{{job.passed}}</td>
-                  <td>{{job.total}}</td>
-                  <td>{{job.priority}}</td>
-                </tr>
-              </tbody>
-            </table>
+          <!-- Nav tabs -->
+          <ul class="nav nav-tabs" role="tablist" id="jobTabs">
+            <li class="active"><a href="#executed" role="tab" data-toggle="tab"><h3>Completed</h3></a></li>
+            <li><a href="#missing" role="tab" data-toggle="tab"><h3>Pending</h3></a></li>
+          </ul>
+          <div class="tab-content">
+            <div class="tab-pane active" id="executed">
+              <div class="table-responsive">
+                <table class="table table-striped">
+                  <thead>
+                    <tr>
+                      <th><a href="" ng-click="predicate = 'name'; reverse=!reverse">Name <i class="fa fa-sort"></i></a></th>
+                      <th><a href="" ng-click="predicate = 'result'; reverse=!reverse">Result <i class="fa fa-sort"></i></a></th>
+                      <th><a href="" ng-click="predicate = 'passed'; reverse=!reverse">Passed <i class="fa fa-sort"></i></a></th>
+                      <th><a href="" ng-click="predicate = 'total'; reverse=!reverse">Total <i class="fa fa-sort"></i></a></th>
+                      <th><a href="" ng-click="predicate = 'priority'; reverse=!reverse">Priority <i class="fa fa-sort"></i></a></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr ng-repeat="job in jobs | orderBy:predicate:reverse">
+                      <td><a href={{job.url}}{{job.bid}}>{{job.name}}</a></td>
+                      <td><span class={{job.result}}>{{job.result}}</span></td>
+                      <td>{{job.passed}}</td>
+                      <td>{{job.total}}</td>
+                      <td>{{job.priority}}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="tab-pane" id="missing">
+              <div class="table-responsive">
+                <table class="table table-striped">
+                  <thead>
+                    <tr>
+                      <th><a href="" ng-click="predicate = 'name'; reverse=!reverse">Name <i class="fa fa-sort"></i></a></th>
+                      <th><a href="" ng-click="predicate = 'result'; reverse=!reverse">Result <i class="fa fa-sort"></i></a></th>
+                      <th><a href="" ng-click="predicate = 'passed'; reverse=!reverse">Passed <i class="fa fa-sort"></i></a></th>
+                      <th><a href="" ng-click="predicate = 'total'; reverse=!reverse">Total <i class="fa fa-sort"></i></a></th>
+                      <th><a href="" ng-click="predicate = 'priority'; reverse=!reverse">Priority <i class="fa fa-sort"></i></a></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr ng-repeat="job in missingJobs | orderBy:predicate:reverse">
+                      <td><a href={{job.url}}{{job.bid}}>{{job.name}}</a></td>
+                      <td><span class={{job.result}}>{{job.result}}</span></td>
+                      <td>{{job.passed}}</td>
+                      <td>{{job.total}}</td>
+                      <td>{{job.priority}}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -201,3 +234,13 @@
     </div>
   </div>
 
+  <script>
+   $(function () {
+      $('#jobTabs a').click(function (e) {
+        e.preventDefault()
+        $(this).tab('show')
+      })
+    //$('#jobTabs a:first').tab('show') // Select first tab
+
+    })
+  </script>

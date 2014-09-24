@@ -62,10 +62,13 @@ serviceApp.service("ViewService",['$http',
               "values": []
           }];
           relData = [{
-            "key": "Passed, %",
+            "key": "Tess Failed, %",
             "values": []
           }, {
-            "key": "Failed, %",
+            "key": "Tests Passed, %",
+            "values": []
+          }, {
+            "key": "Jobs Executed, %",
             "values": []
           }];
 
@@ -77,8 +80,9 @@ serviceApp.service("ViewService",['$http',
           var appendBuild = function(build){
               absData[0].values.push([build.Version, build.AbsPassed]);
               absData[1].values.push([build.Version, -build.AbsFailed]);
-              relData[0].values.push([build.Version, build.RelPassed]);
-              relData[1].values.push([build.Version, build.RelFailed]);
+              relData[0].values.push([build.Version, build.RelFailed]);
+              relData[1].values.push([build.Version, build.RelPassed]);
+              relData[2].values.push([build.Version, build.RelExecuted]);
           }
 
           // filter builds for selected version
@@ -135,6 +139,16 @@ serviceApp.service("ViewService",['$http',
       jobs: function(build, platforms, categories){
 
         var config = {"url": "/jobs",
+                      "params": {"build": build},
+                      cache: true};
+        return $http(config).then(function(response) {
+
+          return mapReduceByCategoryPlatform(response.data, platforms, categories);
+        });
+      },
+      jobs_missing: function(build, platforms, categories){
+
+        var config = {"url": "/jobs_missing",
                       "params": {"build": build},
                       cache: true};
         return $http(config).then(function(response) {
