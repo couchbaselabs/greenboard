@@ -9,7 +9,12 @@ app.config(['$routeProvider',
   function($routeProvider){
     $routeProvider.
       when('/', {
-        templateUrl: 'view.html'
+        templateUrl: 'view.html',
+        reloadOnSearch: false
+      }).
+      when('/home', {
+        templateUrl: 'view.html',
+        reloadOnSearch: false
       }).
       otherwise({
         redirectTo: '/'
