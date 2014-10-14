@@ -62,6 +62,7 @@ controllersApp.controller('TimelineCtrl', ['$scope', 'ViewService', '$location',
     // pagination controls
     $scope.didSelectVersion = function(version){
         $scope.selectedVersion = version;
+        initFilters();
         init(version);
     }
 
@@ -414,31 +415,35 @@ controllersApp.controller('TimelineCtrl', ['$scope', 'ViewService', '$location',
         selected.checked = !selected.checked;
     }
 
-    $scope.filterMenues = [{
-        "title": "Total Passed",
-        "key": "abspassed",
-        "value": 100,
-        "options": [0, 50, 100, 500]
-      }, {
-        "title": "Total Failed",
-        "key": "absfailed",
-        "value": 25,
-        "options": [0, 10, 25, 50]
-      }, {
-        "title": "Perc. Passed",
-        "key": "percpassed",
-        "value": 75,
-        "options": [0, 25, 50, 75]
-      }, {
-        "title": "Perc. Failed",
-        "key": "percfailed",
-        "value": 10,
-        "options": [0, 10, 25, 50]
-      }
-    ];
+    function initFilters(){
+      $scope.filterMenues = [{
+          "title": "Total Passed",
+          "key": "abspassed",
+          "value": 100,
+          "options": [0, 50, 100, 500]
+        }, {
+          "title": "Total Failed",
+          "key": "absfailed",
+          "value": 25,
+          "options": [0, 10, 25, 50]
+        }, {
+          "title": "Perc. Passed",
+          "key": "percpassed",
+          "value": 75,
+          "options": [0, 25, 50, 75]
+        }, {
+          "title": "Perc. Failed",
+          "key": "percfailed",
+          "value": 10,
+          "options": [0, 10, 25, 50]
+        }
+      ];
 
-    // filters
-    $scope.filterBy = $scope.filterMenues[0];
+      // filters
+      $scope.filterBy = $scope.filterMenues[0];
+    }
+
+    initFilters();
 
     $scope.didSelectFilter = function(value){
       $scope.filterBy.value = value;
