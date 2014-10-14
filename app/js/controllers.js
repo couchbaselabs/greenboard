@@ -63,6 +63,7 @@ controllersApp.controller('TimelineCtrl', ['$scope', 'ViewService', '$location',
     $scope.didSelectVersion = function(version){
         $scope.selectedVersion = version;
         initFilters();
+        reflectFilterLocation();
         init(version);
     }
 
@@ -139,6 +140,7 @@ controllersApp.controller('TimelineCtrl', ['$scope', 'ViewService', '$location',
             var filterIdx = options.indexOf($scope.filterBy.value);
             if (filterIdx > 0){
               $scope.filterBy.value = options[filterIdx - 1];
+              $location.search("fv", $scope.filterBy.value);
               return getTimeline(selectedVersion);
             }
         }
@@ -416,26 +418,31 @@ controllersApp.controller('TimelineCtrl', ['$scope', 'ViewService', '$location',
     }
 
     function initFilters(){
+
       $scope.filterMenues = [{
           "title": "Total Passed",
           "key": "abspassed",
           "value": 100,
-          "options": [0, 50, 100, 500]
+          "options": [0, 50, 100, 500],
+          "i": 0
         }, {
           "title": "Total Failed",
           "key": "absfailed",
           "value": 25,
-          "options": [0, 10, 25, 50]
+          "options": [0, 10, 25, 50],
+          "i": 1
         }, {
           "title": "Perc. Passed",
           "key": "percpassed",
           "value": 75,
-          "options": [0, 25, 50, 75]
+          "options": [0, 25, 50, 75],
+          "i": 2
         }, {
           "title": "Perc. Failed",
           "key": "percfailed",
           "value": 10,
-          "options": [0, 10, 25, 50]
+          "options": [0, 10, 25, 50],
+          "i": 3
         }
       ];
 
@@ -443,15 +450,21 @@ controllersApp.controller('TimelineCtrl', ['$scope', 'ViewService', '$location',
       $scope.filterBy = $scope.filterMenues[0];
     }
 
-    initFilters();
+    function reflectFilterLocation(){
+      $location.search("fi", $scope.filterBy.i);
+      $location.search("fv", $scope.filterBy.value);
+    }
+
 
     $scope.didSelectFilter = function(value){
       $scope.filterBy.value = value;
+      reflectFilterLocation();
       init($scope.selectedVersion);
     };
 
     $scope.didSelectMenu = function(menu){
       $scope.filterBy = menu;
+      reflectFilterLocation();
       init($scope.selectedVersion);
     }
 
@@ -487,15 +500,26 @@ controllersApp.controller('TimelineCtrl', ['$scope', 'ViewService', '$location',
 
 
     // init global state
+    initFilters();
     $scope.reverse = true;
     $scope.showAsPerc = true;
     var urlArgs = $location.search();
 
     if ("version" in urlArgs){
       if ("build" in urlArgs){
+
+        if (("fi" in urlArgs) && ("fv" in urlArgs)){
+          $scope.filterBy = $scope.filterMenues[urlArgs.fi];
+          $scope.filterBy.value = urlArgs.fv;
+        } else {
+          $scope.filterBy.value = 0;
+        }
+        reflectFilterLocation();
+
         initVersion(urlArgs.version)
           .then(getTimeline)
           .then(function(){
+
             var defaultBuild = $scope.build;
             prepareForChangeBuildEvent(urlArgs.build);
             if(!$scope.build) {
@@ -508,13 +532,13 @@ controllersApp.controller('TimelineCtrl', ['$scope', 'ViewService', '$location',
               .then(function(){
                 // filter excluded items
                 if ("excluded_platforms" in urlArgs){
-                  platforms = urlArgs.excluded_platforms.split(",");
+                  var platforms = urlArgs.excluded_platforms.split(",");
                   platforms.forEach(function(p){
                     _toggleItem({'Platform': p}, 'p');
                   });
                 }
                 if ("excluded_categories" in urlArgs){
-                  categories = urlArgs.excluded_categories.split(",")
+                  var categories = urlArgs.excluded_categories.split(",")
                   categories.forEach(function(c){
                     _toggleItem({'Category': c}, 'c');
                   });
