@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"log"
+	"regexp"
 	"strings"
 
 	"github.com/couchbaselabs/go-couchbase"
@@ -403,7 +404,11 @@ func (ds *DataSource) _GetTimeline(start_key string, end_key string) []byte {
 		}
 
 		versionMain := strings.Split(version, "-")[0]
-
+		var validID = regexp.MustCompile("[0-9]$")
+		if !validID.MatchString(versionMain) {
+			log.Println("skip:" + versionMain)
+			continue
+		}
 		ds.AllVersions[versionMain] = true
 		if _, ok := ds.JobsByVersion[versionMain]; !ok {
 			// get job totals for version
