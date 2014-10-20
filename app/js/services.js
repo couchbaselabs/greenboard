@@ -150,7 +150,7 @@ serviceApp.service("ViewService",['$http',
 
         var config = {"url": "/jobs_missing",
                       "params": {"build": build},
-                      cache: true};
+                      cache: false};
         return $http(config).then(function(response) {
 
           return mapReduceByCategoryPlatform(response.data, platforms, categories);
