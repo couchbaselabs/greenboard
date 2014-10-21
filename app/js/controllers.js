@@ -44,10 +44,50 @@ controllersApp.controller('TimelineCtrl', ['$scope', 'ViewService', '$location',
         $scope.showAllCategories = true;
         $scope.build = findBuildInVersions(build);
     }
+
+    function setBarOpacity(index){
+
+        // clear old opacity
+        $scope.activeBars.forEach(function(bar){
+            d3.select(bar).style("fill-opacity", function(d, i){
+                        return 0.5;
+                });
+        });
+        $scope.activeBars = [];
+
+        var len = $scope.versionBuilds.length;
+        var bars = d3.selectAll("#absTimeline rect.nv-bar")[0]
+        $scope.activeBars.push(bars[index]);
+        $scope.activeBars.push(bars[index + len]);
+
+         // set active opacity
+         $scope.activeBars.forEach(function(bar){
+             d3.select(bar).style("fill-opacity", function(d, i){
+                         return 1;
+                 });
+         });
+
+        var bars = d3.selectAll("#relTimeline rect.nv-bar")[0]
+        $scope.activeBars.push(bars[index]);
+        $scope.activeBars.push(bars[index + len]);
+        $scope.activeBars.push(bars[index + 2*len]);
+
+        // set active opacity
+        $scope.activeBars.forEach(function(bar){
+            d3.select(bar).style("fill-opacity", function(d, i){
+                        return 1;
+                });
+        });
+
+    }
+
     $scope.$on('barClick', function(event, data) {
         var build = $scope.versionBuilds[data.pointIndex].Version;
         prepareForChangeBuildEvent(build);
         getBreakdown(build);
+        setBarOpacity(data.pointIndex);
+
+
     });
 
     $scope.xFunction = function(){
@@ -154,7 +194,6 @@ controllersApp.controller('TimelineCtrl', ['$scope', 'ViewService', '$location',
         $scope.build.Passed = 0;
         $scope.build.Failed = 0;
         $scope.build.Status = "bg-success";
-
         return $scope.build.Version;
       });
     };
@@ -503,6 +542,8 @@ controllersApp.controller('TimelineCtrl', ['$scope', 'ViewService', '$location',
     initFilters();
     $scope.reverse = true;
     $scope.showAsPerc = true;
+    $scope.activeBars = [];
+
     var urlArgs = $location.search();
 
     if ("version" in urlArgs){
