@@ -593,6 +593,7 @@ controllersApp.controller('TimelineCtrl', ['$scope', 'ViewService', '$location',
     } else {
       $location.path("home");
       init();
+      reflectFilterLocation();
     }
 
 
