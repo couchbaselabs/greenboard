@@ -17,11 +17,9 @@
     </div>
   </div>
 
-  <div class="container-fluid" ng-controller="TimelineCtrl">
-    <div class="row">
+    <div class="container-fluid" ng-controller="SidebarCtrl">
       <div class="col-sm-3 col-md-2 sidebar">
           <div class="nav nav-sidebar">
-
             <div class="nav-header">
               <h3>Build</h3>
               <span class="custom-list-group-item {{build.Status}}">
@@ -31,7 +29,6 @@
                      <span ng-if="!showAsPerc" class="testscore">{{build.Passed}}/{{build.Failed + build.Passed}} <i class="fa fa-toggle-on"></i></span>
                    </span>
                 </span></p>
-                <!--<p class="sidebar-item-info">tests<span class="testscore">{{build.Passed}}/{{build.Failed + build.Passed}}</span></p>-->
               </span>
             </div>
           </div>
@@ -92,7 +89,7 @@
            </div>
         </div>
 
-      <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+      <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main" ng-controller="TimelineCtrl">
 
         <div >
 
@@ -123,7 +120,7 @@
 
         </div>
 
-          <div id="timeline" class="section">
+          <div class="col-sm-12" id="timeline" class="section">
               <div>
                   <div class="timeline">
                       <nvd3-multi-bar-chart
@@ -147,7 +144,7 @@
             </div>
 
             <hr class="separator">
-          <div class="row timeline">
+          <div class="col-sm-12" class="row timeline">
               <nvd3-multi-bar-chart
                   id="relTimeline"
                   data="timelineRelData"
@@ -169,7 +166,7 @@
 
 
         </div>
-        <div>
+        <div class="col-sm-12">
           <!-- Nav tabs -->
           <ul class="nav nav-tabs" role="tablist" id="jobTabs">
             <li class="active"><a href="#executed" role="tab" data-toggle="tab"><h3>Completed</h3></a></li>
@@ -228,7 +225,6 @@
           </div>
         </div>
 
-      </div>
     </div>
   </div>
 

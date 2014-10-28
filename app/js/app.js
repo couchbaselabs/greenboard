@@ -2,7 +2,8 @@
 var app = angular.module('greenBoard', [
   'ngRoute',
   'greenboardControllers',
-  'greenboardServices'
+  'greenboardServices',
+  'greenboardFactories'
 ]);
 
 app.config(['$routeProvider',
