@@ -2,6 +2,7 @@
 var SidebarCtrl = function ($scope, CommonService, Data){
 
     // bind scope to data factory
+    $scope.selectedVersion = Data.selectedVersion;
     $scope.build = Data.build;
     $scope.Platforms = Data.Platforms;
     $scope.Categories = Data.Categories;
@@ -20,26 +21,26 @@ var SidebarCtrl = function ($scope, CommonService, Data){
         var items;
         if (itype == "c"){
             items = Data.Categories;
-            $scope.showAllCategories = !$scope.showAllCategories;
+            Data.showAllCategories = !Data.showAllCategories;
         }
         else {
             items = Data.Platforms;
-            $scope.showAllPlatforms = !$scope.showAllPlatforms;
+            Data.showAllPlatforms = !Data.showAllPlatforms;
 
         }
 
         Object.keys(items).forEach(function(item){
           var key = items[item];
           if (itype == "c"){
-            key.checked = !$scope.showAllCategories;
+            key.checked = !Data.showAllCategories;
           } else {
-            key.checked = !$scope.showAllPlatforms;
+            key.checked = !Data.showAllPlatforms;
           }
           _toggleItem(key, itype);
 
         });
 
-        CommonService.refreshSidebar();
+        CommonService.refreshView();
     }
 
 
@@ -66,7 +67,7 @@ var SidebarCtrl = function ($scope, CommonService, Data){
         }
 
         _toggleItem(key, itype);
-        CommonService.refreshSidebar();
+        CommonService.refreshView();
     }
 
     function _toggleItem(key, itype){

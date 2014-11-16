@@ -186,7 +186,7 @@ var TimelineCtrl = function ($scope, ViewService, Data, $location){
 
         $scope.allBuilds = response.allBuilds;
         $scope.versionBuilds = response.versionBuilds;
-        $scope.build = lastEl($scope.versionBuilds);
+        Data.build = lastEl($scope.versionBuilds);
         Data.build.Passed = 0;
         Data.build.Failed = 0;
         $scope.build.Status = "bg-success";
@@ -456,8 +456,8 @@ var TimelineCtrl = function ($scope, ViewService, Data, $location){
           } else {
             $scope.selectedVersion = versions[versions.length - 1];
           }
-          Data.build.Version = $scope.selectedVersion;
 
+          Data.selectedVersion = $scope.selectedVersion;
           $scope.pagerBuildPartitions = [];
           $scope.backDisabled = true;
           $scope.showPartitions = false;
