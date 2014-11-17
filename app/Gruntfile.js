@@ -13,7 +13,7 @@ module.exports = function(grunt) {
         },
         concat: {
             dist: {
-              src: ['js/app.js', 'js/timelinecontroller.js',
+              src: ['js/app.js', 'js/timelinecontroller.js', 'js/initdatacontroller.js',
                     'js/sidebarcontroller.js', 'js/controllers.js',
                     'js/commonservice.js', 'js/viewservice.js',
                     'js/services.js', 'js/factories.js'],

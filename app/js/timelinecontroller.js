@@ -33,6 +33,40 @@ var TimelineCtrl = function ($scope, ViewService, Data, $location){
       };
     };
 
+/*
+    var showTimeline = function(selectedVersion){
+
+      var filterBy = $scope.filterBy;
+      var endVersion = nextVersion(selectedVersion);
+      return ViewService.timeline(selectedVersion, filterBy, endVersion).then(function(response){
+
+        if (response.allBuilds.length > 0 && response.versionBuilds.length == 0){
+
+            // try a lower filter when data exists but is being excluded
+            var options = $scope.filterBy.options;
+            var filterIdx = options.indexOf($scope.filterBy.value);
+            if (filterIdx > 0){
+              $scope.filterBy.value = options[filterIdx - 1];
+              $location.search("fv", $scope.filterBy.value);
+              return getTimeline(selectedVersion);
+            }
+        }
+
+        $scope.timelineAbsData = response.absData;
+        $scope.timelineRelData = response.relData;
+
+        $scope.allBuilds = response.allBuilds;
+        $scope.versionBuilds = response.versionBuilds;
+        Data.build = lastEl($scope.versionBuilds);
+        Data.build.Passed = 0;
+        Data.build.Failed = 0;
+        $scope.build.Status = "bg-success";
+        return $scope.build.Version;
+      });
+    };
+
+
+/*
     function prepareForChangeBuildEvent(build){
         //Data.Categories = {};
         //Data.Platforms = {};
@@ -532,5 +566,5 @@ var TimelineCtrl = function ($scope, ViewService, Data, $location){
       reflectFilterLocation();
     }
 
-
+*/
 }

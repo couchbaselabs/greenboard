@@ -17,155 +17,155 @@
     </div>
   </div>
 
-    <div class="container-fluid" ng-controller="SidebarCtrl">
-      <div class="col-sm-3 col-md-2 sidebar">
-          <div class="nav nav-sidebar">
-            <div class="nav-header">
-              <h3>Build</h3>
-              <span class="custom-list-group-item {{build.Status}}">
-                <p>{{build.Version}}
-                   <span ng-click="didClickSlider()">
-                     <span ng-if="showAsPerc" class="testscore">{{100*getPerc(build)| number:0}}% <i class="fa fa-toggle-off"></i></span>
-                     <span ng-if="!showAsPerc" class="testscore">{{build.Passed}}/{{build.Failed + build.Passed}} <i class="fa fa-toggle-on"></i></span>
-                   </span>
-                </span></p>
+  <div class="container-fluid">
+    <div class="col-sm-3 col-md-2 sidebar"  ng-controller="SidebarCtrl">
+      <div class="nav nav-sidebar">
+        <div class="nav-header">
+          <h3>Build</h3>
+          <span class="custom-list-group-item {{build.Status}}">
+            <p>{{build.Version}}
+               <span ng-click="didClickSlider()">
+                 <span ng-if="showAsPerc" class="testscore">{{100*getPerc(build)| number:0}}% <i class="fa fa-toggle-off"></i></span>
+                 <span ng-if="!showAsPerc" class="testscore">{{build.Passed}}/{{build.Failed + build.Passed}} <i class="fa fa-toggle-on"></i></span>
+               </span>
+            </span></p>
+          </span>
+        </div>
+      </div>
+
+      <div class="nav nav-sidebar">
+        <form>
+          <div class="nav-header">
+            <h3>Platforms</h3>
+            <input type="checkbox" ng-model="showAllPlatforms" ng-init="showAllPlatforms=true">
+            <a ng-click="toggleAll('p')" href="">
+                <i ng-if="showAllPlatforms" class="fa fa-check-square-o"></i>
+                <i ng-if="!showAllPlatforms"  class="fa fa-square-o"></i> all
+            </a>
+            <br/>
+          </div>
+          <div  ng-repeat="os in Platforms">
+            <input type="checkbox" ng-model="os.checked">
+            <span  ng-click="toggleItem(os, 'p')" class="custom-list-group-item {{os.Status}}" >
+              <a href="">
+                <i ng-if="os.checked" class="glyphicon glyphicon-check"></i>
+                <i ng-if="!os.checked" class="glyphicon glyphicon-unchecked"></i>
+                 {{os.Platform}}
+                <span ng-if="os.checked">
+                  </i> <span ng-if="showAsPerc" class="testscore">{{100*getPerc(os)| number:0}}%</span>
+                  <span ng-if="!showAsPerc" class="testscore">{{os.Passed}}/{{os.Failed + os.Passed}}</span>
+                </span>
+              </a>
+            </span>
+          </div>
+        </form>
+     </div>
+      <div class="nav nav-sidebar">
+        <form>
+          <div class="nav-header">
+            <h3>Features</h3>
+            <input type="checkbox" ng-model="showAllCategories" ng-init="showAllCategories=true">
+            <a ng-click="toggleAll('c')" href="">
+                <i ng-if="showAllCategories" class="fa fa-check-square-o"></i>
+                <i ng-if="!showAllCategories"  class="fa fa-square-o"></i> all
+            </a>
+            <br/>
+          </div>
+          <div  ng-repeat="category in Categories">
+            <input type="checkbox" ng-model="category.checked">
+            <span ng-click="toggleItem(category, 'c')" class="custom-list-group-item {{category.Status}}">
+            <a href="">
+              <i ng-if="category.checked" class="glyphicon glyphicon-check"></i>
+              <i ng-if="!category.checked" class="glyphicon glyphicon-unchecked"></i>
+               {{category.Category}}
+              <span ng-if="category.checked">
+                <span ng-if="showAsPerc" class="testscore">{{100*getPerc(category)| number:0}}%</span>
+                <span ng-if="!showAsPerc" class="testscore">{{category.Passed}}/{{category.Failed + category.Passed}}</span>
               </span>
+             </a>
+            </span>
+          </div>
+        </form>
+       </div>
+    </div>
+
+    <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+    
+      <div class="row" ng-controller="InitDataCtrl">
+        <div class="col-sm-6">
+            <ul class="pagination">
+              <li id={{v}} ng-repeat="v in pagerVersions" ng-class="{'active': v == selectedVersion}" class="pagecell">
+                 <a ng-click="didSelectVersion(v)" href="">{{ v }}</a>
+               </li>
+             </ul>
+        </div>
+        <div class="col-sm-6">
+    
+           <div class="btn-group">
+            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+              {{filterBy.title}} <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu" role="menu">
+              <li ng-click="didSelectMenu(menu)" ng-repeat="menu in filterMenues">
+                <a href="">{{menu.title}}</a>
+              </li>
+            </ul>
+            <ul class="pagination subpager">
+              <li ng-class="{'active': f == filterBy.value}" ng-repeat="f in filterBy.options">
+                <a ng-click="didSelectFilter(f)" href="">{{f}}</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    
+      <div class="row"  ng-controller="TimelineCtrl">
+        <div class="col-sm-12" id="timeline" class="section">
+            <div>
+                <div class="timeline">
+                    <nvd3-multi-bar-chart
+                        id="absTimeline"
+                        data="timelineAbsData"
+                        margin="{left: 40, top: 0, bottom: 35, right: 20}"
+                        stacked="true"
+                        showLegend="true"
+                        showXAxis="true"
+                        showYAxis="true"
+                        reduceXTicks="true"
+                        tooltips="true"
+                        tooltipcontent="absToolTipContentFunction()"
+                        color="['#3bc93b', '#de0000']"
+                        yAxisTickFormat="yAxisTickFormatFunction()"
+                        delay="750">
+                            <svg></svg>
+                    </nvd3-multi-bar-chart>
+                </div>
             </div>
           </div>
-
-          <div class="nav nav-sidebar">
-            <form>
-              <div class="nav-header">
-                <h3>Platforms</h3>
-                <input type="checkbox" ng-model="showAllPlatforms" ng-init="showAllPlatforms=true">
-                <a ng-click="toggleAll('p')" href="">
-                    <i ng-if="showAllPlatforms" class="fa fa-check-square-o"></i>
-                    <i ng-if="!showAllPlatforms"  class="fa fa-square-o"></i> all
-                </a>
-                <br/>
-              </div>
-              <div  ng-repeat="os in Platforms">
-                <input type="checkbox" ng-model="os.checked">
-                <span  ng-click="toggleItem(os, 'p')" class="custom-list-group-item {{os.Status}}" >
-                  <a href="">
-                    <i ng-if="os.checked" class="glyphicon glyphicon-check"></i>
-                    <i ng-if="!os.checked" class="glyphicon glyphicon-unchecked"></i>
-                     {{os.Platform}}
-                    <span ng-if="os.checked">
-                      </i> <span ng-if="showAsPerc" class="testscore">{{100*getPerc(os)| number:0}}%</span>
-                      <span ng-if="!showAsPerc" class="testscore">{{os.Passed}}/{{os.Failed + os.Passed}}</span>
-                    </span>
-                  </a>
-                </span>
-              </div>
-            </form>
-         </div>
-          <div class="nav nav-sidebar">
-            <form>
-              <div class="nav-header">
-                <h3>Features</h3>
-                <input type="checkbox" ng-model="showAllCategories" ng-init="showAllCategories=true">
-                <a ng-click="toggleAll('c')" href="">
-                    <i ng-if="showAllCategories" class="fa fa-check-square-o"></i>
-                    <i ng-if="!showAllCategories"  class="fa fa-square-o"></i> all
-                </a>
-                <br/>
-              </div>
-              <div  ng-repeat="category in Categories">
-                <input type="checkbox" ng-model="category.checked">
-                <span ng-click="toggleItem(category, 'c')" class="custom-list-group-item {{category.Status}}">
-                <a href="">
-                  <i ng-if="category.checked" class="glyphicon glyphicon-check"></i>
-                  <i ng-if="!category.checked" class="glyphicon glyphicon-unchecked"></i>
-                   {{category.Category}}
-                  <span ng-if="category.checked">
-                    <span ng-if="showAsPerc" class="testscore">{{100*getPerc(category)| number:0}}%</span>
-                    <span ng-if="!showAsPerc" class="testscore">{{category.Passed}}/{{category.Failed + category.Passed}}</span>
-                  </span>
-                 </a>
-                </span>
-              </div>
-            </form>
-           </div>
+    
+          <hr class="separator">
+        <div class="col-sm-12" class="row timeline">
+            <nvd3-multi-bar-chart
+                id="relTimeline"
+                data="timelineRelData"
+                margin="{left: 40, top: 0, bottom: 35, right: 20}"
+                stacked="false"
+                showLegend="true"
+                showXAxis="true"
+                showYAxis="true"
+                reduceXTicks="true"
+                showControls="true"
+                tooltips="true"
+                tooltipcontent="relToolTipContentFunction()"
+                color="['#de0000','#3bc93b', '#aec7e8']"
+                yAxisTickFormat="yAxisTickFormatFunction()"
+                delay="750">
+                 <svg></svg>
+            </nvd3-multi-bar-chart>
         </div>
-
-      <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main" ng-controller="TimelineCtrl">
-
-        <div >
-
-          <div class="col-sm-6">
-              <ul class="pagination">
-                <li id={{v}} ng-repeat="v in pagerBuilds" ng-class="{'active': v == selectedVersion}" class="pagecell">
-                   <a ng-click="didSelectVersion(v)" href="">{{ v }}</a>
-                 </li>
-               </ul>
-          </div>
-          <div class="col-sm-6">
-
-             <div class="btn-group">
-              <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                {{filterBy.title}} <span class="caret"></span>
-              </button>
-              <ul class="dropdown-menu dropdown-menu" role="menu">
-                <li ng-click="didSelectMenu(menu)" ng-repeat="menu in filterMenues">
-                  <a href="">{{menu.title}}</a>
-                </li>
-              </ul>
-              <ul class="pagination subpager">
-                <li ng-class="{'active': f == filterBy.value}" ng-repeat="f in filterBy.options">
-                  <a ng-click="didSelectFilter(f)" href="">{{f}}</a>
-                </li>
-              </ul>
-            </div>
-
-        </div>
-
-          <div class="col-sm-12" id="timeline" class="section">
-              <div>
-                  <div class="timeline">
-                      <nvd3-multi-bar-chart
-                          id="absTimeline"
-                          data="timelineAbsData"
-                          margin="{left: 40, top: 0, bottom: 35, right: 20}"
-                          stacked="true"
-                          showLegend="true"
-                          showXAxis="true"
-                          showYAxis="true"
-                          reduceXTicks="true"
-                          tooltips="true"
-                          tooltipcontent="absToolTipContentFunction()"
-                          color="['#3bc93b', '#de0000']"
-                          yAxisTickFormat="yAxisTickFormatFunction()"
-                          delay="750">
-                              <svg></svg>
-                      </nvd3-multi-bar-chart>
-                  </div>
-              </div>
-            </div>
-
-            <hr class="separator">
-          <div class="col-sm-12" class="row timeline">
-              <nvd3-multi-bar-chart
-                  id="relTimeline"
-                  data="timelineRelData"
-                  margin="{left: 40, top: 0, bottom: 35, right: 20}"
-                  stacked="false"
-                  showLegend="true"
-                  showXAxis="true"
-                  showYAxis="true"
-                  reduceXTicks="true"
-                  showControls="true"
-                  tooltips="true"
-                  tooltipcontent="relToolTipContentFunction()"
-                  color="['#de0000','#3bc93b', '#aec7e8']"
-                  yAxisTickFormat="yAxisTickFormatFunction()"
-                  delay="750">
-                   <svg></svg>
-              </nvd3-multi-bar-chart>
-          </div>
-
-
-        </div>
+      </div>
+    
+      <div class="row">  <!--TODO sidebar controller-->
         <div class="col-sm-12">
           <!-- Nav tabs -->
           <ul class="nav nav-tabs" role="tablist" id="jobTabs">
@@ -197,7 +197,7 @@
                 </table>
               </div>
             </div>
-
+    
             <div class="tab-pane" id="missing">
               <div class="table-responsive">
                 <table class="table table-striped">
@@ -224,9 +224,10 @@
             </div>
           </div>
         </div>
+      </div>
 
-    </div>
-  </div>
+    </div> <-- eo-contentd-iv -->
+  </div> <-- eo-container-div -->
 
   <script>
    $(function () {

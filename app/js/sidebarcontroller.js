@@ -1,94 +1,72 @@
 
-var SidebarCtrl = function ($scope, CommonService, Data){
+var SidebarCtrl = function ($scope, ViewService, Data, $location){
 
     // bind scope to data factory
-    $scope.selectedVersion = Data.selectedVersion;
-    $scope.build = Data.build;
-    $scope.Platforms = Data.Platforms;
-    $scope.Categories = Data.Categories;
-    $scope.showAllPlatforms = Data.showAllPlatforms;
-    $scope.showAllCategories = Data.showAllCategories;
+    $scope.data = Data;
+
+    // local scope bindings
     $scope.showAsPerc = true;
+    $scope.showAllPlatforms = true;
+    $scope.showAllCategories = true;
+
+    var resetScope = function() {
+        $scope.selectedVersion = Data.selectedVersion;
+        $scope.build = Data.selectedBuildObj;
+
+        if(Data.selectedBuildObj){
+            $scope.Platforms = {};
+            $scope.Categories = {};
+
+            queryBreakdown().then(function(){
+
+                var urlArgs = $location.search();
+                var needsRefresh = false;
+                if ("excluded_platforms" in urlArgs){
+                  needsRefresh = true;
+                  var platforms = urlArgs.excluded_platforms.split(",");
+                  platforms.forEach(function(p){
+                    _toggleItem({'Platform': p}, 'p');
+                  });
+                }
+                if ("excluded_categories" in urlArgs){
+                  needsRefresh = true;
+                  var categories = urlArgs.excluded_categories.split(",")
+                  categories.forEach(function(c){
+                    _toggleItem({'Category': c}, 'c');
+                  });
+                }
+
+                if (needsRefresh) {
+                    updateBreakdown();
+                }
+            });
+        }
+    }
+
+    $scope.$watch('data', function(newVal, oldVal){
+        // update scope when version or builds change
+        var reset = true;
+        if (oldVal.selectedVersion == newVal.selectedVersion){
+            // version is same
+            //
+            if (oldVal.selectedBuildObj && newVal.selectedBuildObj){
+              if(oldVal.selectedBuildObj.Version == newVal.selectedBuildObj.Version)
+              {
+                  // build is same
+                  reset = false;
+              }
+            }
+        }
+
+        if (reset == true){
+          resetScope();
+        }
+
+    }, true);
 
     // handle % vs # slidler action
     $scope.didClickSlider = function(){
       $scope.showAsPerc = !$scope.showAsPerc;
-    }
-
-    // handle click 'all' toggle button
-    $scope.toggleAll = function(itype){
-
-        var items;
-        if (itype == "c"){
-            items = Data.Categories;
-            Data.showAllCategories = !Data.showAllCategories;
-        }
-        else {
-            items = Data.Platforms;
-            Data.showAllPlatforms = !Data.showAllPlatforms;
-
-        }
-
-        Object.keys(items).forEach(function(item){
-          var key = items[item];
-          if (itype == "c"){
-            key.checked = !Data.showAllCategories;
-          } else {
-            key.checked = !Data.showAllPlatforms;
-          }
-          _toggleItem(key, itype);
-
-        });
-
-        CommonService.refreshView();
-    }
-
-
-    // handle de/select individual sidebar items
-    $scope.toggleItem = function(key, itype){
-
-        // if all items are highlighted first do a toggle all
-        if (itype == "c"){
-          var categories = Object.keys(Data.Categories);
-          var sel = categories.filter(function(k){
-            return Data.Categories[k].checked;
-          });
-          if ((sel.length > 1) && (sel.length == categories.length)){
-            $scope.toggleAll("c");
-          }
-        } else {
-          var platforms = Object.keys(Data.Platforms);
-          var sel = platforms.filter(function(k){
-            return Data.Platforms[k].checked;
-          });
-          if ((sel.length > 1) && (sel.length == platforms.length)){
-            $scope.toggleAll("p");
-          }
-        }
-
-        _toggleItem(key, itype);
-        CommonService.refreshView();
-    }
-
-    function _toggleItem(key, itype){
-        var selected;
-        var item;
-        if (itype == "c"){
-            item = key.Category;
-            selected = Data.Categories[item];
-        }
-        else {
-            item = key.Platform;
-            selected = Data.Platforms[item];
-        }
-        if (selected.checked){
-            // toggle checked item to greyed state
-            selected.Status = "greyed";
-        } else {
-            selected.Status = "bg-success";
-        }
-
-        selected.checked = !selected.checked;
     }
 
     $scope.getPerc = function(item){
@@ -100,9 +78,248 @@ var SidebarCtrl = function ($scope, CommonService, Data){
       if ((total) == 0){
         return 0;
       }
-
       return item.Passed/total;
     }
 
+    var updateTotals = function (build){
+        $scope.Categories[build.Category].Passed += build.Passed;
+        $scope.Categories[build.Category].Failed += build.Failed;
+        $scope.Platforms[build.Platform].Passed += build.Passed;
+        $scope.Platforms[build.Platform].Failed += build.Failed;
+        $scope.build.Passed += build.Passed;
+        $scope.build.Failed += build.Failed;
+    }
+
+    var updateStatuses = function (build){
+
+        var success = "bg-success";
+        var warning = "bg-warning";
+        var danger = "bg-danger";
+
+        if ($scope.Platforms[build.Platform].Status != "greyed") {
+            if ($scope.Platforms[build.Platform].Failed > 0){
+              var fAbs = $scope.Platforms[build.Platform].Failed;
+              var pAbs = $scope.Platforms[build.Platform].Passed;
+              var fRel = 100.0*fAbs/(fAbs + pAbs);
+             if (fRel > 30){
+                   $scope.Platforms[build.Platform].Status = danger;
+		          } else {
+                   $scope.Platforms[build.Platform].Status = warning;
+              }
+            } else {
+                $scope.Platforms[build.Platform].Status = success;
+            }
+        }
+
+        if ($scope.Categories[build.Category].Status != "greyed") {
+            if ($scope.Categories[build.Category].Failed > 0){
+              var fAbs = $scope.Categories[build.Category].Failed;
+              var pAbs = $scope.Categories[build.Category].Passed;
+              var fRel = 100.0*fAbs/(fAbs + pAbs);
+              if (fRel > 30){
+                     $scope.Categories[build.Category].Status = danger;
+              } else {
+                     $scope.Categories[build.Category].Status = warning;
+              }
+            } else {
+                $scope.Categories[build.Category].Status = success;
+            }
+        }
+
+        if ($scope.build.Failed == 0){
+          $scope.build.Status = success;
+        } else {
+            var fAbs = $scope.build.Failed;
+            var pAbs = $scope.build.Passed;
+            var fRel = 100.0*fAbs/(fAbs + pAbs);
+          if (fRel > 30){
+            $scope.build.Status = danger;
+          } else {
+            $scope.build.Status = warning;
+          }
+        }
+    }
+
+    var queryBreakdown = function(platforms, categories){
+
+      return ViewService.breakdown(Data.selectedBuildObj.Version, platforms, categories).then(function(response){
+
+        // update totals for each platform and category
+        response.forEach(function(build) {
+
+          // add in new categories
+          if (!(build.Category in $scope.Categories)) {
+              $scope.Categories[build.Category] = {
+                  "Category": build.Category,
+                  "Passed": 0,
+                  "Failed": 0,
+                  "Status": "bg-success",
+                  "checked": true,
+              };
+          }
+          if (!(build.Platform in $scope.Platforms)){
+              $scope.Platforms[build.Platform] = {
+                  "Platform": build.Platform,
+                  "Passed": 0,
+                  "Failed": 0,
+                  "Status": "bg-success",
+                  "checked": true,
+              };
+          }
+
+          // totals
+          updateTotals(build);
+
+          // status bars
+          updateStatuses(build);
+
+        });
+
+      });
+    }
+
+    var updateBreakdown = function(){
+
+      // update url
+      var selectedBuild = Data.selectedBuildObj.Version;
+      $scope.build.Passed = 0;
+      $scope.build.Failed = 0;
+      $scope.build.Status = "bg-success";
+
+      var platforms = [];
+      var categories = [];
+
+      Object.keys($scope.Categories).forEach(function(k){
+
+        var item = $scope.Categories[k];
+        item.Passed = 0;
+        item.Failed = 0;
+        if (item.Status == "greyed"){
+          if (categories.indexOf(k) < 0){
+              categories.push(k);
+          }
+        } else {
+          item.Status = "bg-success";
+        }
+      });
+      Object.keys($scope.Platforms).forEach(function(k){
+        var item = $scope.Platforms[k];
+        item.Passed = 0;
+        item.Failed = 0;
+        if (item.Status == "greyed"){
+          if (platforms.indexOf(k) < 0){
+              platforms.push(k);
+          }
+        } else {
+          item.Status = "bg-success";
+        }
+      });
+
+      // if all platforms|categories excluded toggle showAll flags
+      if (platforms.length > 0 &&
+          (platforms.length == Object.keys($scope.Platforms).length)){
+        $scope.showAllPlatforms = false;
+      } else if(platforms.length == 0){ // exclude none
+        $scope.showAllPlatforms = true;
+      }
+
+      if (categories.length > 0 &&
+          (categories.length  == Object.keys($scope.Categories).length)){
+        $scope.showAllCategories = false;
+      } else if(categories.length == 0){
+        $scope.showAllCategories = true;
+      }
+
+      var platformParam = null;
+      var categoryParam = null;
+      if (platforms.length > 0){
+        platformParam =  platforms.toString();
+      }
+      if (categories.length > 0){
+        categoryParam = categories.toString();
+      }
+
+      $location.search("excluded_platforms", platformParam);
+      $location.search("excluded_categories", categoryParam);
+
+      return queryBreakdown(platforms, categories);
+    }
+
+
+
+    // handle click 'all' toggle button
+    $scope.toggleAll = function(itype){
+
+        var items;
+        if (itype == "c"){
+            items = $scope.Categories;
+            $scope.showAllCategories = !$scope.showAllCategories;
+        }
+        else {
+            items = $scope.Platforms;
+            $scope.showAllPlatforms = !$scope.showAllPlatforms;
+
+        }
+
+        Object.keys(items).forEach(function(item){
+          var key = items[item];
+          if (itype == "c"){
+            key.checked = !$scope.showAllCategories;
+          } else {
+            key.checked = !$scope.showAllPlatforms;
+          }
+          _toggleItem(key, itype);
+
+        });
+        updateBreakdown();
+    }
+
+
+    // handle de/select individual sidebar items
+    $scope.toggleItem = function(key, itype){
+
+        // if all items are highlighted first do a toggle all
+        if (itype == "c"){
+          var categories = Object.keys($scope.Categories);
+          var sel = categories.filter(function(k){
+            return $scope.Categories[k].checked;
+          });
+          if ((sel.length > 1) && (sel.length == categories.length)){
+            $scope.toggleAll("c");
+          }
+        } else {
+          var platforms = Object.keys($scope.Platforms);
+          var sel = platforms.filter(function(k){
+            return $scope.Platforms[k].checked;
+          });
+          if ((sel.length > 1) && (sel.length == platforms.length)){
+            $scope.toggleAll("p");
+          }
+        }
+
+        _toggleItem(key, itype);
+        updateBreakdown();
+
+    }
+
+    function _toggleItem(key, itype){
+        var selected;
+        var item;
+        if (itype == "c"){
+            item = key.Category;
+            selected = $scope.Categories[item];
+        }
+        else {
+            item = key.Platform;
+            selected = $scope.Platforms[item];
+        }
+        if (selected.checked){
+            // toggle checked item to greyed state
+            selected.Status = "greyed";
+        } else {
+            selected.Status = "bg-success";
+        }
+        selected.checked = !selected.checked;
+    }
 
 };
