@@ -8,84 +8,52 @@ function lastEl(a){
 
 var TimelineCtrl = function ($scope, ViewService, Data, $location){
 
+    $scope.data = Data;
+    $scope.activeBars = [];
 
-      // d3
-     var format = d3.format('f');
-    $scope.yAxisTickFormatFunction = function(){
-      return function(d) {
-        return format(Math.abs(d));
-      };
-    };
+    $scope.$watch('data.refreshTimeline', function(newVal, oldVal){
 
-    $scope.relToolTipContentFunction = function() {
-      return function(key, build, num) {
-        return '<h4>' + num + '% ' + key.replace(', %', '') + '</h4>' +
-          '<p>Build ' + build + '</p>';
-      };
-    };
-
-    $scope.absToolTipContentFunction = function() {
-      return function(key, build, num, data) {
-        var total = $scope.versionBuilds[data.pointIndex].AbsPassed +
-          $scope.versionBuilds[data.pointIndex].AbsFailed;
-        return '<h4>' + num + ' of ' + total + ' Tests ' + key + '</h4>' +
-          '<p>Build ' + build + '</p>';
-      };
-    };
-
-/*
-    var showTimeline = function(selectedVersion){
-
-      var filterBy = $scope.filterBy;
-      var endVersion = nextVersion(selectedVersion);
-      return ViewService.timeline(selectedVersion, filterBy, endVersion).then(function(response){
-
-        if (response.allBuilds.length > 0 && response.versionBuilds.length == 0){
-
-            // try a lower filter when data exists but is being excluded
-            var options = $scope.filterBy.options;
-            var filterIdx = options.indexOf($scope.filterBy.value);
-            if (filterIdx > 0){
-              $scope.filterBy.value = options[filterIdx - 1];
-              $location.search("fv", $scope.filterBy.value);
-              return getTimeline(selectedVersion);
-            }
+        // update timeline when data has been updated
+           if (newVal  == true){
+          resetTimeline();
+          // trigger sidebar refresh
+          Data.refreshTimeline = false;
         }
 
-        $scope.timelineAbsData = response.absData;
-        $scope.timelineRelData = response.relData;
+    });
 
-        $scope.allBuilds = response.allBuilds;
-        $scope.versionBuilds = response.versionBuilds;
-        Data.build = lastEl($scope.versionBuilds);
-        Data.build.Passed = 0;
-        Data.build.Failed = 0;
-        $scope.build.Status = "bg-success";
-        return $scope.build.Version;
-      });
+    var resetTimeline = function(){
+      $scope.timelineAbsData = Data.timelineAbsData;
+      $scope.timelineRelData = Data.timelineRelData;
+      clearBarOpacity();
+
     };
 
 
-/*
-    function prepareForChangeBuildEvent(build){
-        //Data.Categories = {};
-        //Data.Platforms = {};
-        $scope.showAllPlatforms = true;
-        $scope.showAllCategories = true;
-        $scope.build = findBuildInVersions(build);
+
+    $scope.$on('barClick', function(event, data) {
+        Data.selectedBuildObj = Data.versionBuilds[data.pointIndex];
+        setBarOpacity(data.pointIndex);
+        $location.search("build", Data.selectedBuildObj.Version);
+        Data.refreshSidebar = true;
+        $scope.$apply();
+
+    });
+
+    function clearBarOpacity(){
+      $scope.activeBars.forEach(function(bar){
+          d3.select(bar).style("fill-opacity", function(d, i){
+                      return 0.5;
+              });
+      });
     }
 
     function setBarOpacity(index){
 
-        // clear old opacity
-        $scope.activeBars.forEach(function(bar){
-            d3.select(bar).style("fill-opacity", function(d, i){
-                        return 0.5;
-                });
-        });
+        clearBarOpacity();
         $scope.activeBars = [];
 
-        var len = $scope.versionBuilds.length;
+        var len = Data.versionBuilds.length;
         var bars = d3.selectAll("#absTimeline rect.nv-bar")[0]
         $scope.activeBars.push(bars[index]);
         $scope.activeBars.push(bars[index + len]);
@@ -111,30 +79,20 @@ var TimelineCtrl = function ($scope, ViewService, Data, $location){
 
     }
 
-    $scope.$on('barClick', function(event, data) {
-        var build = $scope.versionBuilds[data.pointIndex].Version;
-        prepareForChangeBuildEvent(build);
-        getBreakdown(build);
-        setBarOpacity(data.pointIndex);
-
-
-    });
-
-    $scope.xFunction = function(){
-      return function(d){ return d.key; };
-    };
-
-    $scope.yFunction = function(){
-      return function(d){ return d.value; };
-    };
-
-
+/*
     // pagination controls
     $scope.didSelectVersion = function(version){
         $scope.selectedVersion = version;
         initFilters();
         reflectFilterLocation();
         init(version);
+    }
+    function prepareForChangeBuildEvent(build){
+        //Data.Categories = {};
+        //Data.Platforms = {};
+        $scope.showAllPlatforms = true;
+        $scope.showAllCategories = true;
+        $scope.build = findBuildInVersions(build);
     }
 
     // timeline controls
@@ -567,4 +525,42 @@ var TimelineCtrl = function ($scope, ViewService, Data, $location){
     }
 
 */
+
+
+      // d3
+     var format = d3.format('f');
+    $scope.yAxisTickFormatFunction = function(){
+      return function(d) {
+        return format(Math.abs(d));
+      };
+    };
+
+    $scope.relToolTipContentFunction = function() {
+      return function(key, build, num) {
+        return '<h4>' + num + '% ' + key.replace(', %', '') + '</h4>' +
+          '<p>Build ' + build + '</p>';
+      };
+    };
+
+    $scope.absToolTipContentFunction = function() {
+      return function(key, build, num, data) {
+        var total = Data.versionBuilds[data.pointIndex].AbsPassed +
+          Data.versionBuilds[data.pointIndex].AbsFailed;
+        return '<h4>' + num + ' of ' + total + ' Tests ' + key + '</h4>' +
+          '<p>Build ' + build + '</p>';
+      };
+    };
+
+
+    $scope.xFunction = function(){
+      return function(d){ return d.key; };
+    };
+
+    $scope.yFunction = function(){
+      return function(d){ return d.value; };
+    };
+
+
+
+
 }

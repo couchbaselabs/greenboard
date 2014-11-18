@@ -11,6 +11,8 @@ app.factory('Data',  [function DataFactory() {
             this.selectedBuildObj = null;
             this.timelineAbsData = [];
             this.timelineRelData = [];
+            this.refreshSidebar = false;
+            this.refreshTimeline = false;
         },
         findBuildObj: function(build){
         

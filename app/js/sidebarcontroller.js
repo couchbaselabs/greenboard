@@ -9,9 +9,11 @@ var SidebarCtrl = function ($scope, ViewService, Data, $location){
     $scope.showAllPlatforms = true;
     $scope.showAllCategories = true;
 
-    var resetScope = function() {
+    var resetSidebar = function() {
         $scope.selectedVersion = Data.selectedVersion;
         $scope.build = Data.selectedBuildObj;
+         $scope.build.Passed = 0;
+         $scope.build.Failed = 0;
 
         if(Data.selectedBuildObj){
             $scope.Platforms = {};
@@ -43,26 +45,16 @@ var SidebarCtrl = function ($scope, ViewService, Data, $location){
         }
     }
 
-    $scope.$watch('data', function(newVal, oldVal){
-        // update scope when version or builds change
-        var reset = true;
-        if (oldVal.selectedVersion == newVal.selectedVersion){
-            // version is same
-            //
-            if (oldVal.selectedBuildObj && newVal.selectedBuildObj){
-              if(oldVal.selectedBuildObj.Version == newVal.selectedBuildObj.Version)
-              {
-                  // build is same
-                  reset = false;
-              }
-            }
+    $scope.$watch('data.refreshSidebar', function(newVal, oldVal){
+
+        // update scope when data has been updated
+        if (newVal == true){
+          // build is same
+          resetSidebar();
+          Data.refreshSidebar = false;
         }
 
-        if (reset == true){
-          resetScope();
-        }
-
-    }, true);
+    });
 
     // handle % vs # slidler action
     $scope.didClickSlider = function(){
