@@ -234,6 +234,7 @@ var SidebarCtrl = function ($scope, ViewService, Data, $location){
       $location.search("excluded_platforms", platformParam);
       $location.search("excluded_categories", categoryParam);
 
+      Data.refreshJobs = true;
       return queryBreakdown(platforms, categories);
     }
 

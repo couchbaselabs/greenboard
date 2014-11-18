@@ -3,7 +3,7 @@ var app = angular.module('greenboardFactories', ['greenboardServices']);
 
 app.factory('Data',  [function DataFactory() {
 
-    var api = 
+    var api =
       { init: function(){
             this.versions = [];
             this.selectedVersion = null;
@@ -13,15 +13,16 @@ app.factory('Data',  [function DataFactory() {
             this.timelineRelData = [];
             this.refreshSidebar = false;
             this.refreshTimeline = false;
+            this.refreshJobs = false;
         },
         findBuildObj: function(build){
-        
+
             var _build = this.versionBuilds.filter(function(b){
                 if(b.Version == build){
                     return true;
                 }
             });
-            var rc; 
+            var rc;
             if (_build.length == 0){
                 rc = this.lastVersionBuild();
             } else {
@@ -48,18 +49,3 @@ function lastEl(a){
     return a[0];
   }
 }
-
-
-
-        /*
-        return {
-            build : {Version : null,
-                     Passed: 0,
-                     Failed: 0,
-                     Status: "bg-success"},
-            selectedVersion: "3.0.0",
-            showAllPlatforms: true,
-            showAllCategories: true,
-            Categories : {},
-            Platforms : {}
-        }*/

@@ -90,7 +90,7 @@
     </div>
 
     <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-    
+
       <div class="row" ng-controller="InitDataCtrl">
         <div class="col-sm-6">
             <ul class="pagination">
@@ -100,7 +100,7 @@
              </ul>
         </div>
         <div class="col-sm-6">
-    
+
            <div class="btn-group">
             <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
               {{filterBy.title}} <span class="caret"></span>
@@ -118,7 +118,7 @@
           </div>
         </div>
       </div>
-    
+
       <div class="row"  ng-controller="TimelineCtrl">
         <div class="col-sm-12" id="timeline" class="section">
             <div>
@@ -142,7 +142,7 @@
                 </div>
             </div>
           </div>
-    
+
           <hr class="separator">
         <div class="col-sm-12" class="row timeline">
             <nvd3-multi-bar-chart
@@ -164,8 +164,8 @@
             </nvd3-multi-bar-chart>
         </div>
       </div>
-    
-      <div class="row">  <!--TODO sidebar controller-->
+
+      <div class="row" ng-controller="JobsCtrl">
         <div class="col-sm-12">
           <!-- Nav tabs -->
           <ul class="nav nav-tabs" role="tablist" id="jobTabs">
@@ -197,7 +197,7 @@
                 </table>
               </div>
             </div>
-    
+
             <div class="tab-pane" id="missing">
               <div class="table-responsive">
                 <table class="table table-striped">
@@ -235,7 +235,5 @@
         e.preventDefault()
         $(this).tab('show')
       })
-    //$('#jobTabs a:first').tab('show') // Select first tab
-
     })
   </script>
