@@ -341,7 +341,9 @@ func (ds *DataSource) GetBreakdown(ctx *web.Context) []byte {
 		version := meta[0].(string)
 		platform := meta[1].(string)
 		category := meta[2].(string)
-
+		if (strings.Contains(strings.ToUpper(version), "XX")) {
+			continue
+		}
 		mapBuilds = append(mapBuilds, MapBuild{
 			version,
 			passed,
@@ -399,7 +401,7 @@ func (ds *DataSource) _GetTimeline(start_key string, end_key string) []byte {
 	for _, row := range rows {
 		rowKey := row.Key.([]interface{})
 		version := rowKey[0].(string)
-		if version == "0.0.0-xxxx" {
+		if (strings.Contains(strings.ToUpper(version), "XX")) {
 			continue
 		}
 
