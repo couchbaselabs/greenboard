@@ -11,9 +11,8 @@ import (
 	"github.com/hoisie/web"
 )
 
-var ddocs = map[string]string{
-	"jenkins": `{
-		"views": {
+var viewspec = `{
+	"views": {
 			"data_by_build": {
 				"map": "function(doc, meta){ emit([doc.build, doc.os, doc.component], [doc.totalCount - doc.failCount,doc.failCount,  doc.priority, doc.name, doc.result, doc.url, doc.build_id]);}",
                                 "reduce" : "function (key, values, rereduce) { var fAbs = 0; var pAbs = 0; for(i=0;i < values.length; i++) { pAbs = pAbs + values[i][0]; fAbs = fAbs + values[i][1]; } var total = fAbs + pAbs; var pRel = 100.0*pAbs/total; var fRel = 100.0*fAbs/total; return ([pAbs, fAbs, pRel, fRel]); }"
@@ -23,41 +22,42 @@ var ddocs = map[string]string{
 				"reduce": "_count"
 			}
 		}
-	}`,
-}
+	}`
 
 type DataSource struct {
 	CouchbaseAddress string
 	Release          string
+	Bucket           string
 	AllVersions      map[string]bool
 	JobsByVersion    map[string]float64
 }
 
-func (ds *DataSource) GetBucket(bucket string) *couchbase.Bucket {
+func (ds *DataSource) GetActiveBucket() *couchbase.Bucket {
 	client, _ := couchbase.Connect(ds.CouchbaseAddress)
 	pool, _ := client.GetPool("default")
 
-	b, err := pool.GetBucket(bucket)
+	b, err := pool.GetBucket(ds.Bucket)
 	if err != nil {
 		log.Fatalf("Error reading bucket:  %v", err)
 	}
 	return b
 }
 
-func (ds *DataSource) QueryView(b *couchbase.Bucket, ddoc, view string,
+func (ds *DataSource) QueryView(b *couchbase.Bucket, view string,
 	params map[string]interface{}) []couchbase.ViewRow {
 	params["stale"] = "update_after"
-	vr, err := b.View(ddoc, view, params)
+	vr, err := b.View(ds.Bucket, view, params)
 	if err != nil {
 		log.Println(err)
-		ds.installDDoc(ddoc)
+		ds.installBucketDDocs()
 	}
 	return vr.Rows
 }
 
-func (ds *DataSource) installDDoc(ddoc string) {
-	b := ds.GetBucket(ddoc) // bucket name == ddoc name
-	err := b.PutDDoc(ddoc, ddocs[ddoc])
+func (ds *DataSource) installBucketDDocs() {
+	b := ds.GetActiveBucket()
+
+	err := b.PutDDoc(ds.Bucket, viewspec)
 	if err != nil {
 		log.Fatalf("%v", err)
 	}
@@ -137,7 +137,7 @@ func posInSlice(slice []string, s string) int {
 }
 
 func (ds *DataSource) GetJobs(ctx *web.Context) []byte {
-	b := ds.GetBucket("jenkins")
+	b := ds.GetActiveBucket()
 
 	var version string
 	for k, v := range ctx.Params {
@@ -153,7 +153,7 @@ func (ds *DataSource) GetJobs(ctx *web.Context) []byte {
 	}
 
 	jobs := []Job{}
-	rows := ds.QueryView(b, "jenkins", "data_by_build", params)
+	rows := ds.QueryView(b, "data_by_build", params)
 	for _, row := range rows {
 		meta := row.Key.([]interface{})
 		jversion := meta[0].(string)
@@ -252,7 +252,7 @@ func (ds *DataSource) JobsFromRows(rows []couchbase.ViewRow) map[string]Job {
 }
 
 func (ds *DataSource) GetAllJobsByBuild(version string) map[string]Job {
-	b := ds.GetBucket("jenkins")
+	b := ds.GetActiveBucket()
 
 	params := map[string]interface{}{
 		"key":           version,
@@ -262,13 +262,13 @@ func (ds *DataSource) GetAllJobsByBuild(version string) map[string]Job {
 	}
 	log.Println(params)
 
-	rows := ds.QueryView(b, "jenkins", "jobs_by_build", params)
+	rows := ds.QueryView(b, "jobs_by_build", params)
 	return ds.JobsFromRows(rows)
 }
 
 func (ds *DataSource) GetAllJobsByVersion(version string) map[string]Job {
 
-	b := ds.GetBucket("jenkins")
+	b := ds.GetActiveBucket()
 
 	params := map[string]interface{}{
 		"start_key": version,
@@ -278,7 +278,7 @@ func (ds *DataSource) GetAllJobsByVersion(version string) map[string]Job {
 	}
 	log.Println(params)
 
-	rows := ds.QueryView(b, "jenkins", "jobs_by_build", params)
+	rows := ds.QueryView(b, "jobs_by_build", params)
 	return ds.JobsFromRows(rows)
 
 }
@@ -296,8 +296,8 @@ func (ds *DataSource) GetAllJobsByBuilds() map[string]float64 {
 		"group_level": 1,
 	}
 
-	b := ds.GetBucket("jenkins")
-	rows := ds.QueryView(b, "jenkins", "jobs_by_build", params)
+	b := ds.GetActiveBucket()
+	rows := ds.QueryView(b, "jobs_by_build", params)
 
 	res := make(map[string]float64)
 	for _, row := range rows {
@@ -307,7 +307,7 @@ func (ds *DataSource) GetAllJobsByBuilds() map[string]float64 {
 }
 
 func (ds *DataSource) GetBreakdown(ctx *web.Context) []byte {
-	b := ds.GetBucket("jenkins")
+	b := ds.GetActiveBucket()
 	version := ds.Release
 	for k, v := range ctx.Params {
 		if k == "build" {
@@ -319,7 +319,7 @@ func (ds *DataSource) GetBreakdown(ctx *web.Context) []byte {
 		"end_key":     []interface{}{version + "_"},
 		"group_level": 3,
 	}
-	rows := ds.QueryView(b, "jenkins", "data_by_build", params)
+	rows := ds.QueryView(b, "data_by_build", params)
 
 	/***************** MAP *****************/
 	mapBuilds := []MapBuild{}
@@ -341,7 +341,7 @@ func (ds *DataSource) GetBreakdown(ctx *web.Context) []byte {
 		version := meta[0].(string)
 		platform := meta[1].(string)
 		category := meta[2].(string)
-		if (strings.Contains(strings.ToUpper(version), "XX")) {
+		if strings.Contains(strings.ToUpper(version), "XX") {
 			continue
 		}
 		mapBuilds = append(mapBuilds, MapBuild{
@@ -356,6 +356,14 @@ func (ds *DataSource) GetBreakdown(ctx *web.Context) []byte {
 
 	j, _ := json.Marshal(mapBuilds)
 	return j
+}
+
+func (ds *DataSource) SetBucket(ctx *web.Context) []byte {
+	if b, ok := ctx.Params["bucket"]; ok {
+		ds.BootStrap(b)
+		return []byte(b)
+	}
+	return nil
 }
 
 func (ds *DataSource) GetTimeline(ctx *web.Context) []byte {
@@ -383,7 +391,7 @@ func (ds *DataSource) _GetTimeline(start_key string, end_key string) []byte {
 		end_key = "9999"
 	}
 
-	b := ds.GetBucket("jenkins")
+	b := ds.GetActiveBucket()
 	params := map[string]interface{}{
 		"start_key":     []interface{}{start_key},
 		"end_key":       []interface{}{end_key},
@@ -393,7 +401,7 @@ func (ds *DataSource) _GetTimeline(start_key string, end_key string) []byte {
 	}
 	log.Println(params)
 
-	rows := ds.QueryView(b, "jenkins", "data_by_build", params)
+	rows := ds.QueryView(b, "data_by_build", params)
 	jobsByBuild := ds.GetAllJobsByBuilds()
 
 	/***************** Query Reduce Views*****************/
@@ -401,7 +409,7 @@ func (ds *DataSource) _GetTimeline(start_key string, end_key string) []byte {
 	for _, row := range rows {
 		rowKey := row.Key.([]interface{})
 		version := rowKey[0].(string)
-		if (strings.Contains(strings.ToUpper(version), "XX")) {
+		if strings.Contains(strings.ToUpper(version), "XX") {
 			continue
 		}
 
@@ -435,15 +443,41 @@ func (ds *DataSource) _GetTimeline(start_key string, end_key string) []byte {
 	return j
 }
 
-func (ds *DataSource) GetAllVersions() []byte {
+func (ds *DataSource) GetVersions() []byte {
 	j, _ := json.Marshal(ds.AllVersions)
 	return j
 }
 
-func (ds *DataSource) BootStrap() {
+/*func (ds *DataSource) GetMobileVersions() []byte {
+	client := github.NewClient(nil)
+	if client != nil {
+		tags, _, err := client.Repositories.ListTags("couchbase", "couchbase-lite-ios", nil)
+		if err == nil {
+			for _, t := range tags {
+				var tname = *t.Name
+				var validTag = regexp.MustCompile(`^[0-9](\.[0-9]+)+$`)
+				if validTag.MatchString(tname) {
+					log.Println(tname)
+					ds.MobileVersions[tname] = true
+				} else {
+					log.Println("skip version:" + tname)
+				}
+
+			}
+		} else {
+			log.Println(err)
+		}
+	}
+	j, _ := json.Marshal(ds.MobileVersions)
+	return j
+}*/
+
+func (ds *DataSource) BootStrap(bucket string) {
 	ds.AllVersions = make(map[string]bool)
 	ds.JobsByVersion = make(map[string]float64)
+	ds.Bucket = bucket
 	ds._GetTimeline("", "")
+	log.Println("Loading bucket: " + bucket)
 }
 
 func (ds *DataSource) GetIndex() []byte {

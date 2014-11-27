@@ -29,6 +29,16 @@ var ViewService = function($http) {
     }
 
     return {
+      changetarget: function(target) {
+        var bucket = target.bucket;
+        config = {url: '/bucket',
+                  method: 'POST',
+                  headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                  data: "bucket="+bucket};
+        return $http(config).then(function(response) {
+              return response.data;
+        });
+      },
       versions: function() {
         return $http.get("/versions").then(function(response) {
               var data = response.data;

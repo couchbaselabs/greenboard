@@ -44,23 +44,26 @@ var InitDataCtrl = function ($scope, ViewService, Data, $location){
 
     $scope.viewTargets = [{
         "title": "Couchbase Server",
+        "bucket": "server",
         "key": "abspassed",
         "value": 100,
         "options": [0, 50, 100, 500],
         "i": 0
       }, {
         "title": "Mobile",
+        "bucket": "mobile",
         "key": "abspassed",
         "value": 100,
         "options": [0, 50, 100, 500],
         "i": 1
-      }, {
+      }/*, {
         "title": "SDK Tools",
+        "bucket": "sdk",
         "key": "abspassed",
         "value": 100,
         "options": [0, 50, 100, 500],
         "i": 2
-      }
+      }*/
     ];
 
     // filters
@@ -182,16 +185,20 @@ var InitDataCtrl = function ($scope, ViewService, Data, $location){
     $scope.filterBy = menu;
     initData();
   };
+
   $scope.didSelectTarget = function(target){
-    $scope.targetBy = target;   
-    initData();
+    $scope.targetBy = target;
+    ViewService.changetarget(target).
+        then(main);
   };
 
   // main
-  selectVersion()
-    .then(initData);
+  function main(){
+      selectVersion()
+        .then(initData);
+  }
+
+  main();
 };
-
-
 
 

@@ -35,12 +35,13 @@ func main() {
 	data_source = new(DataSource)
 	data_source.CouchbaseAddress = config.CouchbaseAddress
 	data_source.Release = config.Release
-	data_source.BootStrap()
+	data_source.BootStrap("server")
 	web.Get("/", data_source.GetIndex)
 	web.Get("/timeline", data_source.GetTimeline)
 	web.Get("/breakdown", data_source.GetBreakdown)
 	web.Get("/jobs", data_source.GetJobs)
-	web.Get("/versions", data_source.GetAllVersions)
+	web.Get("/versions", data_source.GetVersions)
 	web.Get("/jobs_missing", data_source.GetMissingJobs)
+	web.Post("/bucket", data_source.SetBucket)
 	web.Run(config.ListenAddress)
 }

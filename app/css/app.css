@@ -145,6 +145,7 @@ body {
 
 .dropdown-toggle {
   margin-top: 20px;
+  width: 150px;
 }
 
 .dropdown-menu {
