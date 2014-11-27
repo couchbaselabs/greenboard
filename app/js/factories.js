@@ -30,7 +30,7 @@ app.factory('Data',  [function DataFactory() {
             }
             return rc;
         },
-
+        bucket: "server",
         lastVersionBuild: function(){
             return lastEl(this.versionBuilds);
         }

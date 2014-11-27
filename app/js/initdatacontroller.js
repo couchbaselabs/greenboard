@@ -188,8 +188,8 @@ var InitDataCtrl = function ($scope, ViewService, Data, $location){
 
   $scope.didSelectTarget = function(target){
     $scope.targetBy = target;
-    ViewService.changetarget(target).
-        then(main);
+    Data.bucket = target.bucket;
+    main();
   };
 
   // main

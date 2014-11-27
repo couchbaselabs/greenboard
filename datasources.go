@@ -26,13 +26,17 @@ var viewspec = `{
 
 type DataSource struct {
 	CouchbaseAddress string
-	Release          string
 	Bucket           string
 	AllVersions      map[string]bool
 	JobsByVersion    map[string]float64
 }
 
-func (ds *DataSource) GetActiveBucket() *couchbase.Bucket {
+type Api struct {
+	DataSources      map[string]*DataSource
+	CouchbaseAddress string
+}
+
+func (ds *DataSource) GetBucket() *couchbase.Bucket {
 	client, _ := couchbase.Connect(ds.CouchbaseAddress)
 	pool, _ := client.GetPool("default")
 
@@ -55,7 +59,7 @@ func (ds *DataSource) QueryView(b *couchbase.Bucket, view string,
 }
 
 func (ds *DataSource) installBucketDDocs() {
-	b := ds.GetActiveBucket()
+	b := ds.GetBucket()
 
 	err := b.PutDDoc(ds.Bucket, viewspec)
 	if err != nil {
@@ -136,8 +140,10 @@ func posInSlice(slice []string, s string) int {
 	return -1
 }
 
-func (ds *DataSource) GetJobs(ctx *web.Context) []byte {
-	b := ds.GetActiveBucket()
+func (api *Api) GetJobs(ctx *web.Context) []byte {
+
+	ds := api.DataSourceFromCtx(ctx)
+	b := ds.GetBucket()
 
 	var version string
 	for k, v := range ctx.Params {
@@ -196,8 +202,9 @@ func (ds *DataSource) UpdateJobsByVersion() {
 	}
 }
 
-func (ds *DataSource) GetMissingJobs(ctx *web.Context) []byte {
+func (api *Api) GetMissingJobs(ctx *web.Context) []byte {
 
+	ds := api.DataSourceFromCtx(ctx)
 	var build string
 	for k, v := range ctx.Params {
 		if k == "build" {
@@ -252,7 +259,7 @@ func (ds *DataSource) JobsFromRows(rows []couchbase.ViewRow) map[string]Job {
 }
 
 func (ds *DataSource) GetAllJobsByBuild(version string) map[string]Job {
-	b := ds.GetActiveBucket()
+	b := ds.GetBucket()
 
 	params := map[string]interface{}{
 		"key":           version,
@@ -268,7 +275,7 @@ func (ds *DataSource) GetAllJobsByBuild(version string) map[string]Job {
 
 func (ds *DataSource) GetAllJobsByVersion(version string) map[string]Job {
 
-	b := ds.GetActiveBucket()
+	b := ds.GetBucket()
 
 	params := map[string]interface{}{
 		"start_key": version,
@@ -296,7 +303,7 @@ func (ds *DataSource) GetAllJobsByBuilds() map[string]float64 {
 		"group_level": 1,
 	}
 
-	b := ds.GetActiveBucket()
+	b := ds.GetBucket()
 	rows := ds.QueryView(b, "jobs_by_build", params)
 
 	res := make(map[string]float64)
@@ -306,9 +313,12 @@ func (ds *DataSource) GetAllJobsByBuilds() map[string]float64 {
 	return res
 }
 
-func (ds *DataSource) GetBreakdown(ctx *web.Context) []byte {
-	b := ds.GetActiveBucket()
-	version := ds.Release
+func (api *Api) GetBreakdown(ctx *web.Context) []byte {
+
+	ds := api.DataSourceFromCtx(ctx)
+	b := ds.GetBucket()
+	version := "3.0"
+
 	for k, v := range ctx.Params {
 		if k == "build" {
 			version = v
@@ -366,7 +376,7 @@ func (ds *DataSource) SetBucket(ctx *web.Context) []byte {
 	return nil
 }
 
-func (ds *DataSource) GetTimeline(ctx *web.Context) []byte {
+func (api *Api) GetTimeline(ctx *web.Context) []byte {
 
 	var start_key string
 	var end_key string
@@ -379,6 +389,7 @@ func (ds *DataSource) GetTimeline(ctx *web.Context) []byte {
 		}
 	}
 
+	ds := api.DataSourceFromCtx(ctx)
 	return ds._GetTimeline(start_key, end_key)
 }
 
@@ -391,7 +402,7 @@ func (ds *DataSource) _GetTimeline(start_key string, end_key string) []byte {
 		end_key = "9999"
 	}
 
-	b := ds.GetActiveBucket()
+	b := ds.GetBucket()
 	params := map[string]interface{}{
 		"start_key":     []interface{}{start_key},
 		"end_key":       []interface{}{end_key},
@@ -443,7 +454,8 @@ func (ds *DataSource) _GetTimeline(start_key string, end_key string) []byte {
 	return j
 }
 
-func (ds *DataSource) GetVersions() []byte {
+func (api *Api) GetVersions(ctx *web.Context) []byte {
+	ds := api.DataSourceFromCtx(ctx)
 	j, _ := json.Marshal(ds.AllVersions)
 	return j
 }
@@ -480,8 +492,34 @@ func (ds *DataSource) BootStrap(bucket string) {
 	log.Println("Loading bucket: " + bucket)
 }
 
-func (ds *DataSource) GetIndex() []byte {
+func (api *Api) DataSourceFromCtx(ctx *web.Context) *DataSource {
+
+	var ds *DataSource
+
+	if b, ok := ctx.Params["bucket"]; ok {
+		ds = api.DataSources[b]
+	} else {
+		ds = api.DataSources["server"]
+	}
+	return ds
+}
+
+func (api *Api) GetIndex(ctx *web.Context) []byte {
+	ds := api.DataSourceFromCtx(ctx)
 	go ds.UpdateJobsByVersion()
 	content, _ := ioutil.ReadFile(pckgDir + "app/index.html")
 	return content
+}
+
+func DataSourceForBucket(bucket string, couchbaseAddress string) *DataSource {
+	ds := new(DataSource)
+	ds.CouchbaseAddress = couchbaseAddress
+	ds.BootStrap(bucket)
+	return ds
+}
+
+func (api *Api) AddDataSource(bucket string) {
+	if _, ok := api.DataSources[bucket]; !ok {
+		api.DataSources[bucket] = DataSourceForBucket(bucket, api.CouchbaseAddress)
+	}
 }

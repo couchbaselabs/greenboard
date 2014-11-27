@@ -1,4 +1,4 @@
-var ViewService = function($http) {
+var ViewService = function($http, Data) {
 
     var mapReduceByCategoryPlatform = function(data, platforms, categories){
 
@@ -29,26 +29,17 @@ var ViewService = function($http) {
     }
 
     return {
-      changetarget: function(target) {
-        var bucket = target.bucket;
-        config = {url: '/bucket',
-                  method: 'POST',
-                  headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                  data: "bucket="+bucket};
-        return $http(config).then(function(response) {
-              return response.data;
-        });
-      },
       versions: function() {
-        return $http.get("/versions").then(function(response) {
+        var config = {"url": "/versions",
+                      params: {"bucket": Data.bucket} };
+        return $http(config).then(function(response) {
               var data = response.data;
               return Object.keys(data);
         });
       },
       timeline: function(version, filterBy, endVersion) {
-
         var config = {"url": "/timeline",
-                      params: {"start_key": version},
+                      params: {"start_key": version, "bucket": Data.bucket},
                       cache: true };
 
         if (endVersion) {
@@ -135,7 +126,7 @@ var ViewService = function($http) {
       breakdown: function(build, platforms, categories){
 
         var config = {"url": "/breakdown",
-                      "params": {"build": build},
+                      "params": {"build": build, "bucket": Data.bucket},
                       cache: true};
         return $http(config).then(function(response) {
 
@@ -146,7 +137,7 @@ var ViewService = function($http) {
       jobs: function(build, platforms, categories){
 
         var config = {"url": "/jobs",
-                      "params": {"build": build},
+                      "params": {"build": build, "bucket": Data.bucket},
                       cache: true};
         return $http(config).then(function(response) {
 
@@ -156,7 +147,7 @@ var ViewService = function($http) {
       jobs_missing: function(build, platforms, categories){
 
         var config = {"url": "/jobs_missing",
-                      "params": {"build": build},
+                      "params": {"build": build, "bucket": Data.bucket},
                       cache: false};
         return $http(config).then(function(response) {
 

@@ -11,10 +11,10 @@ import (
 
 var pckgDir string
 
-var data_source *DataSource
+var api *Api
 
 type Config struct {
-	CouchbaseAddress, ListenAddress, Release string
+	CouchbaseAddress, ListenAddress string
 }
 
 func main() {
@@ -32,16 +32,18 @@ func main() {
 		log.Fatal(err)
 	}
 
-	data_source = new(DataSource)
-	data_source.CouchbaseAddress = config.CouchbaseAddress
-	data_source.Release = config.Release
-	data_source.BootStrap("server")
-	web.Get("/", data_source.GetIndex)
-	web.Get("/timeline", data_source.GetTimeline)
-	web.Get("/breakdown", data_source.GetBreakdown)
-	web.Get("/jobs", data_source.GetJobs)
-	web.Get("/versions", data_source.GetVersions)
-	web.Get("/jobs_missing", data_source.GetMissingJobs)
-	web.Post("/bucket", data_source.SetBucket)
+	api = new(Api)
+	api.CouchbaseAddress = config.CouchbaseAddress
+	api.DataSources = make(map[string]*DataSource)
+	api.AddDataSource("server")
+	api.AddDataSource("mobile")
+	//Api.AddDataSource("sdk")
+
+	web.Get("/", api.GetIndex)
+	web.Get("/timeline", api.GetTimeline)
+	web.Get("/breakdown", api.GetBreakdown)
+	web.Get("/jobs", api.GetJobs)
+	web.Get("/versions", api.GetVersions)
+	web.Get("/jobs_missing", api.GetMissingJobs)
 	web.Run(config.ListenAddress)
 }
