@@ -87,28 +87,28 @@ var ViewService = function($http, Data) {
           versionBuilds = data.filter(function(build) {
             if (build.Version.indexOf(version) > -1){
               if(filterBy.key == "abspassed"){
-                if (build.AbsPassed > filterBy.value) {
+                if (build.AbsPassed >= filterBy.value) {
                   appendBuild(build);
                   return true;
                 }
               }
 
               if(filterBy.key == "absfailed"){
-                if (build.AbsFailed > filterBy.value) {
+                if (build.AbsFailed >= filterBy.value) {
                   appendBuild(build);
                   return true;
                 }
               }
 
               if(filterBy.key == "percpassed"){
-                if (build.RelPassed > filterBy.value) {
+                if (build.RelPassed >= filterBy.value) {
                   appendBuild(build);
                   return true;
                 }
               }
 
               if(filterBy.key == "percfailed"){
-                if (build.RelFailed > filterBy.value) {
+                if (build.RelFailed >= filterBy.value) {
                   appendBuild(build);
                   return true;
                 }
