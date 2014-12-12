@@ -36,6 +36,8 @@ var TimelineCtrl = function ($scope, ViewService, Data, $location){
         Data.selectedBuildObj = Data.versionBuilds[data.pointIndex];
         setBarOpacity(data.pointIndex);
         $location.search("build", Data.selectedBuildObj.Version);
+        $location.search("excluded_platforms", null);
+        $location.search("excluded_categories", null);
         Data.refreshSidebar = true;
         Data.refreshJobs = true;
         $scope.$apply();
