@@ -6,6 +6,7 @@ app.factory('Data',  [function DataFactory() {
     var api =
       { init: function(){
             this.versions = [];
+            this.bucket = "server";
             this.selectedVersion = null;
             this.versionBuilds = [];
             this.selectedBuildObj = null;

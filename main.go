@@ -32,12 +32,13 @@ func main() {
 		log.Fatal(err)
 	}
 
+    // start jenkins maintenance thread
 	api = new(Api)
 	api.CouchbaseAddress = config.CouchbaseAddress
 	api.DataSources = make(map[string]*DataSource)
 	api.AddDataSource("server")
 	api.AddDataSource("mobile")
-	//Api.AddDataSource("sdk")
+	api.AddDataSource("sdk")
 
 	web.Get("/", api.GetIndex)
 	web.Get("/timeline", api.GetTimeline)

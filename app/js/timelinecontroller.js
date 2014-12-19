@@ -24,8 +24,20 @@ var TimelineCtrl = function ($scope, ViewService, Data, $location){
     });
 
     var resetTimeline = function(){
-      $scope.timelineAbsData = Data.timelineAbsData;
-      $scope.timelineRelData = Data.timelineRelData;
+
+      var shorten_version_func = function(d){
+          d.values = d.values.map(function(v){
+              // shorten x-axis version values
+              var _b = v[0].split("-");
+              v[0] = _b[_b.length - 1];
+              return v;
+          });
+         return d;
+
+      };
+
+      $scope.timelineAbsData = Data.timelineAbsData.map(shorten_version_func);
+      $scope.timelineRelData = Data.timelineRelData.map(shorten_version_func);
       clearBarOpacity();
 
     };
@@ -109,7 +121,7 @@ var TimelineCtrl = function ($scope, ViewService, Data, $location){
 
 
     $scope.xFunction = function(){
-      return function(d){ return d.key; };
+      return function(d){ return d.key };
     };
 
     $scope.yFunction = function(){

@@ -49,21 +49,21 @@ var InitDataCtrl = function ($scope, ViewService, Data, $location){
         "value": 100,
         "options": [0, 50, 100, 500],
         "i": 0
+      },{
+        "title": "SDK",
+        "bucket": "sdk",
+        "key": "abspassed",
+        "value": 0,
+        "options": [0, 50, 100, 500],
+        "i": 1
       }, {
         "title": "Mobile",
         "bucket": "mobile",
         "key": "abspassed",
         "value": 100,
         "options": [0, 50, 100, 500],
-        "i": 1
-      }/*, {
-        "title": "SDK Tools",
-        "bucket": "sdk",
-        "key": "abspassed",
-        "value": 100,
-        "options": [0, 50, 100, 500],
         "i": 2
-      }*/
+      }
     ];
 
     // filters
@@ -94,6 +94,12 @@ var InitDataCtrl = function ($scope, ViewService, Data, $location){
   if (("fi" in urlArgs) && ("fv" in urlArgs)){
     $scope.filterBy = $scope.filterMenues[urlArgs.fi];
     $scope.filterBy.value = urlArgs.fv;
+  }
+
+  // set target
+  if ("ft" in urlArgs) {
+      $scope.targetBy = $scope.viewTargets[urlArgs.ft];
+      Data.bucket = $scope.targetBy.bucket;
   }
 
   // init controller data
@@ -142,18 +148,30 @@ var InitDataCtrl = function ($scope, ViewService, Data, $location){
     });
   };
 
-  var updateLocation = function(){
+  var clearLocations = function(){
+    $location.search("fi", null);
+    $location.search("fv", null);
+    $location.search("ft", null);
+    $location.search("version", null);
+    $location.search("build", null);
+    $location.search("excluded_platforms", null);
+    $location.search("excluded_categories", null);
+    urlArgs = {};
+  }
+
+  var updateLocations = function(){
     $location.search("version", Data.selectedVersion);
     $location.search("build", Data.selectedBuildObj.Version);
     $location.search("fi", $scope.filterBy.i);
     $location.search("fv", $scope.filterBy.value);
+    $location.search("ft", $scope.targetBy.i);
   }
 
 
   var initData = function(){
     initVersionBuild()
         .then(function(){
-            updateLocation();
+            updateLocations();
             Data.refreshSidebar = true;
             Data.refreshTimeline = true;
             Data.refreshJobs = true;
@@ -166,27 +184,31 @@ var InitDataCtrl = function ($scope, ViewService, Data, $location){
   }
 
   // pagination controls
-  $scope.didSelectVersion = function(version){
+  $scope.didSelectVersion = function(version){ // ie 3.0, 3.5
+      clearLocations();
+      _b = Data.bucket;
       Data.init();
+      Data.bucket = _b;
       clearPlatformCategories();
       Data.selectedVersion = version;
       $scope.selectedVersion = version;
       initData();
   };
-  $scope.didSelectFilter = function(value){
+  $scope.didSelectFilter = function(value){  // ie 0 50 100
     // change filter.by value  and update timeline
     $scope.filterBy.value = value;
     clearPlatformCategories();
     initData();
 
   };
-  $scope.didSelectMenu = function(menu){
+  $scope.didSelectMenu = function(menu){ // ie abs, perc pass failed
     // change filter.by menu and update timeline
     $scope.filterBy = menu;
     initData();
   };
 
-  $scope.didSelectTarget = function(target){
+  $scope.didSelectTarget = function(target){ // ie couchbase, mobile, sdk
+    clearLocations();
     $scope.targetBy = target;
     Data.bucket = target.bucket;
     main();
