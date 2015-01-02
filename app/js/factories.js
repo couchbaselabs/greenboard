@@ -34,7 +34,9 @@ app.factory('Data',  [function DataFactory() {
         bucket: "server",
         lastVersionBuild: function(){
             return lastEl(this.versionBuilds);
-        }
+        },
+        knownPlatforms: [],
+        knownCategories: []
     };
 
     api.init();

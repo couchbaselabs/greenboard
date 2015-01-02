@@ -50,7 +50,7 @@ var JobsCtrl = function ($scope, ViewService, Data, $location){
         pushToJobScope(response, $scope.jobs);
       });
 
-      ViewService.jobs_missing(build, [], []).then(function(response){
+      ViewService.jobs_missing(build, platforms, categories).then(function(response){
         pushToJobScope(response, $scope.missingJobs);
       });
 

@@ -8,6 +8,39 @@ var SidebarCtrl = function ($scope, ViewService, Data, $location){
     $scope.showAsPerc = true;
     $scope.showAllPlatforms = true;
     $scope.showAllCategories = true;
+    $scope.PlatformsList = [];
+    $scope.CategoriesList = [];
+
+    $scope.orderByPerc = function(el){
+       return $scope.getPerc(el)*-100;
+    };
+    var sortByPerc = function(componentObj){
+        if (!componentObj){
+            console.log("Error: refusing to sort null object");
+            return;
+        }
+
+        var sortedComponents = Object.keys(componentObj);
+
+        sortedComponents.sort(function(a, b){
+           var percA = $scope.getPerc(a); 
+           var percB = $scope.getPerc(b);
+           if (percA < percB){
+               return -1;
+           } 
+           if (percA > percB){
+               return 1;
+           }
+           return 0;
+        });
+
+        var objAsList = []; 
+        sortedComponents.forEach(function(key){
+            objAsList.push(componentObj[key]);
+        });
+        return objAsList;
+
+    };
 
     var resetSidebar = function() {
         $scope.selectedVersion = Data.selectedVersion;
@@ -38,6 +71,8 @@ var SidebarCtrl = function ($scope, ViewService, Data, $location){
                   });
                 }
 
+                $scope.PlatformsList = sortByPerc($scope.Platforms);
+                $scope.CategoriesList = sortByPerc($scope.Categories);
                 if (needsRefresh) {
                     updateBreakdown();
                 }
@@ -83,7 +118,7 @@ var SidebarCtrl = function ($scope, ViewService, Data, $location){
     }
 
     var updateStatuses = function (build){
-
+        
         var success = "bg-success";
         var warning = "bg-warning";
         var danger = "bg-danger";
@@ -103,6 +138,11 @@ var SidebarCtrl = function ($scope, ViewService, Data, $location){
             }
         }
 
+        if (($scope.Platforms[build.Platform].Passed == 0) &&
+                ($scope.Platforms[build.Platform].Failed == 0)) {
+             $scope.Platforms[build.Platform].Status = "disabled";
+        }
+
         if ($scope.Categories[build.Category].Status != "greyed") {
             if ($scope.Categories[build.Category].Failed > 0){
               var fAbs = $scope.Categories[build.Category].Failed;
@@ -116,6 +156,11 @@ var SidebarCtrl = function ($scope, ViewService, Data, $location){
             } else {
                 $scope.Categories[build.Category].Status = success;
             }
+        }
+
+        if (($scope.Categories[build.Category].Passed == 0) &&
+                ($scope.Categories[build.Category].Failed == 0)) {
+             $scope.Categories[build.Category].Status = "disabled";
         }
 
         if ($scope.build.Failed == 0){

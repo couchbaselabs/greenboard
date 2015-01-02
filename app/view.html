@@ -44,7 +44,7 @@
             </a>
             <br/>
           </div>
-          <div  ng-repeat="os in Platforms">
+          <div  ng-repeat="os in PlatformsList | orderBy:orderByPerc">
             <input type="checkbox" ng-model="os.checked">
             <span  ng-click="toggleItem(os, 'p')" class="custom-list-group-item {{os.Status}}" >
               <a href="">
@@ -71,7 +71,7 @@
             </a>
             <br/>
           </div>
-          <div  ng-repeat="category in Categories">
+          <div  ng-repeat="category in CategoriesList | orderBy:orderByPerc">
             <input type="checkbox" ng-model="category.checked">
             <span ng-click="toggleItem(category, 'c')" class="custom-list-group-item {{category.Status}}">
             <a href="">
@@ -134,7 +134,7 @@
       </div>
 
       <div class="row"  ng-controller="TimelineCtrl">
-        <div class="col-sm-12" id="timeline" class="section">
+        <!--<div class="col-sm-12" id="timeline" class="section">
             <div>
                 <div class="timeline">
                     <nvd3-multi-bar-chart
@@ -156,14 +156,14 @@
                 </div>
             </div>
           </div>
-
           <hr class="separator">
+        -->
         <div class="col-sm-12" class="row timeline">
             <nvd3-multi-bar-chart
                 id="relTimeline"
                 data="timelineRelData"
                 margin="{left: 40, top: 0, bottom: 35, right: 20}"
-                stacked="false"
+                stacked="true"
                 showLegend="true"
                 showXAxis="true"
                 showYAxis="true"
@@ -178,6 +178,7 @@
             </nvd3-multi-bar-chart>
         </div>
       </div>
+      <hr class="separator">
 
       <div class="row" ng-controller="JobsCtrl">
         <div class="col-sm-12">

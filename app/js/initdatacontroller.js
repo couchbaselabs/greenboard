@@ -216,6 +216,11 @@ var InitDataCtrl = function ($scope, ViewService, Data, $location){
 
   // main
   function main(){
+      // load known platforms and categories
+      ViewService.categories().then(function(response){
+          Data.knownPlatforms = response.data.platforms;
+          Data.knownCategories = response.data.components;
+      });
       selectVersion()
         .then(initData);
   }
