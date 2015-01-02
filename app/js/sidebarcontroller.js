@@ -10,36 +10,25 @@ var SidebarCtrl = function ($scope, ViewService, Data, $location){
     $scope.showAllCategories = true;
     $scope.PlatformsList = [];
     $scope.CategoriesList = [];
+    $scope.didFirstSort = false;
 
     $scope.orderByPerc = function(el){
-       return $scope.getPerc(el)*-100;
+
+        // if already sorted by perc use old order 
+        if ($scope.didFirstSort){
+            return el.sortOrder;
+        }   
+        el.sortOrder = $scope.getPerc(el)*-100;
+       return el.sortOrder;
+
     };
-    var sortByPerc = function(componentObj){
-        if (!componentObj){
-            console.log("Error: refusing to sort null object");
-            return;
+
+    $scope.objAsList = function(obj){
+        var li = []; 
+        for (var key in obj) {
+            li.push(obj[key]);
         }
-
-        var sortedComponents = Object.keys(componentObj);
-
-        sortedComponents.sort(function(a, b){
-           var percA = $scope.getPerc(a); 
-           var percB = $scope.getPerc(b);
-           if (percA < percB){
-               return -1;
-           } 
-           if (percA > percB){
-               return 1;
-           }
-           return 0;
-        });
-
-        var objAsList = []; 
-        sortedComponents.forEach(function(key){
-            objAsList.push(componentObj[key]);
-        });
-        return objAsList;
-
+        return li;       
     };
 
     var resetSidebar = function() {
@@ -71,8 +60,6 @@ var SidebarCtrl = function ($scope, ViewService, Data, $location){
                   });
                 }
 
-                $scope.PlatformsList = sortByPerc($scope.Platforms);
-                $scope.CategoriesList = sortByPerc($scope.Categories);
                 if (needsRefresh) {
                     updateBreakdown();
                 }
@@ -87,6 +74,9 @@ var SidebarCtrl = function ($scope, ViewService, Data, $location){
           // build is same
           resetSidebar();
           Data.refreshSidebar = false;
+        } else {
+            // resort for new build
+            $scope.didFirstSort = false;
         }
 
     });
@@ -236,7 +226,7 @@ var SidebarCtrl = function ($scope, ViewService, Data, $location){
               categories.push(k);
           }
         } else {
-          item.Status = "bg-success";
+          item.Status = "disabled";
         }
       });
       Object.keys($scope.Platforms).forEach(function(k){
@@ -248,7 +238,7 @@ var SidebarCtrl = function ($scope, ViewService, Data, $location){
               platforms.push(k);
           }
         } else {
-          item.Status = "bg-success";
+          item.Status = "disabled";
         }
       });
 
@@ -316,6 +306,9 @@ var SidebarCtrl = function ($scope, ViewService, Data, $location){
     // handle de/select individual sidebar items
     $scope.toggleItem = function(key, itype){
 
+        // assuming after an item has been click sort has already happened
+        $scope.didFirstSort = true;
+
         // if all items are highlighted first do a toggle all
         if (itype == "c"){
           var categories = Object.keys($scope.Categories);
@@ -334,6 +327,7 @@ var SidebarCtrl = function ($scope, ViewService, Data, $location){
             $scope.toggleAll("p");
           }
         }
+
 
         _toggleItem(key, itype);
         updateBreakdown();

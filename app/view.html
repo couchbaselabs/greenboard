@@ -44,7 +44,7 @@
             </a>
             <br/>
           </div>
-          <div  ng-repeat="os in PlatformsList | orderBy:orderByPerc">
+          <div  ng-repeat="os in objAsList(Platforms) | orderBy:orderByPerc">
             <input type="checkbox" ng-model="os.checked">
             <span  ng-click="toggleItem(os, 'p')" class="custom-list-group-item {{os.Status}}" >
               <a href="">
@@ -71,7 +71,7 @@
             </a>
             <br/>
           </div>
-          <div  ng-repeat="category in CategoriesList | orderBy:orderByPerc">
+          <div  ng-repeat="category in objAsList(Categories) | orderBy:orderByPerc">
             <input type="checkbox" ng-model="category.checked">
             <span ng-click="toggleItem(category, 'c')" class="custom-list-group-item {{category.Status}}">
             <a href="">
@@ -184,7 +184,9 @@
         <div class="col-sm-12">
           <!-- Nav tabs -->
           <ul class="nav nav-tabs" role="tablist" id="jobTabs">
-            <li class="active"><a href="#executed" role="tab" data-toggle="tab"><h3>Completed</h3></a></li>
+            <li class="active"><a href="#executed" role="tab" data-toggle="tab"><h3>All</h3></a></li>
+            <li><a href="#missing" role="tab" data-toggle="tab"><h3>Success</h3></a></li>
+            <li><a href="#missing" role="tab" data-toggle="tab"><h3>Unstable</h3></a></li>
             <li><a href="#missing" role="tab" data-toggle="tab"><h3>Pending</h3></a></li>
           </ul>
           <div class="tab-content">
