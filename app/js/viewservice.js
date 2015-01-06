@@ -60,7 +60,7 @@ var ViewService = function($http, Data) {
               "values": []
           }];
           relData = [{
-            "key": "Tess Failed, %",
+            "key": "Tests Failed, %",
             "values": []
           }, {
             "key": "Tests Passed, %",
