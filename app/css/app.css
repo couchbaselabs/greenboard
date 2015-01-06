@@ -157,7 +157,11 @@ body {
   font-weight: bold;
   font-size: 16px;
 }
-
+.FAILURE{
+  color: #de0000;
+  font-weight: bold;
+  font-size: 16px;
+}
 .NONE{
   color: #aaa;
   font-weight: bold;

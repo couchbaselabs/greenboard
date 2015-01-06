@@ -60,7 +60,7 @@ var InitDataCtrl = function ($scope, ViewService, Data, $location){
         "title": "Mobile",
         "bucket": "mobile",
         "key": "abspassed",
-        "value": 100,
+        "value": 0,
         "options": [0, 50, 100, 500],
         "i": 2
       }
