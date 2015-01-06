@@ -2,16 +2,23 @@
 var JobsCtrl = function ($scope, ViewService, Data, $location){
 
     $scope.data = Data;
-
+    $scope.jobsPending = 0;
+    $scope.jobsCompleted = 0;
     $scope.$watch('data.refreshJobs', function(newVal, oldVal){
 
         // update timeline when data has been updated
-           if (newVal  == true){
+        if (newVal  == true){
             displayJobs();
             Data.refreshJobs = false;
         }
 
     });
+
+    $scope.nameSort = function(el){
+        return el.name;
+    };
+
+    $scope.predicate = $scope.nameSort;
 
     function displayJobs(){
 
@@ -48,10 +55,12 @@ var JobsCtrl = function ($scope, ViewService, Data, $location){
 
       ViewService.jobs(build, platforms, categories).then(function(response){
         pushToJobScope(response, $scope.jobs);
+        $scope.jobsCompleted = $scope.jobs.length;
       });
 
-      ViewService.jobs_missing(build, [], []).then(function(response){
+      ViewService.jobs_missing(build, platforms, categories).then(function(response){
         pushToJobScope(response, $scope.missingJobs);
+        $scope.jobsPending = $scope.missingJobs.length;
       });
 
     }

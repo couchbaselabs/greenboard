@@ -8,6 +8,28 @@ var SidebarCtrl = function ($scope, ViewService, Data, $location){
     $scope.showAsPerc = true;
     $scope.showAllPlatforms = true;
     $scope.showAllCategories = true;
+    $scope.PlatformsList = [];
+    $scope.CategoriesList = [];
+    $scope.didFirstSort = false;
+
+    $scope.orderByPerc = function(el){
+
+        // if already sorted by perc use old order 
+        if ($scope.didFirstSort){
+            return el.sortOrder;
+        }   
+        el.sortOrder = $scope.getPerc(el)*-100;
+       return el.sortOrder;
+
+    };
+
+    $scope.objAsList = function(obj){
+        var li = []; 
+        for (var key in obj) {
+            li.push(obj[key]);
+        }
+        return li;       
+    };
 
     var resetSidebar = function() {
         $scope.selectedVersion = Data.selectedVersion;
@@ -52,6 +74,9 @@ var SidebarCtrl = function ($scope, ViewService, Data, $location){
           // build is same
           resetSidebar();
           Data.refreshSidebar = false;
+        } else {
+            // resort for new build
+            $scope.didFirstSort = false;
         }
 
     });
@@ -83,7 +108,7 @@ var SidebarCtrl = function ($scope, ViewService, Data, $location){
     }
 
     var updateStatuses = function (build){
-
+        
         var success = "bg-success";
         var warning = "bg-warning";
         var danger = "bg-danger";
@@ -103,6 +128,11 @@ var SidebarCtrl = function ($scope, ViewService, Data, $location){
             }
         }
 
+        if (($scope.Platforms[build.Platform].Passed == 0) &&
+                ($scope.Platforms[build.Platform].Failed == 0)) {
+             $scope.Platforms[build.Platform].Status = "disabled";
+        }
+
         if ($scope.Categories[build.Category].Status != "greyed") {
             if ($scope.Categories[build.Category].Failed > 0){
               var fAbs = $scope.Categories[build.Category].Failed;
@@ -116,6 +146,11 @@ var SidebarCtrl = function ($scope, ViewService, Data, $location){
             } else {
                 $scope.Categories[build.Category].Status = success;
             }
+        }
+
+        if (($scope.Categories[build.Category].Passed == 0) &&
+                ($scope.Categories[build.Category].Failed == 0)) {
+             $scope.Categories[build.Category].Status = "disabled";
         }
 
         if ($scope.build.Failed == 0){
@@ -191,7 +226,7 @@ var SidebarCtrl = function ($scope, ViewService, Data, $location){
               categories.push(k);
           }
         } else {
-          item.Status = "bg-success";
+          item.Status = "disabled";
         }
       });
       Object.keys($scope.Platforms).forEach(function(k){
@@ -203,7 +238,7 @@ var SidebarCtrl = function ($scope, ViewService, Data, $location){
               platforms.push(k);
           }
         } else {
-          item.Status = "bg-success";
+          item.Status = "disabled";
         }
       });
 
@@ -271,6 +306,9 @@ var SidebarCtrl = function ($scope, ViewService, Data, $location){
     // handle de/select individual sidebar items
     $scope.toggleItem = function(key, itype){
 
+        // assuming after an item has been click sort has already happened
+        $scope.didFirstSort = true;
+
         // if all items are highlighted first do a toggle all
         if (itype == "c"){
           var categories = Object.keys($scope.Categories);
@@ -289,6 +327,7 @@ var SidebarCtrl = function ($scope, ViewService, Data, $location){
             $scope.toggleAll("p");
           }
         }
+
 
         _toggleItem(key, itype);
         updateBreakdown();

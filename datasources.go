@@ -20,6 +20,12 @@ var viewspec = `{
 			"jobs_by_build": {
 				"map": "function(doc, meta){ emit(doc.build, [doc.name, doc.os, doc.component, doc.url, doc.priority]);}",
 				"reduce": "_count"
+			},"all_components": {
+				"map": "function(doc, meta){ emit(doc.component, null);}",
+				"reduce": "_count"
+			},"all_platforms": {
+				"map": "function(doc, meta){ emit(doc.os, null);}",
+				"reduce": "_count"
 			}
 		}
 	}`
@@ -29,6 +35,7 @@ type DataSource struct {
 	Bucket           string
 	AllVersions      map[string]bool
 	JobsByVersion    map[string]float64
+    //TODO ADD ALL PLATSFORMA ALL COMPS
 }
 
 type Api struct {
@@ -212,13 +219,13 @@ func (api *Api) GetMissingJobs(ctx *web.Context) []byte {
 		}
 	}
 
-	version := strings.Split(build, "-")[0]
 	missingJobs := []Job{}
 
-	// make sure jobs exists for this version
-	if _, ok := ds.JobsByVersion[version]; ok {
+    // include missing jobs across all versions
+    for version, _ := range ds.JobsByVersion {
 		allJobs := ds.GetAllJobsByVersion(version)
 		buildJobs := ds.GetAllJobsByBuild(build)
+        log.Println(version)
 		for key, job := range allJobs {
 			if _, ok := buildJobs[key]; !ok {
 				// missing
@@ -331,6 +338,11 @@ func (api *Api) GetBreakdown(ctx *web.Context) []byte {
 	}
 	rows := ds.QueryView(b, "data_by_build", params)
 
+    unlistedPlatforms := api.QueryAllView(ctx, "all_platforms")
+    unlistedCategories := api.QueryAllView(ctx, "all_components")
+    listedPlatforms := make(map[string]bool)
+    listedCategories := make(map[string]bool)
+
 	/***************** MAP *****************/
 	mapBuilds := []MapBuild{}
 	for _, row := range rows {
@@ -362,7 +374,31 @@ func (api *Api) GetBreakdown(ctx *web.Context) []byte {
 			platform,
 			"na",
 		})
+        listedPlatforms[platform] = true
+        listedCategories[category] = true
 	}
+
+    // append unused platforms and versions
+    for _, p := range unlistedPlatforms{
+        if _, ok := listedPlatforms[p]; !ok {
+            // platform has no data for this build create empty results
+            // check if it also has categories with no results
+            for _, c := range unlistedCategories{
+                if _, ok := listedCategories[c]; !ok {
+                    // platform has no data for this build create empty results
+                    mapBuilds = append(mapBuilds, MapBuild{
+                        version,
+                        0,
+                        0,
+                        c,
+                        p,
+                        "missing",
+                    })
+                }
+            }
+        }
+    }
+
 
 	j, _ := json.Marshal(mapBuilds)
 	return j
@@ -391,6 +427,34 @@ func (api *Api) GetTimeline(ctx *web.Context) []byte {
 
 	ds := api.DataSourceFromCtx(ctx)
 	return ds._GetTimeline(start_key, end_key)
+}
+
+func (api *Api) GetCategories(ctx *web.Context) []byte {
+
+    results := map[string][]string{}
+    results["platforms"] = api.QueryAllView(ctx, "all_platforms")
+    results["components"] = api.QueryAllView(ctx, "all_components")
+    j, _ := json.Marshal(results)
+    return j
+}
+
+
+func (api *Api) QueryAllView(ctx *web.Context, view string) []string{
+	ds := api.DataSourceFromCtx(ctx)
+	b := ds.GetBucket()
+
+	params := map[string]interface{}{
+		"group_level":   1,
+	}
+
+    li := []string{}
+
+	rows := ds.QueryView(b, view, params)
+    for _, row := range rows {
+        item := row.Key.(string)
+        li = append(li, item)
+    }
+    return li
 }
 
 func (ds *DataSource) _GetTimeline(start_key string, end_key string) []byte {
@@ -459,30 +523,6 @@ func (api *Api) GetVersions(ctx *web.Context) []byte {
 	j, _ := json.Marshal(ds.AllVersions)
 	return j
 }
-
-/*func (ds *DataSource) GetMobileVersions() []byte {
-	client := github.NewClient(nil)
-	if client != nil {
-		tags, _, err := client.Repositories.ListTags("couchbase", "couchbase-lite-ios", nil)
-		if err == nil {
-			for _, t := range tags {
-				var tname = *t.Name
-				var validTag = regexp.MustCompile(`^[0-9](\.[0-9]+)+$`)
-				if validTag.MatchString(tname) {
-					log.Println(tname)
-					ds.MobileVersions[tname] = true
-				} else {
-					log.Println("skip version:" + tname)
-				}
-
-			}
-		} else {
-			log.Println(err)
-		}
-	}
-	j, _ := json.Marshal(ds.MobileVersions)
-	return j
-}*/
 
 func (ds *DataSource) BootStrap(bucket string) {
 	ds.AllVersions = make(map[string]bool)

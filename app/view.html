@@ -44,7 +44,7 @@
             </a>
             <br/>
           </div>
-          <div  ng-repeat="os in Platforms">
+          <div  ng-repeat="os in objAsList(Platforms) | orderBy:orderByPerc">
             <input type="checkbox" ng-model="os.checked">
             <span  ng-click="toggleItem(os, 'p')" class="custom-list-group-item {{os.Status}}" >
               <a href="">
@@ -71,7 +71,7 @@
             </a>
             <br/>
           </div>
-          <div  ng-repeat="category in Categories">
+          <div  ng-repeat="category in objAsList(Categories) | orderBy:orderByPerc">
             <input type="checkbox" ng-model="category.checked">
             <span ng-click="toggleItem(category, 'c')" class="custom-list-group-item {{category.Status}}">
             <a href="">
@@ -135,56 +135,56 @@
 
       <div class="row"  ng-controller="TimelineCtrl">
         <div class="col-sm-12" id="timeline" class="section">
-            <div>
+            <!--<div>
                 <div class="timeline">
                     <nvd3-multi-bar-chart
-                        id="absTimeline"
-                        data="timelineAbsData"
+                        id="relTimeline"
+                        data="timelineRelData"
                         margin="{left: 40, top: 0, bottom: 35, right: 20}"
                         stacked="true"
                         showLegend="true"
                         showXAxis="true"
                         showYAxis="true"
                         reduceXTicks="true"
+                        showControls="true"
                         tooltips="true"
-                        tooltipcontent="absToolTipContentFunction()"
-                        color="['#3bc93b', '#de0000']"
+                        tooltipcontent="relToolTipContentFunction()"
+                        color="['#de0000','#3bc93b', '#aec7e8']"
                         yAxisTickFormat="yAxisTickFormatFunction()"
                         delay="750">
-                            <svg></svg>
+                         <svg></svg>
                     </nvd3-multi-bar-chart>
                 </div>
-            </div>
+            </div>-->
           </div>
-
           <hr class="separator">
         <div class="col-sm-12" class="row timeline">
             <nvd3-multi-bar-chart
-                id="relTimeline"
-                data="timelineRelData"
+                id="absTimeline"
+                data="timelineAbsData"
                 margin="{left: 40, top: 0, bottom: 35, right: 20}"
-                stacked="false"
+                stacked="true"
                 showLegend="true"
                 showXAxis="true"
                 showYAxis="true"
                 reduceXTicks="true"
-                showControls="true"
                 tooltips="true"
-                tooltipcontent="relToolTipContentFunction()"
-                color="['#de0000','#3bc93b', '#aec7e8']"
+                tooltipcontent="absToolTipContentFunction()"
+                color="['#3bc93b', '#de0000']"
                 yAxisTickFormat="yAxisTickFormatFunction()"
                 delay="750">
-                 <svg></svg>
+                    <svg></svg>
             </nvd3-multi-bar-chart>
         </div>
       </div>
+      <hr class="separator">
 
       <div class="row" ng-controller="JobsCtrl">
         <div class="col-sm-12">
           <!-- Nav tabs -->
           <ul class="nav nav-tabs" role="tablist" id="jobTabs">
-            <li class="active"><a href="#executed" role="tab" data-toggle="tab"><h3>Completed</h3></a></li>
-            <li><a href="#missing" role="tab" data-toggle="tab"><h3>Pending</h3></a></li>
+              <li class="active"><a href="#executed" role="tab" data-toggle="tab"><h4>{{jobsCompleted}} Jobs Completed</h4></a></li>
+              <li><a href="#missing" role="tab" data-toggle="tab"><h4>{{jobsPending}} Jobs Pending</h4></a></li>
           </ul>
           <div class="tab-content">
             <div class="tab-pane active" id="executed">
@@ -215,27 +215,17 @@
             <div class="tab-pane" id="missing">
               <div class="table-responsive">
                 <table class="table table-striped">
-                  <thead>
-                    <tr>
-                      <th><a href="" ng-click="predicate = 'name'; reverse=!reverse">Name <i class="fa fa-sort"></i></a></th>
-                      <th><a href="" ng-click="predicate = 'result'; reverse=!reverse">Result <i class="fa fa-sort"></i></a></th>
-                      <th><a href="" ng-click="predicate = 'passed'; reverse=!reverse">Passed <i class="fa fa-sort"></i></a></th>
-                      <th><a href="" ng-click="predicate = 'total'; reverse=!reverse">Total <i class="fa fa-sort"></i></a></th>
-                      <th><a href="" ng-click="predicate = 'priority'; reverse=!reverse">Priority <i class="fa fa-sort"></i></a></th>
-                    </tr>
+                    <thead>
                   </thead>
                   <tbody>
-                    <tr ng-repeat="job in missingJobs | orderBy:predicate:reverse">
+                    <tr ng-repeat="job in missingJobs | orderBy:nameSort">
                       <td><a href={{job.url}}{{job.bid}}>{{job.name}}</a></td>
-                      <td><span class={{job.result}}>{{job.result}}</span></td>
-                      <td>{{job.passed}}</td>
-                      <td>{{job.total}}</td>
-                      <td>{{job.priority}}</td>
                     </tr>
                   </tbody>
                 </table>
               </div>
             </div>
+
           </div>
         </div>
       </div>

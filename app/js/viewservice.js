@@ -60,7 +60,7 @@ var ViewService = function($http, Data) {
               "values": []
           }];
           relData = [{
-            "key": "Tess Failed, %",
+            "key": "Tests Failed, %",
             "values": []
           }, {
             "key": "Tests Passed, %",
@@ -144,11 +144,22 @@ var ViewService = function($http, Data) {
           return mapReduceByCategoryPlatform(response.data, platforms, categories);
         });
       },
+
+      categories: function(){
+
+        var config = {"url": "/categories",
+                      "params": {"bucket": Data.bucket},
+                      cache: true};
+        return $http(config);
+
+      },
       jobs_missing: function(build, platforms, categories){
 
         var config = {"url": "/jobs_missing",
                       "params": {"build": build, "bucket": Data.bucket},
                       cache: false};
+        // expand with all platforms and categories
+        
         return $http(config).then(function(response) {
 
           return mapReduceByCategoryPlatform(response.data, platforms, categories);
