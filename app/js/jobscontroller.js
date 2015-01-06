@@ -25,12 +25,18 @@ var JobsCtrl = function ($scope, ViewService, Data, $location){
       var build = Data.selectedBuildObj.Version;
       $scope.jobs = [];
       $scope.missingJobs = [];
+      var dupeChecker = {};
 
       var pushToJobScope = function(response, ctx){
             response.forEach(function(job){
                 if (job.Bid == -1){
                   job.Bid = "";
                 }
+                // no double reporting
+                if (job.Name in dupeChecker){
+                    return;
+                }
+                dupeChecker[job.Name] = true;
                 ctx.push({
                    "name": job.Name,
                    "passed": job.Passed,
