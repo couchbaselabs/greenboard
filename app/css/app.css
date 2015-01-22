@@ -179,3 +179,17 @@ body {
     fill-opacity: 0.5;
 }
 
+
+.grid .tick {
+    stroke: lightgrey;
+    opacity: 0.8;
+}
+.grid path {
+      stroke-width: 0;
+}
+
+.tick text {
+    stroke: #333333;
+    stroke-width: 0;
+}
+

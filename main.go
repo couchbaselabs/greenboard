@@ -32,7 +32,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-    // start jenkins maintenance thread
+    // start web api 
 	api = new(Api)
 	api.CouchbaseAddress = config.CouchbaseAddress
 	api.DataSources = make(map[string]*DataSource)

@@ -16,7 +16,6 @@
       </div>
     </div>
   </div>
-
   <div class="container-fluid">
     <div class="col-sm-3 col-md-2 sidebar"  ng-controller="SidebarCtrl">
       <div class="nav nav-sidebar">
@@ -136,25 +135,16 @@
       <div class="row"  ng-controller="TimelineCtrl">
 
         <div class="col-sm-12" id="timeline" class="section">
-            <nvd3-multi-bar-chart
-                id="absTimeline"
-                data="timelineAbsData"
-                margin="{left: 40, top: 0, bottom: 35, right: 20}"
-                stacked="true"
-                showLegend="true"
-                showXAxis="true"
-                showYAxis="true"
-                reduceXTicks="true"
-                tooltips="true"
-                tooltipcontent="absToolTipContentFunction()"
-                color="['#3bc93b', '#de0000']"
-                yAxisTickFormat="yAxisTickFormatFunction()"
-                delay="750">
-                    <svg></svg>
-            </nvd3-multi-bar-chart>
+            <bar-chart data="timelineAbsData"></bar-chart>
+            <input type="range"></input>
+        </div>
+
+        <div class="col-sm-12" id="timeline" class="section">
+            <!--<pie-chart></pie-chart>
+            <pie-chart></pie-chart>
+            <pie-chart></pie-chart>-->
         </div>
       </div>
-      <hr class="separator">
 
       <div class="row" ng-controller="JobsCtrl">
         <div class="col-sm-12">

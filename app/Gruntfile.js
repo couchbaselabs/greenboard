@@ -17,9 +17,16 @@ module.exports = function(grunt) {
                     'js/initdatacontroller.js', 'js/jobscontroller.js',
                     'js/sidebarcontroller.js', 'js/controllers.js',
                     'js/viewservice.js',
-                    'js/services.js', 'js/factories.js'],
+                    'js/services.js', 'js/factories.js',
+                    'js/directives.js', 'js/d3directives.js'],
               dest: 'dist/greenboard.js',
             },
+        },
+        watch: {
+            scripts: {
+                files: 'js/*.js',
+                tasks: ['concat']
+            }
         }
     });
 
@@ -28,6 +35,7 @@ module.exports = function(grunt) {
 
     // Load the plugin that provides the "uglify" task.
     grunt.loadNpmTasks('grunt-contrib-uglify');
+    grunt.loadNpmTasks('grunt-contrib-watch');
 
     // Default task(s).
     grunt.registerTask('default', ['concat', 'uglify']);
