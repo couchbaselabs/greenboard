@@ -1,3 +1,271 @@
+function barChartDirective(Data, $location){
+
+   var margin = {top: 10, right: 10, bottom: 150, left: 50},
+       margin2 = {top: 180, right: 10, bottom: 20, left: 50},
+       width = 860 - margin.left - margin.right,
+       height = 300 - margin.top - margin.bottom,
+       height2 = 300 - margin2.top - margin2.bottom;
+
+    var selectedIndex = 0;
+
+    function loadTimeline(scope, data, el){
+
+            var passed = data[0].values;
+            var failed = data[1].values;
+            var selectedIndex =
+                Data.versionBuilds.indexOf(Data.selectedBuildObj);
+
+            var rangeCursor = 0;
+            var n = 2;
+            var m = passed.length;
+            var t = 30; // truncation value
+            stack = d3.layout.stack();
+
+            layers = function(pass, fail){
+                return [
+                    { "name": "passed",
+                      "x" : 0,
+                      "values": pass.map(function(d, i){
+                         return {"x": i,
+                                 "y": d[1],
+                                 "y0": 0,
+                                 "bno": d[0]}})
+                    },
+                    { "name": "failed",
+                      "x" : 0,
+                      "values": fail.map(function(d, i){
+                         return {"x": i,
+                                 "y": -1*d[1],
+                                 "y0": 0,
+                                 "bno": d[0]}})
+                    }
+                ]};
+
+            yGroupMax = d3.max(passed, function(d) { return d[1]; });
+
+
+            var x = d3.scale.ordinal()
+                    .domain(passed.map(function(d){ return d[0]}))
+                    .rangeRoundBands([0, width], .08),
+                x2 = d3.scale.ordinal()
+                    .domain(passed.map(function(d){ return d[0]}))
+                    .rangeRoundBands([0, width], .08),
+                y = d3.scale.linear()
+                    .domain([0, yGroupMax])
+                    .range([height, 0]),
+                y2 = d3.scale.linear()
+                    .domain([0, yGroupMax])
+                    .range([height2, 0]);
+
+            var barWidth = Math.floor(width/x2.domain().length);
+            var colors = ["#3bc93b", "#de0000"];
+
+
+
+            var svg = d3.select(el).append("svg")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom);
+
+            svg.append("defs").append("clipPath")
+                .attr("id", "clip")
+              .append("rect")
+                .attr("width", width)
+                .attr("height", width);
+
+            var focus = svg.append("g")
+                .attr("class", "focus")
+                .attr("transform",
+                     "translate("+ margin.left +"," + margin.top + ")");
+
+            var context = svg.append("g")
+                .attr("class", "context")
+                .attr("transform",
+                    "translate(" + margin2.left + "," + margin2.top + ")");
+
+
+            var xTickerValues = function(pass){
+                var tickerMod = 1;
+                if(pass.length > 10){
+                    tickerMod = Math.floor(m/10);
+                }
+
+                return pass.filter(function(d, i){
+                          return (i%tickerMod == 0) }).map(function(d){
+                                return d[0]});
+            }
+            var xAxis = d3.svg.axis()
+                .scale(x)
+                .tickValues(xTickerValues(passed))
+                .tickSize(0)
+                .tickPadding(6)
+                .orient("bottom");
+
+            var xAxis2 = d3.svg.axis()
+                .scale(x2)
+                .tickFormat("")
+                .tickSize(0)
+                .tickPadding(6)
+                .orient("bottom");
+
+            var yAxis = d3.svg.axis()
+                .scale(y)
+                .tickSize(-width, 0, 0)
+                .tickPadding(6)
+                .orient("left")
+                .ticks(3);
+                
+
+            var area = d3.svg.area()
+                .interpolate("monotone")
+                .x(function(d) { return x(d.bno); })
+                .y0(height)
+                .y1(function(d) { return y(d.y); });
+
+
+            var area2 = d3.svg.area()
+                .interpolate("monotone")
+                .x(function(d) { return x2(d.bno); })
+                .y0(height2)
+                .y1(function(d) { return y2(d.y); });
+
+            var opaqueLevel = function(d){
+                var selectedBno = 
+                    Data.selectedBuildObj.Version.split("-")[1];
+                if (selectedBno == d.bno){
+                    return 1;
+                }
+                return 0.5; 
+            };
+
+            var layer = focus.selectAll(".layer")
+                .data(layers(passed, failed))
+              
+            layer.enter().append("g")
+                .attr("class", "layer")
+                .style("fill", function(d, i) { return colors[i]; });
+
+
+            var rect = layer.selectAll("rect")
+                .data(function(d) {return d.values;})
+              .enter().append("rect")
+                .attr("x", function(d, i) {return x(d.bno)})
+                .attr("y", function(d) { return y(d.y); })
+                .style("opacity", opaqueLevel)
+                .attr("width", x.rangeBand())
+                .attr("height", function(d) {
+                     return y(d.y0) - y(d.y0 + d.y); });
+
+            // context layer with brush
+            var brush = d3.svg.brush()
+                .x(x2)
+                .extent([width-width/4, width]) // upper 1/4th
+                .on("brush", function(){
+                    // convert brush extent from pixel space
+                    var extents = brush.extent();
+                    var lval = Math.floor(extents[0]/barWidth);
+                    var rval = Math.floor(extents[1]/barWidth);
+                    var nPass = passed.filter(function(d, i){
+                                return((i>=lval) && (i<=rval))});
+                    var nDom = nPass.map(function(d){ return d[0] });
+                    if(nDom.length > 0){
+
+                        // update focus domain
+                        x.domain(nDom);
+
+                        // update focus data
+                        rect.data(function(d) {return d.values;})
+                            .attr("x", function(d, i) {return x(d.bno)})
+                            .attr("height", function(d,i){
+                                if((i<lval) || (i>rval)){
+                                    return 0;
+                                } return y(d.y0) - y(d.y); })
+                            .attr("width", x.rangeBand());
+
+                        // redraw axis
+                        xAxis.tickValues(xTickerValues(nPass));
+                        focus.select(".x.axis").call(xAxis);
+                    } 
+                });
+
+            var cxlayer = context.selectAll(".layer2")
+                .data(layers(passed, failed))
+              .enter().append("g")
+                .attr("class", "layer2")
+                .style("fill", function(d, i) { return colors[i]; });
+
+            var cxrect = cxlayer.selectAll("rect")
+                .data(function(d) {return d.values;})
+              .enter().append("rect")
+                .attr("x", function(d, i) {return x(d.bno)})
+                .attr("y", function(d, i) {return y(d.y)/4})
+                .style("opacity", opaqueLevel)
+                .attr("width", x.rangeBand())
+                .attr("height", function(d) {
+                     return (y(d.y0) - y(d.y0 + d.y))/4; });
+
+            var cxlayer = context.append("g")
+              .attr("class", "x axis")
+              .attr("transform", "translate(0," + height2 + ")")
+              .call(xAxis2);
+
+            cxlayer.append("g")
+              .attr("class", "x brush")
+              .call(brush)
+              .call(brush.event)
+            .selectAll("rect")
+              .attr("y", -1*(height2+10))
+              .attr("height", 50);
+
+
+            rect.on("click", function(event, i) {
+                Data.selectedBuildObj = Data.versionBuilds[i];
+                $location.search("build", Data.selectedBuildObj.Version);
+                $location.search("excluded_platforms", null);
+                $location.search("excluded_categories", null);
+                Data.refreshSidebar = true;
+                Data.refreshJobs = true;
+
+                // set opacity
+                rect.transition()
+                    .delay(1)
+                    .style("opacity", opaqueLevel);
+
+                cxrect.transition()
+                    .delay(1)
+                    .style("opacity", opaqueLevel);
+                scope.$apply();
+            });
+
+
+            focus.append("g")
+                .attr("class", "x axis grid")
+                .attr("transform", "translate(0,"+height+")")
+                .call(xAxis);
+
+            focus.append("g")
+                .attr("class", "y axis grid")
+                .attr("transform", "translate(10,0)")
+                .call(yAxis);
+
+        
+    }
+
+    function link(scope, element, attr){
+        scope.$watch('data.timelineAbsData', function(data){
+            if((data != undefined) && (data.length > 0)){
+                d3.select(element[0]).select("svg").remove();
+                loadTimeline(scope, data, element[0]);
+            }
+        }, true);
+    }
+
+    return {
+        link: link,
+        restrict: 'E',
+        scope: false
+    }
+}
+
 function pieChartDirective(){
 
     function link(scope, element, attr){
@@ -26,173 +294,8 @@ function pieChartDirective(){
     return {
         link: link,
         restrict: 'E',
-        scope: { data: '=' }
+        scope: false,
     }
 }
 
-function barChartDirective(Data, $location){
-
-    var margin = {top: 40, right: 10, bottom: 20, left: 50},
-        width = 960 - margin.left - margin.right,
-        height = 200 - margin.top - margin.bottom;
-
-    function loadTimeline(scope, data, el){
-            var passed = data[0].values;
-            var failed = data[1].values;
-
-            var n = 2;
-            var m = passed.length;
-            var t = 30; // truncation value
-            stack = d3.layout.stack();
-            // truncate beyond 30 values
-            if(m > t){
-                passed.splice(0, m-t);
-                failed.splice(0, m-t);
-            }
-
-            layers = [
-                { "name": "passed",
-                  "values": passed.map(function(d, i){
-                     return {"x": i,
-                             "y": d[1],
-                             "y0": 0,
-                             "bno": d[0]}})
-                },
-                { "name": "failed",
-                  "values": failed.map(function(d, i){
-                     return {"x": i,
-                             "y": -1*d[1],
-                             "y0": 0,
-                             "bno": d[0]}})
-                }
-            ]
-
-            yGroupMax = d3.max(passed, function(d) { return d[1]; });
-
-            var x = d3.scale.ordinal()
-                .domain(passed.map(function(d){ return d[0]}))
-                .rangeRoundBands([0, width], .08);
-
-            var y = d3.scale.linear()
-                .domain([0, yGroupMax])
-                .range([height, 0]);
-
-            var colors = ["#3bc93b", "#de0000"];
-
-
-            var svg = d3.select(el).append("svg")
-                .attr("width", width + margin.left + margin.right)
-                .attr("height", height + margin.top + margin.bottom)
-              .append("g")
-                .attr("transform",
-                     "translate(" + margin.left + "," + margin.top + ")");
-
-            var tickerMod = 1;
-            if(m > 10){
-                tickerMod = Math.floor(m/10);
-            }
-
-            var xTickerValues = passed.filter(function(d, i){
-                      return (i%tickerMod == 0) }).map(function(d){
-                            return d[0]});
-
-            var xAxis = d3.svg.axis()
-                .scale(x)
-                .tickValues(xTickerValues)
-                .tickSize(0)
-                .tickPadding(6)
-                .orient("bottom");
-
-            var yAxis = d3.svg.axis()
-                .scale(y)
-                .tickSize(-width, 0, 0)
-                .tickPadding(6)
-                .orient("left")
-                .ticks(3);
-                
-
-            var layer = svg.selectAll(".layer")
-                .data(layers)
-              .enter().append("g")
-                .attr("class", "layer")
-                .style("fill", function(d, i) { return colors[i]; });
-
-            var opaqueLevel = function(d){
-                var selectedBno = 
-                    Data.selectedBuildObj.Version.split("-")[1];
-                if (selectedBno == d.bno){
-                    return 1;
-                }
-                return 0.5; 
-            }
-
-            var rect = layer.selectAll("rect")
-                .data(function(d) {return d.values;})
-              .enter().append("rect")
-                .attr("x", function(d, i) {return x(d.bno)})
-                .attr("y", height)
-                .style("opacity", opaqueLevel)
-                .attr("width", x.rangeBand())
-                .attr("height", 0);
-
-            rect.on("click", function(event, i) {
-                Data.selectedBuildObj = Data.versionBuilds[i];
-                $location.search("build", Data.selectedBuildObj.Version);
-                $location.search("excluded_platforms", null);
-                $location.search("excluded_categories", null);
-                Data.refreshSidebar = true;
-                Data.refreshJobs = true;
-
-                // set opacity
-                rect.transition()
-                    .delay(2)
-                    .style("opacity", opaqueLevel);
-
-                scope.$apply();
-            });
-
-
-            rect.transition()
-                .delay(function(d, i) { return i * 10; })
-                .attr("y", function(d) { return y(d.y); })
-                .attr("height", function(d) {
-                     return y(d.y0) - y(d.y0 + d.y); });
-
-            var zoom = d3.behavior.zoom().scaleExtent([1, 1]);
-            zoom.x(x);
-            zoom.on('zoom', function() { 
-              svg.select(".x.axis").call(xAxis);
-                console.log("zumba?");
-                //svg.selectAll(".layer").data(layers);
-            });
-
-            svg.call(zoom);
-            svg.append("g")
-                .attr("class", "x axis grid")
-                .attr("transform", "translate(0,"+height+")")
-                .call(xAxis);
-
-            svg.append("g")
-                .attr("class", "x axis grid")
-                .attr("transform", "translate(10,0)")
-                .call(yAxis);
-        
-    }
-
-    function link(scope, element, attr){
-
-        scope.$watch('data', function(data){
-            if(data){
-                d3.select(element[0]).select("svg").remove();
-                loadTimeline(scope, data, element[0]);
-            }
-        }, true);
-    }
-
-    return {
-        link: link,
-        restrict: 'E',
-        scope: { data: '=' }
-    }
-}
 

@@ -193,3 +193,14 @@ body {
     stroke-width: 0;
 }
 
+.slider {
+    margin-left: 50px;
+    width: 200px !important;
+}
+
+.brush .extent {
+  stroke: #fff;
+  fill-opacity: .125;
+  shape-rendering: crispEdges;
+}
+
