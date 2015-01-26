@@ -24,8 +24,8 @@
           <span class="custom-list-group-item {{build.Status}}">
             <p>{{build.Version}}
                <span ng-click="didClickSlider()">
-                 <span ng-if="showAsPerc" class="testscore">{{100*getPerc(build)| number:0}}% <i class="fa fa-toggle-off"></i></span>
-                 <span ng-if="!showAsPerc" class="testscore">{{build.Passed}}/{{build.Failed + build.Passed}} <i class="fa fa-toggle-on"></i></span>
+                 <span class="testscore">{{100*getPerc(build)| number:0}}% <i ng-if="showAsPerc" class="fa fa-toggle-off"></i><i ng-if="!showAsPerc" class="fa fa-toggle-on"></i></span>
+                 <div ng-if="!showAsPerc" class="scoredesc">pass: {{build.Passed}}, fail: {{build.Failed}} pend: {{build.Pending}}</div>
                </span>
             </span></p>
           </span>
@@ -51,10 +51,12 @@
                 <i ng-if="!os.checked" class="glyphicon glyphicon-unchecked"></i>
                  {{os.Platform}}
                 <span ng-if="os.checked">
-                  </i> <span ng-if="showAsPerc" class="testscore">{{100*getPerc(os)| number:0}}%</span>
-                  <span ng-if="!showAsPerc" class="testscore">{{os.Passed}}/{{os.Failed + os.Passed}}</span>
+                  </i><span  class="testscore">{{100*getPerc(os)| number:0}}%</span>
                 </span>
               </a>
+                <span ng-if="os.checked">
+                    <div ng-if="!showAsPerc" class="scoredesc">pass: {{os.Passed}}, fail: {{os.Failed}} pend: {{os.Pending}}</div>
+                </span>
             </span>
           </div>
         </form>
@@ -78,10 +80,12 @@
               <i ng-if="!category.checked" class="glyphicon glyphicon-unchecked"></i>
                {{category.Category}}
               <span ng-if="category.checked">
-                <span ng-if="showAsPerc" class="testscore">{{100*getPerc(category)| number:0}}%</span>
-                <span ng-if="!showAsPerc" class="testscore">{{category.Passed}}/{{category.Failed + category.Passed}}</span>
+                <span class="testscore">{{100*getPerc(category)| number:0}}%</span>
               </span>
              </a>
+                <span ng-if="category.checked">
+                  <div ng-if="!showAsPerc" class="scoredesc">pass: {{category.Passed}}, fail: {{category.Failed}} pend: {{category.Pending}}</div>
+                </span>
             </span>
           </div>
         </form>

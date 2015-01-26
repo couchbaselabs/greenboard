@@ -130,6 +130,10 @@ body {
   float:right;
 }
 
+.scoredesc {
+  font-size: 10px;
+}
+
 .greyed a{
   color: #ddd;
 }

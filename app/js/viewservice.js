@@ -158,8 +158,7 @@ var ViewService = function($http, Data) {
         var config = {"url": "/jobs_missing",
                       "params": {"build": build, "bucket": Data.bucket},
                       cache: false};
-        // expand with all platforms and categories
-        
+
         return $http(config).then(function(response) {
 
           return mapReduceByCategoryPlatform(response.data, platforms, categories);

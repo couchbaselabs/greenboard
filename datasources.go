@@ -18,7 +18,7 @@ var viewspec = `{
                                 "reduce" : "function (key, values, rereduce) { var fAbs = 0; var pAbs = 0; for(i=0;i < values.length; i++) { pAbs = pAbs + values[i][0]; fAbs = fAbs + values[i][1]; } var total = fAbs + pAbs; var pRel = 100.0*pAbs/total; var fRel = 100.0*fAbs/total; return ([pAbs, fAbs, pRel, fRel]); }"
             },
 			"jobs_by_build": {
-				"map": "function(doc, meta){ emit(doc.build, [doc.name, doc.os, doc.component, doc.url, doc.priority]);}",
+				"map": "function(doc, meta){ emit(doc.build, [doc.name, doc.os, doc.component, doc.url, doc.priority, doc.totalCount]);}",
 				"reduce": "_count"
 			},"all_components": {
 				"map": "function(doc, meta){ emit(doc.component, null);}",
@@ -97,6 +97,7 @@ type MapBuild struct {
 	Version  string
 	Passed   float64
 	Failed   float64
+    Pending  float64
 	Category string
 	Platform string
 	Priority string
@@ -209,15 +210,7 @@ func (ds *DataSource) UpdateJobsByVersion() {
 	}
 }
 
-func (api *Api) GetMissingJobs(ctx *web.Context) []byte {
-
-	ds := api.DataSourceFromCtx(ctx)
-	var build string
-	for k, v := range ctx.Params {
-		if k == "build" {
-			build = v
-		}
-	}
+func _GetMissingJobs(ds *DataSource, build string) []Job {
 
 	missingJobs := []Job{}
 
@@ -234,6 +227,21 @@ func (api *Api) GetMissingJobs(ctx *web.Context) []byte {
 		}
 	}
 
+    return missingJobs
+
+}
+
+func (api *Api) GetMissingJobs(ctx *web.Context) []byte {
+
+	ds := api.DataSourceFromCtx(ctx)
+	var build string
+	for k, v := range ctx.Params {
+		if k == "build" {
+			build = v
+		}
+	}
+
+    missingJobs := _GetMissingJobs(ds, build)
 	j, _ := json.Marshal(missingJobs)
 	return j
 }
@@ -248,10 +256,11 @@ func (ds *DataSource) JobsFromRows(rows []couchbase.ViewRow) map[string]Job {
 		category := value[2].(string)
 		url := value[3].(string)
 		priority := value[4].(string)
+		total := value[5].(float64)
 
 		uniqJobs[name] = Job{
 			0,
-			0,
+			total,
 			priority,
 			name,
 			"NONE",
@@ -324,22 +333,22 @@ func (api *Api) GetBreakdown(ctx *web.Context) []byte {
 
 	ds := api.DataSourceFromCtx(ctx)
 	b := ds.GetBucket()
-	version := "3.0"
+	build := "3.0"
 
 	for k, v := range ctx.Params {
 		if k == "build" {
-			version = v
+			build = v
 		}
 	}
 	params := map[string]interface{}{
-		"start_key":   []interface{}{version},
-		"end_key":     []interface{}{version + "_"},
+		"start_key":   []interface{}{build},
+		"end_key":     []interface{}{build+ "_"},
 		"group_level": 3,
 	}
 	rows := ds.QueryView(b, "data_by_build", params)
 
-    unlistedPlatforms := api.QueryAllView(ctx, "all_platforms")
-    unlistedCategories := api.QueryAllView(ctx, "all_components")
+//   unlistedPlatforms := api.QueryAllView(ctx, "all_platforms")
+//   unlistedCategories := api.QueryAllView(ctx, "all_components")
     listedPlatforms := make(map[string]bool)
     listedCategories := make(map[string]bool)
 
@@ -360,16 +369,19 @@ func (api *Api) GetBreakdown(ctx *web.Context) []byte {
 		if !ok {
 			continue
 		}
-		version := meta[0].(string)
+
 		platform := meta[1].(string)
 		category := meta[2].(string)
-		if strings.Contains(strings.ToUpper(version), "XX") {
+		if strings.Contains(strings.ToUpper(build), "XX") {
 			continue
 		}
+
+        // these are jobs that have actual results
 		mapBuilds = append(mapBuilds, MapBuild{
-			version,
+			build,
 			passed,
 			failed,
+            0,
 			category,
 			platform,
 			"na",
@@ -378,6 +390,21 @@ func (api *Api) GetBreakdown(ctx *web.Context) []byte {
         listedCategories[category] = true
 	}
 
+    // append jobs with no results for this build as pending 
+    allJobs := _GetMissingJobs(ds, build)
+    for _, job := range allJobs {
+		mapBuilds = append(mapBuilds, MapBuild{
+			build,
+			0,
+			0,
+            job.Total,  // total from missing job = pending
+			job.Category,
+			job.Platform,
+			"na",
+		})
+    }
+
+    /*
     // append unused platforms and versions
     for _, p := range unlistedPlatforms{
         if _, ok := listedPlatforms[p]; !ok {
@@ -398,6 +425,7 @@ func (api *Api) GetBreakdown(ctx *web.Context) []byte {
             }
         }
     }
+    */
 
 
 	j, _ := json.Marshal(mapBuilds)

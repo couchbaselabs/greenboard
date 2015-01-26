@@ -1,10 +1,10 @@
 function barChartDirective(Data, $location){
 
-   var margin = {top: 10, right: 10, bottom: 150, left: 50},
-       margin2 = {top: 180, right: 10, bottom: 20, left: 50},
+   var margin = {top: 50, right: 10, bottom: 150, left: 50},
+       margin2 = {top: 150, right: 10, bottom: 20, left: 50},
        width = 860 - margin.left - margin.right,
-       height = 300 - margin.top - margin.bottom,
-       height2 = 300 - margin2.top - margin2.bottom;
+       height = 270 - margin.top - margin.bottom,
+       height2 = 270 - margin2.top - margin2.bottom;
 
     var selectedIndex = 0;
 
@@ -158,7 +158,7 @@ function barChartDirective(Data, $location){
             // context layer with brush
             var brush = d3.svg.brush()
                 .x(x2)
-                .extent([width-width/4, width]) // upper 1/4th
+                .extent([width/2, width])
                 .on("brush", function(){
                     // convert brush extent from pixel space
                     var extents = brush.extent();
@@ -214,7 +214,7 @@ function barChartDirective(Data, $location){
               .call(brush.event)
             .selectAll("rect")
               .attr("y", -1*(height2+10))
-              .attr("height", 50);
+              .attr("height", 30);
 
 
             rect.on("click", function(event, i) {
