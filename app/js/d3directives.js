@@ -144,6 +144,15 @@ function barChartDirective(Data, $location){
                 .attr("class", "layer")
                 .style("fill", function(d, i) { return colors[i]; });
 
+            var tip = d3.tip()
+              .attr('class', 'd3-tip')
+              .offset([-10, 0])
+              .html(function(d, i) {
+                  var p = passed[i][1];
+                  var f = -1*failed[i][1];
+                return "<div class='tip'><h4>passed: "+p+" failed: "+f+"</h4><strong>"+d.bno+"</strong></div>";
+                });
+            focus.call(tip);
 
             var rect = layer.selectAll("rect")
                 .data(function(d) {return d.values;})
@@ -153,7 +162,9 @@ function barChartDirective(Data, $location){
                 .style("opacity", opaqueLevel)
                 .attr("width", x.rangeBand())
                 .attr("height", function(d) {
-                     return y(d.y0) - y(d.y0 + d.y); });
+                     return y(d.y0) - y(d.y0 + d.y); })
+                .on('mouseover', tip.show)
+                .on('mouseout', tip.hide);
 
             // context layer with brush
             var brush = d3.svg.brush()
