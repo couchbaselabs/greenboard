@@ -94,11 +94,10 @@ var SidebarCtrl = function ($scope, ViewService, Data, $location){
         return 0;
       }
 
-      var total = item.Passed + item.Failed + item.Pending;
-      if ((total) == 0){
-        return 0;
-      }
-      return item.Passed/total;
+      var total = item.Passed + item.Failed;
+      var denom = total + item.Pending;
+      console.log(total+"/"+denom); 
+      return total/denom;
     }
 
     var updateTotals = function (build){
