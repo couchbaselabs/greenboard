@@ -60,11 +60,9 @@ function barChartDirective(Data, $location){
             var barWidth = Math.floor(width/x2.domain().length);
             var colors = ["#3bc93b", "#de0000"];
 
-
-
             var svg = d3.select(el).append("svg")
                 .attr("width", width + margin.left + margin.right)
-                .attr("height", height + margin.top + margin.bottom);
+                .attr("height", height + 150);
 
             svg.append("defs").append("clipPath")
                 .attr("id", "clip")
@@ -114,20 +112,6 @@ function barChartDirective(Data, $location){
                 .orient("left")
                 .ticks(3);
                 
-
-            var area = d3.svg.area()
-                .interpolate("monotone")
-                .x(function(d) { return x(d.bno); })
-                .y0(height)
-                .y1(function(d) { return y(d.y); });
-
-
-            var area2 = d3.svg.area()
-                .interpolate("monotone")
-                .x(function(d) { return x2(d.bno); })
-                .y0(height2)
-                .y1(function(d) { return y2(d.y); });
-
             var opaqueLevel = function(d){
                 var selectedBno = 
                     Data.selectedBuildObj.Version.split("-")[1];
@@ -138,11 +122,18 @@ function barChartDirective(Data, $location){
             };
 
             var layer = focus.selectAll(".layer")
-                .data(layers(passed, failed))
+                .data(layers(passed, failed));
               
             layer.enter().append("g")
                 .attr("class", "layer")
-                .style("fill", function(d, i) { return colors[i]; });
+                .style("fill", function(d, i) { return colors[i]; })
+                .attr("data-legend",function(d) { return d.name});
+
+            var legend = svg.append("g")
+                .attr("class","legend")
+                .attr("transform","translate("+width+", 20)")
+                .style("font-size","12px")
+                .call(d3.legend);
 
             var tip = d3.tip()
               .attr('class', 'd3-tip')
@@ -157,6 +148,7 @@ function barChartDirective(Data, $location){
             var rect = layer.selectAll("rect")
                 .data(function(d) {return d.values;})
               .enter().append("rect")
+                .attr("class", "bar")
                 .attr("x", function(d, i) {return x(d.bno)})
                 .attr("y", function(d) { return y(d.y); })
                 .style("opacity", opaqueLevel)

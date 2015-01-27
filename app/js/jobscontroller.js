@@ -62,11 +62,11 @@ var JobsCtrl = function ($scope, ViewService, Data, $location){
       ViewService.jobs(build, platforms, categories).then(function(response){
         pushToJobScope(response, $scope.jobs);
         $scope.jobsCompleted = $scope.jobs.length;
-      });
 
-      ViewService.jobs_missing(build, platforms, categories).then(function(response){
-        pushToJobScope(response, $scope.missingJobs);
-        $scope.jobsPending = $scope.missingJobs.length;
+          ViewService.jobs_missing(build, platforms, categories).then(function(response){
+            pushToJobScope(response, $scope.missingJobs);
+            $scope.jobsPending = $scope.missingJobs.length;
+          });
       });
 
     }

@@ -34,8 +34,8 @@ type DataSource struct {
 	CouchbaseAddress string
 	Bucket           string
 	AllVersions      map[string]bool
-	JobsByVersion    map[string]float64
-    //TODO ADD ALL PLATSFORMA ALL COMPS
+	JobsByVersion    map[string]map[string]Job
+	JobsByBuild      map[string]map[string]Job
 }
 
 type Api struct {
@@ -173,7 +173,6 @@ func (api *Api) GetJobs(ctx *web.Context) []byte {
 		jversion := meta[0].(string)
 		platform := meta[1].(string)
 		category := meta[2].(string)
-
 		if jversion == version {
 			value := row.Value.([]interface{})
 			passed := value[VIEW["absPassed"]].(float64)
@@ -203,10 +202,11 @@ func (api *Api) GetJobs(ctx *web.Context) []byte {
 	return j
 }
 
-func (ds *DataSource) UpdateJobsByVersion() {
+func (ds *DataSource) UpdateJobs() {
 
+    // update all jobs belonging to a version
 	for version, _ := range ds.AllVersions {
-		ds.JobsByVersion[version] = ds.GetNumJobsByVersion(version)
+	    ds.JobsByVersion[version] = ds.GetAllJobsByVersion(version)
 	}
 }
 
@@ -214,18 +214,18 @@ func _GetMissingJobs(ds *DataSource, build string) []Job {
 
 	missingJobs := []Job{}
 
-    // include missing jobs across all versions
-    for version, _ := range ds.JobsByVersion {
-		allJobs := ds.GetAllJobsByVersion(version)
-		buildJobs := ds.GetAllJobsByBuild(build)
+    for version, versionJobs := range ds.JobsByVersion {
         log.Println(version)
-		for key, job := range allJobs {
-			if _, ok := buildJobs[key]; !ok {
-				// missing
-				missingJobs = append(missingJobs, job)
-			}
-		}
-	}
+        for key, job := range versionJobs {
+            buildJobs := ds.JobsByBuild[build]
+            if _, ok := buildJobs[key]; !ok {
+                missingJobs = append(missingJobs, job)
+            }
+        }
+    }
+
+    //return and update cache
+    go ds.UpdateJobs()
 
     return missingJobs
 
@@ -274,8 +274,15 @@ func (ds *DataSource) JobsFromRows(rows []couchbase.ViewRow) map[string]Job {
 	return uniqJobs
 }
 
+
+
 func (ds *DataSource) GetAllJobsByBuild(version string) map[string]Job {
 	b := ds.GetBucket()
+
+    if _, ok := ds.JobsByBuild[version]; ok {
+        // update and return cached 
+        return ds.JobsByBuild[version]
+    }
 
 	params := map[string]interface{}{
 		"key":           version,
@@ -286,12 +293,19 @@ func (ds *DataSource) GetAllJobsByBuild(version string) map[string]Job {
 	log.Println(params)
 
 	rows := ds.QueryView(b, "jobs_by_build", params)
-	return ds.JobsFromRows(rows)
+    ds.JobsByBuild[version] = ds.JobsFromRows(rows)
+	return ds.JobsByBuild[version]
 }
+
 
 func (ds *DataSource) GetAllJobsByVersion(version string) map[string]Job {
 
 	b := ds.GetBucket()
+
+    if _, ok := ds.JobsByVersion[version]; ok {
+        // update and return cached 
+        return ds.JobsByVersion[version]
+    }
 
 	params := map[string]interface{}{
 		"start_key": version,
@@ -307,26 +321,11 @@ func (ds *DataSource) GetAllJobsByVersion(version string) map[string]Job {
 }
 
 func (ds *DataSource) GetNumJobsByVersion(version string) float64 {
-
-	jobs := ds.GetAllJobsByVersion(version)
-	return float64(len(jobs))
-
+	return float64(len(ds.JobsByVersion[version]))
 }
 
-func (ds *DataSource) GetAllJobsByBuilds() map[string]float64 {
-
-	params := map[string]interface{}{
-		"group_level": 1,
-	}
-
-	b := ds.GetBucket()
-	rows := ds.QueryView(b, "jobs_by_build", params)
-
-	res := make(map[string]float64)
-	for _, row := range rows {
-		res[row.Key.(string)] = row.Value.(float64)
-	}
-	return res
+func (ds *DataSource) GetNumJobsByBuild(version string) float64 {
+	return float64(len(ds.JobsByBuild[version]))
 }
 
 func (api *Api) GetBreakdown(ctx *web.Context) []byte {
@@ -403,30 +402,6 @@ func (api *Api) GetBreakdown(ctx *web.Context) []byte {
 			"na",
 		})
     }
-
-    /*
-    // append unused platforms and versions
-    for _, p := range unlistedPlatforms{
-        if _, ok := listedPlatforms[p]; !ok {
-            // platform has no data for this build create empty results
-            // check if it also has categories with no results
-            for _, c := range unlistedCategories{
-                if _, ok := listedCategories[c]; !ok {
-                    // platform has no data for this build create empty results
-                    mapBuilds = append(mapBuilds, MapBuild{
-                        version,
-                        0,
-                        0,
-                        c,
-                        p,
-                        "missing",
-                    })
-                }
-            }
-        }
-    }
-    */
-
 
 	j, _ := json.Marshal(mapBuilds)
 	return j
@@ -505,7 +480,6 @@ func (ds *DataSource) _GetTimeline(start_key string, end_key string) []byte {
 	log.Println(params)
 
 	rows := ds.QueryView(b, "data_by_build", params)
-	jobsByBuild := ds.GetAllJobsByBuilds()
 
 	/***************** Query Reduce Views*****************/
 	reduceBuild := []ReduceBuild{}
@@ -524,12 +498,13 @@ func (ds *DataSource) _GetTimeline(start_key string, end_key string) []byte {
 		}
 		ds.AllVersions[versionMain] = true
 		if _, ok := ds.JobsByVersion[versionMain]; !ok {
-			// get job totals for version
-			ds.JobsByVersion[versionMain] = ds.GetNumJobsByVersion(versionMain)
+            ds.UpdateJobs()
 		}
+        nJobsByBuild := ds.GetNumJobsByBuild(version)
+        nJobsByVersion := ds.GetNumJobsByVersion(versionMain)
 
 		value := row.Value.([]interface{})
-		relExecuted := 100 * (jobsByBuild[version] / ds.JobsByVersion[versionMain])
+		relExecuted := nJobsByVersion - nJobsByBuild
 
 		reduceBuild = append(reduceBuild,
 			ReduceBuild{
@@ -554,7 +529,8 @@ func (api *Api) GetVersions(ctx *web.Context) []byte {
 
 func (ds *DataSource) BootStrap(bucket string) {
 	ds.AllVersions = make(map[string]bool)
-	ds.JobsByVersion = make(map[string]float64)
+	ds.JobsByVersion = make(map[string]map[string]Job)
+	ds.JobsByBuild = make(map[string]map[string]Job)
 	ds.Bucket = bucket
 	ds._GetTimeline("", "")
 	log.Println("Loading bucket: " + bucket)
@@ -574,7 +550,7 @@ func (api *Api) DataSourceFromCtx(ctx *web.Context) *DataSource {
 
 func (api *Api) GetIndex(ctx *web.Context) []byte {
 	ds := api.DataSourceFromCtx(ctx)
-	go ds.UpdateJobsByVersion()
+	go ds.UpdateJobs()
 	content, _ := ioutil.ReadFile(pckgDir + "app/index.html")
 	return content
 }

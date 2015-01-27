@@ -183,7 +183,6 @@ body {
     fill-opacity: 0.5;
 }
 
-
 .grid .tick {
     stroke: lightgrey;
     opacity: 0.8;
@@ -207,6 +206,15 @@ body {
   fill-opacity: .125;
   shape-rendering: crispEdges;
 }
+
+.bar:hover {
+  fill: green;
+}
+
+.legend rect {
+  fill:white;
+  stroke:black;
+  opacity:0.8;}
 
 /* tool tip */
 .d3-tip {
@@ -238,3 +246,5 @@ body {
   top: 100%;
   left: 0;
 }
+
+

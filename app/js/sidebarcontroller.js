@@ -5,7 +5,7 @@ var SidebarCtrl = function ($scope, ViewService, Data, $location){
     $scope.data = Data;
 
     // local scope bindings
-    $scope.showAsPerc = true;
+    $scope.showAsPerc = false;
     $scope.showAllPlatforms = true;
     $scope.showAllCategories = true;
     $scope.PlatformsList = [];
