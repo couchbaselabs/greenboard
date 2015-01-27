@@ -5,7 +5,7 @@ var SidebarCtrl = function ($scope, ViewService, Data, $location){
     $scope.data = Data;
 
     // local scope bindings
-    $scope.showAsPerc = true;
+    $scope.showAsPerc = false;
     $scope.showAllPlatforms = true;
     $scope.showAllCategories = true;
     $scope.PlatformsList = [];
@@ -34,8 +34,11 @@ var SidebarCtrl = function ($scope, ViewService, Data, $location){
     var resetSidebar = function() {
         $scope.selectedVersion = Data.selectedVersion;
         $scope.build = Data.selectedBuildObj;
-         $scope.build.Passed = 0;
-         $scope.build.Failed = 0;
+        $scope.build.Passed = 0;
+        $scope.build.Failed = 0;
+        $scope.build.Pending = 0;
+        $scope.showAllPlatforms = true;
+        $scope.showAllCategories = true;
 
         if(Data.selectedBuildObj){
             $scope.Platforms = {};
@@ -91,7 +94,7 @@ var SidebarCtrl = function ($scope, ViewService, Data, $location){
         return 0;
       }
 
-      var total = item.Passed + item.Failed;
+      var total = item.Passed + item.Failed + item.Pending;
       if ((total) == 0){
         return 0;
       }
@@ -101,10 +104,13 @@ var SidebarCtrl = function ($scope, ViewService, Data, $location){
     var updateTotals = function (build){
         $scope.Categories[build.Category].Passed += build.Passed;
         $scope.Categories[build.Category].Failed += build.Failed;
+        $scope.Categories[build.Category].Pending += build.Pending;
         $scope.Platforms[build.Platform].Passed += build.Passed;
         $scope.Platforms[build.Platform].Failed += build.Failed;
+        $scope.Platforms[build.Platform].Pending += build.Pending;
         $scope.build.Passed += build.Passed;
         $scope.build.Failed += build.Failed;
+        $scope.build.Pending += build.Pending;
     }
 
     var updateStatuses = function (build){
@@ -114,8 +120,9 @@ var SidebarCtrl = function ($scope, ViewService, Data, $location){
         var danger = "bg-danger";
 
         if ($scope.Platforms[build.Platform].Status != "greyed") {
-            if ($scope.Platforms[build.Platform].Failed > 0){
-              var fAbs = $scope.Platforms[build.Platform].Failed;
+            var fAbs = $scope.Platforms[build.Platform].Failed +
+                              $scope.Platforms[build.Platform].Pending;
+            if (fAbs > 0){
               var pAbs = $scope.Platforms[build.Platform].Passed;
               var fRel = 100.0*fAbs/(fAbs + pAbs);
              if (fRel > 30){
@@ -130,12 +137,14 @@ var SidebarCtrl = function ($scope, ViewService, Data, $location){
 
         if (($scope.Platforms[build.Platform].Passed == 0) &&
                 ($scope.Platforms[build.Platform].Failed == 0)) {
+            // did not run
              $scope.Platforms[build.Platform].Status = "disabled";
         }
 
         if ($scope.Categories[build.Category].Status != "greyed") {
-            if ($scope.Categories[build.Category].Failed > 0){
-              var fAbs = $scope.Categories[build.Category].Failed;
+          var fAbs = $scope.Categories[build.Category].Failed +
+                    $scope.Categories[build.Category].Pending;
+            if (fAbs > 0){
               var pAbs = $scope.Categories[build.Category].Passed;
               var fRel = 100.0*fAbs/(fAbs + pAbs);
               if (fRel > 30){
@@ -153,10 +162,10 @@ var SidebarCtrl = function ($scope, ViewService, Data, $location){
              $scope.Categories[build.Category].Status = "disabled";
         }
 
-        if ($scope.build.Failed == 0){
+        var fAbs = $scope.build.Failed + $scope.build.Pending;
+        if (fAbs == 0){
           $scope.build.Status = success;
         } else {
-            var fAbs = $scope.build.Failed;
             var pAbs = $scope.build.Passed;
             var fRel = 100.0*fAbs/(fAbs + pAbs);
           if (fRel > 30){
@@ -180,6 +189,7 @@ var SidebarCtrl = function ($scope, ViewService, Data, $location){
                   "Category": build.Category,
                   "Passed": 0,
                   "Failed": 0,
+                  "Pending": 0,
                   "Status": "bg-success",
                   "checked": true,
               };
@@ -189,6 +199,7 @@ var SidebarCtrl = function ($scope, ViewService, Data, $location){
                   "Platform": build.Platform,
                   "Passed": 0,
                   "Failed": 0,
+                  "Pending": 0,
                   "Status": "bg-success",
                   "checked": true,
               };
@@ -211,6 +222,7 @@ var SidebarCtrl = function ($scope, ViewService, Data, $location){
       var selectedBuild = Data.selectedBuildObj.Version;
       $scope.build.Passed = 0;
       $scope.build.Failed = 0;
+      $scope.build.Pending = 0;
       $scope.build.Status = "bg-success";
 
       var platforms = [];
@@ -221,6 +233,7 @@ var SidebarCtrl = function ($scope, ViewService, Data, $location){
         var item = $scope.Categories[k];
         item.Passed = 0;
         item.Failed = 0;
+        item.Pending = 0;
         if (item.Status == "greyed"){
           if (categories.indexOf(k) < 0){
               categories.push(k);
@@ -233,6 +246,7 @@ var SidebarCtrl = function ($scope, ViewService, Data, $location){
         var item = $scope.Platforms[k];
         item.Passed = 0;
         item.Failed = 0;
+        item.Pending = 0;
         if (item.Status == "greyed"){
           if (platforms.indexOf(k) < 0){
               platforms.push(k);

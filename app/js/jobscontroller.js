@@ -21,13 +21,18 @@ var JobsCtrl = function ($scope, ViewService, Data, $location){
     $scope.predicate = $scope.nameSort;
 
     function displayJobs(){
+      if($scope.runningJobs){ return; } // already running
 
+      $scope.runningJobs = true;
       var build = Data.selectedBuildObj.Version;
       $scope.jobs = [];
       $scope.missingJobs = [];
       var dupeChecker = {};
+      $scope.testsPending = 0;
+      $scope.testsPassed = 0;
+      $scope.testsTotal = 0;
 
-      var pushToJobScope = function(response, ctx){
+      var pushToJobScope = function(response, ctx, isMissingScope){
             response.forEach(function(job){
                 if (job.Bid == -1){
                   job.Bid = "";
@@ -46,6 +51,12 @@ var JobsCtrl = function ($scope, ViewService, Data, $location){
                    "url": job.Url,
                    "bid": job.Bid,
                 });
+                if(isMissingScope){
+                    $scope.testsPending += job.Total;
+                } else {
+                    $scope.testsPassed += job.Passed;
+                    $scope.testsTotal += job.Total;
+                }
             });
       }
 
@@ -60,13 +71,14 @@ var JobsCtrl = function ($scope, ViewService, Data, $location){
       }
 
       ViewService.jobs(build, platforms, categories).then(function(response){
-        pushToJobScope(response, $scope.jobs);
+        pushToJobScope(response, $scope.jobs, false);
         $scope.jobsCompleted = $scope.jobs.length;
-      });
 
-      ViewService.jobs_missing(build, platforms, categories).then(function(response){
-        pushToJobScope(response, $scope.missingJobs);
-        $scope.jobsPending = $scope.missingJobs.length;
+          ViewService.jobs_missing(build, platforms, categories).then(function(response){
+            pushToJobScope(response, $scope.missingJobs, true);
+            $scope.jobsPending = $scope.missingJobs.length;
+            $scope.runningJobs = false;
+          });
       });
 
     }

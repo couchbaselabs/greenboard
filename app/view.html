@@ -16,7 +16,6 @@
       </div>
     </div>
   </div>
-
   <div class="container-fluid">
     <div class="col-sm-3 col-md-2 sidebar"  ng-controller="SidebarCtrl">
       <div class="nav nav-sidebar">
@@ -25,8 +24,8 @@
           <span class="custom-list-group-item {{build.Status}}">
             <p>{{build.Version}}
                <span ng-click="didClickSlider()">
-                 <span ng-if="showAsPerc" class="testscore">{{100*getPerc(build)| number:0}}% <i class="fa fa-toggle-off"></i></span>
-                 <span ng-if="!showAsPerc" class="testscore">{{build.Passed}}/{{build.Failed + build.Passed}} <i class="fa fa-toggle-on"></i></span>
+                 <span class="testscore">{{100*getPerc(build)| number:0}}% <i ng-if="showAsPerc" class="fa fa-toggle-off"></i><i ng-if="!showAsPerc" class="fa fa-toggle-on"></i></span>
+                 <div ng-if="!showAsPerc" class="scoredesc">pass: {{build.Passed}}, fail: {{build.Failed}} pend: {{build.Pending}}</div>
                </span>
             </span></p>
           </span>
@@ -52,10 +51,12 @@
                 <i ng-if="!os.checked" class="glyphicon glyphicon-unchecked"></i>
                  {{os.Platform}}
                 <span ng-if="os.checked">
-                  </i> <span ng-if="showAsPerc" class="testscore">{{100*getPerc(os)| number:0}}%</span>
-                  <span ng-if="!showAsPerc" class="testscore">{{os.Passed}}/{{os.Failed + os.Passed}}</span>
+                  </i><span  class="testscore">{{100*getPerc(os)| number:0}}%</span>
                 </span>
               </a>
+                <span ng-if="os.checked">
+                    <div ng-if="!showAsPerc" class="scoredesc">pass: {{os.Passed}}, fail: {{os.Failed}} pend: {{os.Pending}}</div>
+                </span>
             </span>
           </div>
         </form>
@@ -79,10 +80,12 @@
               <i ng-if="!category.checked" class="glyphicon glyphicon-unchecked"></i>
                {{category.Category}}
               <span ng-if="category.checked">
-                <span ng-if="showAsPerc" class="testscore">{{100*getPerc(category)| number:0}}%</span>
-                <span ng-if="!showAsPerc" class="testscore">{{category.Passed}}/{{category.Failed + category.Passed}}</span>
+                <span class="testscore">{{100*getPerc(category)| number:0}}%</span>
               </span>
              </a>
+                <span ng-if="category.checked">
+                  <div ng-if="!showAsPerc" class="scoredesc">pass: {{category.Passed}}, fail: {{category.Failed}} pend: {{category.Pending}}</div>
+                </span>
             </span>
           </div>
         </form>
@@ -112,6 +115,7 @@
           </div>
         </div>
 
+        <!--
         <div class="row">
           <div class="col-sm-12">
            <div class="btn-group">
@@ -131,54 +135,18 @@
           </div>
          </div>
         </div>
+        -->
       </div>
 
       <div class="row"  ng-controller="TimelineCtrl">
+
         <div class="col-sm-12" id="timeline" class="section">
-            <!--<div>
-                <div class="timeline">
-                    <nvd3-multi-bar-chart
-                        id="relTimeline"
-                        data="timelineRelData"
-                        margin="{left: 40, top: 0, bottom: 35, right: 20}"
-                        stacked="true"
-                        showLegend="true"
-                        showXAxis="true"
-                        showYAxis="true"
-                        reduceXTicks="true"
-                        showControls="true"
-                        tooltips="true"
-                        tooltipcontent="relToolTipContentFunction()"
-                        color="['#de0000','#3bc93b', '#aec7e8']"
-                        yAxisTickFormat="yAxisTickFormatFunction()"
-                        delay="750">
-                         <svg></svg>
-                    </nvd3-multi-bar-chart>
-                </div>
-            </div>-->
-          </div>
-          <hr class="separator">
-        <div class="col-sm-12" class="row timeline">
-            <nvd3-multi-bar-chart
-                id="absTimeline"
-                data="timelineAbsData"
-                margin="{left: 40, top: 0, bottom: 35, right: 20}"
-                stacked="true"
-                showLegend="true"
-                showXAxis="true"
-                showYAxis="true"
-                reduceXTicks="true"
-                tooltips="true"
-                tooltipcontent="absToolTipContentFunction()"
-                color="['#3bc93b', '#de0000']"
-                yAxisTickFormat="yAxisTickFormatFunction()"
-                delay="750">
-                    <svg></svg>
-            </nvd3-multi-bar-chart>
+            <div class="row">
+                <bar-chart></bar-chart>
+            </div>
         </div>
       </div>
-      <hr class="separator">
-
+        
       <div class="row" ng-controller="JobsCtrl">
         <div class="col-sm-12">
           <!-- Nav tabs -->
@@ -200,6 +168,12 @@
                     </tr>
                   </thead>
                   <tbody>
+                    <!--<tr>
+                      <td>Summary</td>
+                      <td> </td>
+                      <td>{{testsPassed}}</td>
+                      <td>{{testsTotal}}</td>
+                      <tr>-->
                     <tr ng-repeat="job in jobs | orderBy:predicate:reverse">
                       <td><a href={{job.url}}{{job.bid}}>{{job.name}}</a></td>
                       <td><span class={{job.result}}>{{job.result}}</span></td>
@@ -215,11 +189,18 @@
             <div class="tab-pane" id="missing">
               <div class="table-responsive">
                 <table class="table table-striped">
-                    <thead>
+                  <thead>
+                      <th><a href="" ng-click="predicate = 'name'; reverse=!reverse">Name <i class="fa fa-sort"></i></a></th>
+                      <th><a href="" ng-click="predicate = 'total'; reverse=!reverse">Total <i class="fa fa-sort"></i></a></th>
                   </thead>
                   <tbody>
+                    <tr>
+                      <td>Summary</td>
+                      <td>{{testsPending}}</td>
+                    <tr>
                     <tr ng-repeat="job in missingJobs | orderBy:nameSort">
                       <td><a href={{job.url}}{{job.bid}}>{{job.name}}</a></td>
+                      <td>{{job.total}}</td>
                     </tr>
                   </tbody>
                 </table>
