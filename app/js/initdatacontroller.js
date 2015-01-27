@@ -12,25 +12,25 @@ var InitDataCtrl = function ($scope, ViewService, Data, $location){
     $scope.filterMenues = [{
         "title": "Total Passed",
         "key": "abspassed",
-        "value": 0,
+        "value": 100,
         "options": [0, 50, 100, 500],
         "i": 0
       }, {
         "title": "Total Failed",
         "key": "absfailed",
-        "value": 0,
+        "value": 25,
         "options": [0, 10, 25, 50],
         "i": 1
       }, {
         "title": "Perc. Passed",
         "key": "percpassed",
-        "value": 0,
+        "value": 50,
         "options": [0, 25, 50, 75],
         "i": 2
       }, {
         "title": "Perc. Failed",
         "key": "percfailed",
-        "value": 0,
+        "value": 25,
         "options": [0, 10, 25, 50],
         "i": 3
       }

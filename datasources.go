@@ -216,11 +216,15 @@ func _GetMissingJobs(ds *DataSource, build string) []Job {
 
     buildJobs := ds.GetAllJobsByBuild(build)
 	uniqJobs := make(map[string]Job)
+
     for _, versionJobs := range ds.JobsByVersion {
         for key, job := range versionJobs {
-            if _, ok := buildJobs[key]; !ok {
-                uniqJobs[key] = job;
+            if _, ok := buildJobs[key]; ok { // job exists
+                if job.Bid < uniqJobs[key].Bid {
+                    continue // skip 
+                }
             }
+            uniqJobs[key] = job;
         }
     }
 
@@ -229,7 +233,7 @@ func _GetMissingJobs(ds *DataSource, build string) []Job {
     }
 
     //return and update cache
-    go ds.UpdateJobs()
+    // go ds.UpdateJobs()
 
     return missingJobs
 
@@ -560,7 +564,7 @@ func (api *Api) DataSourceFromCtx(ctx *web.Context) *DataSource {
 
 func (api *Api) GetIndex(ctx *web.Context) []byte {
 	ds := api.DataSourceFromCtx(ctx)
-	go ds.UpdateJobs()
+	ds.UpdateJobs()
 	content, _ := ioutil.ReadFile(pckgDir + "app/index.html")
 	return content
 }

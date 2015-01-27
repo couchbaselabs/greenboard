@@ -28,7 +28,6 @@ var JobsCtrl = function ($scope, ViewService, Data, $location){
       $scope.jobs = [];
       $scope.missingJobs = [];
       var dupeChecker = {};
-      $scope.testsPending = 0;
       $scope.testsPassed = 0;
       $scope.testsTotal = 0;
 
@@ -75,6 +74,7 @@ var JobsCtrl = function ($scope, ViewService, Data, $location){
         $scope.jobsCompleted = $scope.jobs.length;
 
           ViewService.jobs_missing(build, platforms, categories).then(function(response){
+            $scope.testsPending = 0;
             pushToJobScope(response, $scope.missingJobs, true);
             $scope.jobsPending = $scope.missingJobs.length;
             $scope.runningJobs = false;

@@ -20,6 +20,7 @@ function barChartDirective(Data, $location){
             var m = passed.length;
             var t = 30; // truncation value
             stack = d3.layout.stack();
+            var colors = ["#3bc93b", "#de0000"];
 
             layers = function(pass, fail){
                 return [
@@ -29,7 +30,8 @@ function barChartDirective(Data, $location){
                          return {"x": i,
                                  "y": d[1],
                                  "y0": 0,
-                                 "bno": d[0]}})
+                                 "bno": d[0],
+                                 "cc": colors[0]}})
                     },
                     { "name": "failed",
                       "x" : 0,
@@ -37,7 +39,8 @@ function barChartDirective(Data, $location){
                          return {"x": i,
                                  "y": -1*d[1],
                                  "y0": 0,
-                                 "bno": d[0]}})
+                                 "bno": d[0],
+                                 "cc": colors[1]}})
                     }
                 ]};
 
@@ -58,7 +61,6 @@ function barChartDirective(Data, $location){
                     .range([height2, 0]);
 
             var barWidth = Math.floor(width/x2.domain().length);
-            var colors = ["#3bc93b", "#de0000"];
 
             var svg = d3.select(el).append("svg")
                 .attr("width", width + margin.left + margin.right)
@@ -126,7 +128,6 @@ function barChartDirective(Data, $location){
               
             layer.enter().append("g")
                 .attr("class", "layer")
-                .style("fill", function(d, i) { return colors[i]; })
                 .attr("data-legend",function(d) { return d.name});
 
             var legend = svg.append("g")
@@ -149,6 +150,7 @@ function barChartDirective(Data, $location){
                 .data(function(d) {return d.values;})
               .enter().append("rect")
                 .attr("class", "bar")
+                .style("fill", function(d, i) { return d.cc; })
                 .attr("x", function(d, i) {return x(d.bno)})
                 .attr("y", function(d) { return y(d.y); })
                 .style("opacity", opaqueLevel)
@@ -161,7 +163,7 @@ function barChartDirective(Data, $location){
             // context layer with brush
             var brush = d3.svg.brush()
                 .x(x2)
-                .extent([width/2, width])
+                .extent([width/4, width])
                 .on("brush", function(){
                     // convert brush extent from pixel space
                     var extents = brush.extent();
@@ -193,14 +195,14 @@ function barChartDirective(Data, $location){
             var cxlayer = context.selectAll(".layer2")
                 .data(layers(passed, failed))
               .enter().append("g")
-                .attr("class", "layer2")
-                .style("fill", function(d, i) { return colors[i]; });
+                .attr("class", "layer2");
 
             var cxrect = cxlayer.selectAll("rect")
                 .data(function(d) {return d.values;})
               .enter().append("rect")
                 .attr("x", function(d, i) {return x(d.bno)})
                 .attr("y", function(d, i) {return y(d.y)/4})
+                .style("fill", function(d, i) { return d.cc; })
                 .style("opacity", opaqueLevel)
                 .attr("width", x.rangeBand())
                 .attr("height", function(d) {
