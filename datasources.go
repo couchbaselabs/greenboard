@@ -18,7 +18,7 @@ var viewspec = `{
                                 "reduce" : "function (key, values, rereduce) { var fAbs = 0; var pAbs = 0; for(i=0;i < values.length; i++) { pAbs = pAbs + values[i][0]; fAbs = fAbs + values[i][1]; } var total = fAbs + pAbs; var pRel = 100.0*pAbs/total; var fRel = 100.0*fAbs/total; return ([pAbs, fAbs, pRel, fRel]); }"
             },
 			"jobs_by_build": {
-				"map": "function(doc, meta){ emit(doc.build, [doc.name, doc.os, doc.component, doc.url, doc.priority, doc.totalCount]);}",
+				"map": "function(doc, meta){ emit(doc.build, [doc.name, doc.os, doc.component, doc.url, doc.priority, doc.totalCount, doc.build_id]);}",
 				"reduce": "_count"
 			},"all_components": {
 				"map": "function(doc, meta){ emit(doc.component, null);}",
@@ -214,14 +214,18 @@ func _GetMissingJobs(ds *DataSource, build string) []Job {
 
 	missingJobs := []Job{}
 
-    for version, versionJobs := range ds.JobsByVersion {
-        log.Println(version)
+    buildJobs := ds.GetAllJobsByBuild(build)
+	uniqJobs := make(map[string]Job)
+    for _, versionJobs := range ds.JobsByVersion {
         for key, job := range versionJobs {
-            buildJobs := ds.JobsByBuild[build]
             if _, ok := buildJobs[key]; !ok {
-                missingJobs = append(missingJobs, job)
+                uniqJobs[key] = job;
             }
         }
+    }
+
+    for _, job := range uniqJobs { // to array
+        missingJobs = append(missingJobs, job)
     }
 
     //return and update cache
@@ -257,7 +261,13 @@ func (ds *DataSource) JobsFromRows(rows []couchbase.ViewRow) map[string]Job {
 		url := value[3].(string)
 		priority := value[4].(string)
 		total := value[5].(float64)
+        bid := value[6].(float64)
 
+        if _, ok := uniqJobs[name]; ok { // job exists
+            if bid < uniqJobs[name].Bid { // if this is older
+                continue  // skip
+            }
+        }
 		uniqJobs[name] = Job{
 			0,
 			total,
@@ -265,7 +275,7 @@ func (ds *DataSource) JobsFromRows(rows []couchbase.ViewRow) map[string]Job {
 			name,
 			"NONE",
 			url,
-			-1,
+			bid,
 			"",
 			platform,
 			category}

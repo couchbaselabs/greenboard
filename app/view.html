@@ -168,6 +168,12 @@
                     </tr>
                   </thead>
                   <tbody>
+                    <!--<tr>
+                      <td>Summary</td>
+                      <td> </td>
+                      <td>{{testsPassed}}</td>
+                      <td>{{testsTotal}}</td>
+                      <tr>-->
                     <tr ng-repeat="job in jobs | orderBy:predicate:reverse">
                       <td><a href={{job.url}}{{job.bid}}>{{job.name}}</a></td>
                       <td><span class={{job.result}}>{{job.result}}</span></td>
@@ -183,11 +189,18 @@
             <div class="tab-pane" id="missing">
               <div class="table-responsive">
                 <table class="table table-striped">
-                    <thead>
+                  <thead>
+                      <th><a href="" ng-click="predicate = 'name'; reverse=!reverse">Name <i class="fa fa-sort"></i></a></th>
+                      <th><a href="" ng-click="predicate = 'total'; reverse=!reverse">Total <i class="fa fa-sort"></i></a></th>
                   </thead>
                   <tbody>
+                    <tr>
+                      <td>Summary</td>
+                      <td>{{testsPending}}</td>
+                    <tr>
                     <tr ng-repeat="job in missingJobs | orderBy:nameSort">
                       <td><a href={{job.url}}{{job.bid}}>{{job.name}}</a></td>
+                      <td>{{job.total}}</td>
                     </tr>
                   </tbody>
                 </table>
