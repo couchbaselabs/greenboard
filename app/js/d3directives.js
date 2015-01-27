@@ -113,21 +113,22 @@ function barChartDirective(Data, $location){
                 .tickPadding(6)
                 .orient("left")
                 .ticks(3);
-                
+
             var opaqueLevel = function(d){
-                var selectedBno = 
+                var selectedBno =
                     Data.selectedBuildObj.Version.split("-")[1];
                 if (selectedBno == d.bno){
                     return 1;
                 }
-                return 0.5; 
+                return 0.5;
             };
 
             var layer = focus.selectAll(".layer")
                 .data(layers(passed, failed));
-              
+
             layer.enter().append("g")
                 .attr("class", "layer")
+                .style("fill", function(d, i) { return colors[i]; })
                 .attr("data-legend",function(d) { return d.name});
 
             var legend = svg.append("g")
@@ -189,7 +190,7 @@ function barChartDirective(Data, $location){
                         // redraw axis
                         xAxis.tickValues(xTickerValues(nPass));
                         focus.select(".x.axis").call(xAxis);
-                    } 
+                    }
                 });
 
             var cxlayer = context.selectAll(".layer2")
@@ -252,7 +253,7 @@ function barChartDirective(Data, $location){
                 .attr("transform", "translate(10,0)")
                 .call(yAxis);
 
-        
+
     }
 
     function link(scope, element, attr){

@@ -36,6 +36,7 @@ type DataSource struct {
 	AllVersions      map[string]bool
 	JobsByVersion    map[string]map[string]Job
 	JobsByBuild      map[string]map[string]Job
+    JobsMissingByBuild  map[string][]Job
 }
 
 type Api struct {
@@ -219,12 +220,12 @@ func _GetMissingJobs(ds *DataSource, build string) []Job {
 
     for _, versionJobs := range ds.JobsByVersion {
         for key, job := range versionJobs {
-            if _, ok := buildJobs[key]; ok { // job exists
+            if _, ok := buildJobs[key]; !ok { // job missing 
                 if job.Bid < uniqJobs[key].Bid {
-                    continue // skip 
+                    continue // skip not latest
                 }
+                uniqJobs[key] = job;
             }
-            uniqJobs[key] = job;
         }
     }
 
@@ -232,9 +233,7 @@ func _GetMissingJobs(ds *DataSource, build string) []Job {
         missingJobs = append(missingJobs, job)
     }
 
-    //return and update cache
-    // go ds.UpdateJobs()
-
+    ds.JobsMissingByBuild[build] = missingJobs
     return missingJobs
 
 }
@@ -248,9 +247,10 @@ func (api *Api) GetMissingJobs(ctx *web.Context) []byte {
 			build = v
 		}
 	}
-
-    missingJobs := _GetMissingJobs(ds, build)
-	j, _ := json.Marshal(missingJobs)
+    if _, ok := ds.JobsMissingByBuild[build]; !ok {
+       api.GetBreakdown(ctx)
+    }
+	j, _ := json.Marshal(ds.JobsMissingByBuild[build])
 	return j
 }
 
@@ -389,22 +389,28 @@ func (api *Api) GetBreakdown(ctx *web.Context) []byte {
 			continue
 		}
 
-        // these are jobs that have actual results
-		mapBuilds = append(mapBuilds, MapBuild{
-			build,
-			passed,
-			failed,
-            0,
-			category,
-			platform,
-			"na",
-		})
+        if((passed + failed) > 0){
+            // these are jobs that have actual results
+            mapBuilds = append(mapBuilds, MapBuild{
+                build,
+                passed,
+                failed,
+                0,
+                category,
+                platform,
+                "na",
+            })
+        }
         listedPlatforms[platform] = true
         listedCategories[category] = true
 	}
 
     // append jobs with no results for this build as pending 
-    allJobs := _GetMissingJobs(ds, build)
+    if _, ok := ds.JobsMissingByBuild[build]; !ok {
+       _GetMissingJobs(ds, build)
+    }
+    allJobs := ds.JobsMissingByBuild[build]
+
     for _, job := range allJobs {
 		mapBuilds = append(mapBuilds, MapBuild{
 			build,
@@ -545,6 +551,7 @@ func (ds *DataSource) BootStrap(bucket string) {
 	ds.AllVersions = make(map[string]bool)
 	ds.JobsByVersion = make(map[string]map[string]Job)
 	ds.JobsByBuild = make(map[string]map[string]Job)
+    ds.JobsMissingByBuild = make(map[string][]Job)
 	ds.Bucket = bucket
 	ds._GetTimeline("", "")
 	log.Println("Loading bucket: " + bucket)
