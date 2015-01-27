@@ -34,9 +34,11 @@ var SidebarCtrl = function ($scope, ViewService, Data, $location){
     var resetSidebar = function() {
         $scope.selectedVersion = Data.selectedVersion;
         $scope.build = Data.selectedBuildObj;
-         $scope.build.Passed = 0;
-         $scope.build.Failed = 0;
-         $scope.build.Pending = 0;
+        $scope.build.Passed = 0;
+        $scope.build.Failed = 0;
+        $scope.build.Pending = 0;
+        $scope.showAllPlatforms = true;
+        $scope.showAllCategories = true;
 
         if(Data.selectedBuildObj){
             $scope.Platforms = {};

@@ -112,6 +112,7 @@ body {
     margin-bottom: -1px;
     border: 1px solid #ddd;
     cursor: pointer;
+    height: 60px;
 }
 
 .custom-list-group-item a{
