@@ -119,8 +119,7 @@ var SidebarCtrl = function ($scope, ViewService, Data, $location){
         var danger = "bg-danger";
 
         if ($scope.Platforms[build.Platform].Status != "greyed") {
-            var fAbs = $scope.Platforms[build.Platform].Failed +
-                              $scope.Platforms[build.Platform].Pending;
+            var fAbs = $scope.Platforms[build.Platform].Failed;
             if (fAbs > 0){
               var pAbs = $scope.Platforms[build.Platform].Passed;
               var fRel = 100.0*fAbs/(fAbs + pAbs);
@@ -141,8 +140,7 @@ var SidebarCtrl = function ($scope, ViewService, Data, $location){
         }
 
         if ($scope.Categories[build.Category].Status != "greyed") {
-          var fAbs = $scope.Categories[build.Category].Failed +
-                    $scope.Categories[build.Category].Pending;
+          var fAbs = $scope.Categories[build.Category].Failed;
             if (fAbs > 0){
               var pAbs = $scope.Categories[build.Category].Passed;
               var fRel = 100.0*fAbs/(fAbs + pAbs);
@@ -161,7 +159,7 @@ var SidebarCtrl = function ($scope, ViewService, Data, $location){
              $scope.Categories[build.Category].Status = "disabled";
         }
 
-        var fAbs = $scope.build.Failed + $scope.build.Pending;
+        var fAbs = $scope.build.Failed;
         if (fAbs == 0){
           $scope.build.Status = success;
         } else {
