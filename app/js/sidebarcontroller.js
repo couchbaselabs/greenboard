@@ -97,6 +97,8 @@ var SidebarCtrl = function ($scope, ViewService, Data, $location){
       var total = item.Passed + item.Failed;
       var denom = total + item.Pending;
       console.log(total+"/"+denom); 
+      if(denom == 0){ return 0; }
+
       return total/denom;
     }
 
