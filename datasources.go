@@ -203,11 +203,11 @@ func (api *Api) GetJobs(ctx *web.Context) []byte {
 	return j
 }
 
-func (ds *DataSource) UpdateJobs() {
+func (ds *DataSource) UpdateJobs(stale_ok bool) {
 
     // update all jobs belonging to a version
 	for version, _ := range ds.AllVersions {
-	    ds.JobsByVersion[version] = ds.GetAllJobsByVersion(version)
+	    ds.JobsByVersion[version] = ds.GetAllJobsByVersion(version, stale_ok)
 	}
 }
 
@@ -215,7 +215,7 @@ func _GetMissingJobs(ds *DataSource, build string) []Job {
 
 	missingJobs := []Job{}
 
-    buildJobs := ds.GetAllJobsByBuild(build)
+    buildJobs := ds.GetAllJobsByBuild(build, true)
 	uniqJobs := make(map[string]Job)
 
     for _, versionJobs := range ds.JobsByVersion {
@@ -234,6 +234,8 @@ func _GetMissingJobs(ds *DataSource, build string) []Job {
     }
 
     ds.JobsMissingByBuild[build] = missingJobs
+
+    go ds.GetAllJobsByBuild(build, false) // update jobs by build cache
     return missingJobs
 
 }
@@ -290,12 +292,14 @@ func (ds *DataSource) JobsFromRows(rows []couchbase.ViewRow) map[string]Job {
 
 
 
-func (ds *DataSource) GetAllJobsByBuild(version string) map[string]Job {
+func (ds *DataSource) GetAllJobsByBuild(version string, stale_ok bool) map[string]Job {
 	b := ds.GetBucket()
 
-    if _, ok := ds.JobsByBuild[version]; ok {
-        // update and return cached 
-        return ds.JobsByBuild[version]
+    if stale_ok == true {
+      if _, ok := ds.JobsByBuild[version]; ok {
+          // update and return cached 
+          return ds.JobsByBuild[version]
+      }
     }
 
 	params := map[string]interface{}{
@@ -312,13 +316,15 @@ func (ds *DataSource) GetAllJobsByBuild(version string) map[string]Job {
 }
 
 
-func (ds *DataSource) GetAllJobsByVersion(version string) map[string]Job {
+func (ds *DataSource) GetAllJobsByVersion(version string, stale_ok bool) map[string]Job {
 
 	b := ds.GetBucket()
 
-    if _, ok := ds.JobsByVersion[version]; ok {
-        // update and return cached 
-        return ds.JobsByVersion[version]
+    if stale_ok == true {
+      if _, ok := ds.JobsByVersion[version]; ok {
+          // update and return cached 
+          return ds.JobsByVersion[version]
+      }
     }
 
 	params := map[string]interface{}{
@@ -518,7 +524,7 @@ func (ds *DataSource) _GetTimeline(start_key string, end_key string) []byte {
 		}
 		ds.AllVersions[versionMain] = true
 		if _, ok := ds.JobsByVersion[versionMain]; !ok {
-            ds.UpdateJobs()
+            ds.UpdateJobs(true)
 		}
         nJobsByBuild := ds.GetNumJobsByBuild(version)
         nJobsByVersion := ds.GetNumJobsByVersion(versionMain)
@@ -571,7 +577,7 @@ func (api *Api) DataSourceFromCtx(ctx *web.Context) *DataSource {
 
 func (api *Api) GetIndex(ctx *web.Context) []byte {
 	ds := api.DataSourceFromCtx(ctx)
-	ds.UpdateJobs()
+	ds.UpdateJobs(false)
 	content, _ := ioutil.ReadFile(pckgDir + "app/index.html")
 	return content
 }
