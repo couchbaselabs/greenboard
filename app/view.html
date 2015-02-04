@@ -23,10 +23,8 @@
           <h3>Build</h3>
           <span class="custom-list-group-item {{build.Status}}">
             <p>{{build.Version}}
-               <span ng-click="didClickSlider()">
-                 <span class="testscore">{{100*getPerc(build)| number:0}}% <i ng-if="showAsPerc" class="fa fa-toggle-off"></i><i ng-if="!showAsPerc" class="fa fa-toggle-on"></i></span>
-                 <div ng-if="!showAsPerc" class="scoredesc">pass: {{build.Passed}}, fail: {{build.Failed}} pend: {{build.Pending}}</div>
-               </span>
+                 <span class="testscore">{{100*getPerc(build)| number:0}}%</span>
+                 <div class="scoredesc">pass: {{build.Passed}}, fail: {{build.Failed}} pend: {{build.Pending}}</div>
             </span></p>
           </span>
         </div>
