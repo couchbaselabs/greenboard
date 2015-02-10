@@ -235,7 +235,6 @@ func _GetMissingJobs(ds *DataSource, build string) []Job {
 
     ds.JobsMissingByBuild[build] = missingJobs
 
-    go ds.GetAllJobsByBuild(build, false) // update jobs by build cache
     return missingJobs
 
 }
@@ -252,7 +251,10 @@ func (api *Api) GetMissingJobs(ctx *web.Context) []byte {
     if _, ok := ds.JobsMissingByBuild[build]; !ok {
        api.GetBreakdown(ctx)
     }
+
 	j, _ := json.Marshal(ds.JobsMissingByBuild[build])
+    // update jobs by build cache
+    go ds.GetAllJobsByBuild(build, false)
 	return j
 }
 
@@ -312,6 +314,7 @@ func (ds *DataSource) GetAllJobsByBuild(version string, stale_ok bool) map[strin
 
 	rows := ds.QueryView(b, "jobs_by_build", params)
     ds.JobsByBuild[version] = ds.JobsFromRows(rows)
+
 	return ds.JobsByBuild[version]
 }
 
