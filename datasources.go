@@ -211,7 +211,7 @@ func (ds *DataSource) UpdateJobs(stale_ok bool) {
 	}
 }
 
-func _GetMissingJobs(ds *DataSource, build string) []Job {
+func (ds *DataSource) _GetMissingJobs(build string) []Job {
 
 	missingJobs := []Job{}
 
@@ -249,12 +249,14 @@ func (api *Api) GetMissingJobs(ctx *web.Context) []byte {
 		}
 	}
     if _, ok := ds.JobsMissingByBuild[build]; !ok {
-       api.GetBreakdown(ctx)
+       ds.GetAllJobsByBuild(build, false)
+       ds._GetMissingJobs(build)
     }
 
 	j, _ := json.Marshal(ds.JobsMissingByBuild[build])
     // update jobs by build cache
     go ds.GetAllJobsByBuild(build, false)
+    go ds._GetMissingJobs(build)
 	return j
 }
 
@@ -416,7 +418,7 @@ func (api *Api) GetBreakdown(ctx *web.Context) []byte {
 
     // append jobs with no results for this build as pending 
     if _, ok := ds.JobsMissingByBuild[build]; !ok {
-       _GetMissingJobs(ds, build)
+       ds._GetMissingJobs(build)
     }
     allJobs := ds.JobsMissingByBuild[build]
 
