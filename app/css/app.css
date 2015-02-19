@@ -158,15 +158,22 @@ body {
 }
 
 .UNSTABLE {
-  color: #de0000;
+  color: #BF360C;
   font-weight: bold;
   font-size: 16px;
 }
 .FAILURE{
-  color: #de0000;
+  color: #BF360C;
   font-weight: bold;
   font-size: 16px;
 }
+
+.ABORTED{
+  color: #607D8B;
+  font-weight: bold;
+  font-size: 16px;
+}
+
 .NONE{
   color: #aaa;
   font-weight: bold;
