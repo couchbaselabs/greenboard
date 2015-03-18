@@ -5,7 +5,7 @@ var SidebarCtrl = function ($scope, ViewService, Data, $location){
     $scope.data = Data;
 
     // local scope bindings
-    $scope.showAsPerc = false;
+    $scope.showAsPerc = true;
     $scope.showAllPlatforms = true;
     $scope.showAllCategories = true;
     $scope.PlatformsList = [];
@@ -87,6 +87,16 @@ var SidebarCtrl = function ($scope, ViewService, Data, $location){
     // handle % vs # slidler action
     $scope.didClickSlider = function(){
       $scope.showAsPerc = !$scope.showAsPerc;
+    }
+
+    $scope.getPercVal = function(item, val){
+      if (!item){
+        return 0;
+      }
+
+      var denom = item.Passed + item.Failed;
+      if(denom == 0){ return 0; }
+      return 100*(val/denom);
     }
 
     $scope.getPerc = function(item){

@@ -20,13 +20,19 @@
     <div class="col-sm-3 col-md-2 sidebar"  ng-controller="SidebarCtrl">
       <div class="nav nav-sidebar">
         <div class="nav-header">
-          <h3>Build</h3>
-          <span class="custom-list-group-item {{build.Status}}">
+            <h3>Build</h3>
+            <span class="custom-list-group-item {{build.Status}}">
             <p>{{build.Version}}
-                 <span class="testscore">{{100*getPerc(build)| number:0}}%</span>
-                 <div class="scoredesc">pass: {{build.Passed}}, fail: {{build.Failed}} pend: {{build.Pending}}</div>
+                           <span ng-click="didClickSlider()">
+                            <span class="testscore">{{100*getPerc(build)| number:0}}%
+                                <i ng-if="showAsPerc" class="fa fa-toggle-on"></i>
+                                <i ng-if="!showAsPerc" class="fa fa-toggle-off"></i></span>
+                             <div ng-if="showAsPerc" class="scoredesc">pass: {{getPercVal(build, build.Passed)| number:0}}%, fail: {{getPercVal(build, build.Failed)| number:0}}%</div>
+                            <div ng-if="!showAsPerc" class="scoredesc">pass: {{build.Passed}}, fail: {{build.Failed}} pend: {{build.Pending}}</div>
+                           </span>
             </span></p>
-          </span>
+</span>
+
         </div>
       </div>
 
@@ -54,6 +60,7 @@
               </a>
                 <span ng-if="os.checked">
                     <div ng-if="!showAsPerc" class="scoredesc">pass: {{os.Passed}}, fail: {{os.Failed}} pend: {{os.Pending}}</div>
+                    <div ng-if="showAsPerc" class="scoredesc">pass: {{getPercVal(os, os.Passed)| number:0}}%, fail: {{getPercVal(os, os.Failed)| number:0}}%</div>
                 </span>
             </span>
           </div>
@@ -83,6 +90,7 @@
              </a>
                 <span ng-if="category.checked">
                   <div ng-if="!showAsPerc" class="scoredesc">pass: {{category.Passed}}, fail: {{category.Failed}} pend: {{category.Pending}}</div>
+                    <div ng-if="showAsPerc" class="scoredesc">pass: {{getPercVal(category, category.Passed)| number:0}}%, fail: {{getPercVal(category, category.Failed)| number:0}}%</div>
                 </span>
             </span>
           </div>
