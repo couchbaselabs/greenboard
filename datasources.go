@@ -218,16 +218,20 @@ func (ds *DataSource) _GetMissingJobs(build string) []Job {
 	buildJobs := ds.GetAllJobsByBuild(build, true)
 	uniqJobs := make(map[string]Job)
 
-	// only pick up jobs within version applicable for this build
-	v := strings.Split(build, "-")[0]
-	versionJobs := ds.JobsByVersion[v]
+	build_v := strings.Split(build, "-")[0]
+	// only pick up jobs <= version applicable for this build
+	for v, versionJobs := range ds.JobsByVersion {
+		if v > build_v {
+			continue
+		}
 
-	for key, job := range versionJobs {
-		if _, ok := buildJobs[key]; !ok { // job missing
-			if job.Bid < uniqJobs[key].Bid {
-				continue // skip not latest
+		for key, job := range versionJobs {
+			if _, ok := buildJobs[key]; !ok { // job missing
+				if job.Bid < uniqJobs[key].Bid {
+					continue // skip not latest
+				}
+				uniqJobs[key] = job
 			}
-			uniqJobs[key] = job
 		}
 	}
 
