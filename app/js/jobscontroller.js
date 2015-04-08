@@ -40,6 +40,11 @@ var JobsCtrl = function ($scope, ViewService, Data, $location){
                 if (job.Name in dupeChecker){
                     return;
                 }
+                if(job.Url.indexOf("macbuild") > -1){
+                   job.Url = "https://macbuild.hq.couchbase.com/"
+                   job.Bid = "" 
+                }
+
                 dupeChecker[job.Name] = true;
                 ctx.push({
                    "name": job.Name,
