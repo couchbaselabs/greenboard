@@ -14,11 +14,11 @@ import (
 var viewspec = `{
 	"views": {
 			"data_by_build": {
-				"map": "function(doc, meta){ emit([doc.build, doc.os, doc.component], [doc.totalCount - doc.failCount,doc.failCount,  doc.priority, doc.name, doc.result, doc.url, doc.build_id]);}",
+				"map": "function(doc, meta){ emit([doc.build, doc.os, doc.component], [doc.totalCount - doc.failCount,doc.failCount,  doc.priority, doc.name, doc.result, doc.url, doc.build_id, doc.duration]);}",
                                 "reduce" : "function (key, values, rereduce) { var fAbs = 0; var pAbs = 0; for(i=0;i < values.length; i++) { pAbs = pAbs + values[i][0]; fAbs = fAbs + values[i][1]; } var total = fAbs + pAbs; var pRel = 100.0*pAbs/total; var fRel = 100.0*fAbs/total; return ([pAbs, fAbs, pRel, fRel]); }"
             },
 			"jobs_by_build": {
-				"map": "function(doc, meta){ emit(doc.build, [doc.name, doc.os, doc.component, doc.url, doc.priority, doc.totalCount, doc.build_id]);}",
+				"map": "function(doc, meta){ emit(doc.build, [doc.name, doc.os, doc.component, doc.url, doc.priority, doc.totalCount, doc.build_id, doc.duration]);}",
 				"reduce": "_count"
 			},"all_components": {
 				"map": "function(doc, meta){ emit(doc.component, null);}",
@@ -85,6 +85,7 @@ var VIEW = map[string]int{
 	"result":    4,
 	"url":       5,
 	"bid":       6,
+	"duration":  7,
 }
 
 var REDUCE = map[string]int{
@@ -120,6 +121,7 @@ type Job struct {
 	Version  string
 	Platform string
 	Category string
+	Duration float64
 }
 
 type ReduceBuild struct {
@@ -183,6 +185,12 @@ func (api *Api) GetJobs(ctx *web.Context) []byte {
 			result := value[VIEW["result"]].(string)
 			url := value[VIEW["url"]].(string)
 			bid := value[VIEW["bid"]].(float64)
+			var duration float64
+			if len(value)==8 && value[7] != nil {
+				duration = value[7].(float64)
+			} else {
+				duration = 0
+			}
 
 			jobs = append(jobs, Job{
 				passed,
@@ -195,6 +203,7 @@ func (api *Api) GetJobs(ctx *web.Context) []byte {
 				jversion,
 				platform,
 				category,
+				duration,
 			})
 		}
 	}
@@ -279,6 +288,13 @@ func (ds *DataSource) JobsFromRows(rows []couchbase.ViewRow) map[string]Job {
 		total := value[5].(float64)
 		bid := value[6].(float64)
 
+		var duration float64
+		if len(value)==8 && value[7] != nil {
+			duration = value[7].(float64)
+		} else {
+			duration = 0
+		}
+
 		if _, ok := uniqJobs[name]; ok { // job exists
 			if bid < uniqJobs[name].Bid { // if this is older
 				continue // skip
@@ -294,7 +310,8 @@ func (ds *DataSource) JobsFromRows(rows []couchbase.ViewRow) map[string]Job {
 			bid,
 			"",
 			platform,
-			category}
+			category,
+			duration}
 
 	}
 	return uniqJobs

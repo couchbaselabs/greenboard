@@ -1,5 +1,5 @@
 {
-    "CouchbaseAddress": "http://Administrator:password@127.0.0.1:8091",
-    "ListenAddress": "10.0.0.242:8181",
+    "CouchbaseAddress": "http://Administrator:password@localhost:8091",
+    "ListenAddress": "127.0.0.1:8181",
     "Release": "3.0"
 }

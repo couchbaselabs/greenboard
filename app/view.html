@@ -121,7 +121,17 @@
           </div>
         </div>
 
-        <div class="row">
+        <div ng-if="targetBy.bucket=='mobile'" class="row">
+          <div class="col-sm-12">
+            <ul class="pagination">
+              <li id={{t}} ng-repeat="t in mobileTargets" ng-class="{'active': t == selectedMobileTarget}" class="pagecell">
+                 <a ng-click="didSelectMobileType(t)" href="">{{ t }}</a>
+               </li>
+            </ul>
+         </div>
+        </div>
+
+        <div ng-if="targetBy.bucket=='server'" class="row">
           <div class="col-sm-12">
            <div class="btn-group">
             <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
@@ -168,6 +178,7 @@
                       <th><a href="" ng-click="predicate = 'result'; reverse=!reverse">Result <i class="fa fa-sort"></i></a></th>
                       <th><a href="" ng-click="predicate = 'passed'; reverse=!reverse">Passed <i class="fa fa-sort"></i></a></th>
                       <th><a href="" ng-click="predicate = 'total'; reverse=!reverse">Total <i class="fa fa-sort"></i></a></th>
+                      <th><a href="" ng-click="predicate = 'duration'; reverse=!reverse">Duration <i class="fa fa-sort"></i></a></th>
                       <th><a href="" ng-click="predicate = 'priority'; reverse=!reverse">Priority <i class="fa fa-sort"></i></a></th>
                     </tr>
                   </thead>
@@ -183,6 +194,7 @@
                       <td><span class={{job.result}}>{{job.result}}</span></td>
                       <td>{{job.passed}}</td>
                       <td>{{job.total}}</td>
+                      <td>{{job.duration}}</td>
                       <td>{{job.priority}}</td>
                     </tr>
                   </tbody>
