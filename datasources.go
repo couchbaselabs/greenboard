@@ -234,8 +234,15 @@ func (ds *DataSource) _GetMissingJobs(build string) []Job {
 			continue
 		}
 
+
 		for key, job := range versionJobs {
 			if _, ok := buildJobs[key]; !ok { // job missing
+				// block 4.0 xdcr jobs
+				if(build_v > "3.5"){
+					if(job.Category == "XDCR"){
+						continue
+					}
+				}
 				if job.Bid < uniqJobs[key].Bid {
 					continue // skip not latest
 				}
