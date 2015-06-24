@@ -33,6 +33,8 @@ Open config.json and verify CouchbaseAddress and ListenAddress for greenboard se
 
 `greenboard`
 
+Greenboard service should be running on host and port specified from ListenAddress.  Default [localhost:8181](http://localhost:8181)
+
 
 ## Collecting Jobs
 
@@ -49,7 +51,7 @@ This will run the collector once.  In production you may want to wrap it in some
 
 "My Jobs aren't showing up"
 - Make sure you ran your job with expected build number
-- Make sure your job produced test results.  Append the following uri to your job and check for totalCount keyword 'http://<jenkins_serv>/job/<job_name>/<job_num>/api/json?pretty=true'
+- Make sure your job produced test results.  Append the following uri to your job and check for totalCount keyword - ie. 'http://qa.sc.couchbase.com/job/cen006-p0-sanit-vset01-00/1624/api/json?pretty=true'
 - Check that the collector is running
 - Look in constants.py of the collector repro (jinja) and make sure the job you are looking for matches within 'SERVER_PLATFORMS' and 'SERVER_FEATURES', both matches are necessary for job to be picked up
 
