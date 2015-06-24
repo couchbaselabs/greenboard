@@ -6,6 +6,7 @@ QE Dashboard tool for displaying jenkins test results.  Currently deployed at [g
 ## Building
 
 To build and deploy your own instance of greenboard:
+
 `git clone https://github.com/tahmmee/greenboard.git`
 
 Have the following dependencies ready before getting started:
