@@ -1,7 +1,7 @@
 # Greenboard 
 
 QE Dashboard tool for displaying jenkins test results.  Currently deployed at [greenboard.hq](http://greenboard.couchbase.com)
-asdf
+
 
 ## Building
 
@@ -15,16 +15,21 @@ Have the following dependencies ready before getting started:
 
 Build Backend service.  From top of repo run
 `go build`
+
 `go install`
 
 Build UI:
 `cd app`
+
 `npm install`
+
 `bower install`
+
 `./node_modules/.bin/grunt`
 
 Run:
 Open config.json and verify CouchbaseAddress and ListenAddress for greenboard service are correct.
+
 `greenboard`
 
 
@@ -33,6 +38,7 @@ Open config.json and verify CouchbaseAddress and ListenAddress for greenboard se
 Now that greenboard is running you will need to collect jobs from jenkins.  This is currently done via jinja.
 
 `git clone https://github.com/tahmmee/jinja.git`
+
 `python jinja.py`
 
 This will run the collector once.  In production you may want to wrap it in some continuous loop to get constant updates.
