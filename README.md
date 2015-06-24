@@ -14,11 +14,13 @@ Have the following dependencies ready before getting started:
 - local instance of couchbase server with 3 buckets (mobile, sdk, server)
 
 Build Backend service.  From top of repo run
+
 `go build`
 
 `go install`
 
 Build UI:
+
 `cd app`
 
 `npm install`
@@ -27,7 +29,6 @@ Build UI:
 
 `./node_modules/.bin/grunt`
 
-Run:
 Open config.json and verify CouchbaseAddress and ListenAddress for greenboard service are correct.
 
 `greenboard`
