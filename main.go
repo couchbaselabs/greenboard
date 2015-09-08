@@ -5,7 +5,6 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-
 	"github.com/hoisie/web"
 )
 
@@ -21,7 +20,7 @@ func main() {
 	pckgDir = os.Getenv("GOPATH") + "/src/github.com/tahmmee/greenboard/"
 	web.Config.StaticDir = pckgDir + "app"
 
-	configFile, err := ioutil.ReadFile(pckgDir + "config.json")
+	configFile, err := ioutil.ReadFile("config.json")
 	if err != nil {
 		log.Fatal(err)
 	}

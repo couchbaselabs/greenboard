@@ -4,7 +4,8 @@ var app = angular.module('greenBoard', [
   'greenboardControllers',
   'greenboardServices',
   'greenboardFactories',
-  'greenboardDirectives'
+  'greenboardDirectives',
+  'ngSanitize'
 ]);
 
 app.config(['$routeProvider',

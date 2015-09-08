@@ -2,23 +2,22 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/couchbaselabs/go-couchbase"
+	"github.com/hoisie/web"
 	"io/ioutil"
 	"log"
 	"regexp"
 	"strings"
-
-	"github.com/couchbaselabs/go-couchbase"
-	"github.com/hoisie/web"
 )
 
 var viewspec = `{
 	"views": {
 			"data_by_build": {
-				"map": "function(doc, meta){ emit([doc.build, doc.os, doc.component], [doc.totalCount - doc.failCount,doc.failCount,  doc.priority, doc.name, doc.result, doc.url, doc.build_id, doc.duration]);}",
+				"map": "function(doc, meta){ emit([doc.build, doc.os, doc.component], [doc.totalCount - doc.failCount,doc.failCount,  doc.priority, doc.name, doc.result, doc.url, doc.build_id, doc.duration, doc.claim]);}",
                                 "reduce" : "function (key, values, rereduce) { var fAbs = 0; var pAbs = 0; for(i=0;i < values.length; i++) { pAbs = pAbs + values[i][0]; fAbs = fAbs + values[i][1]; } var total = fAbs + pAbs; var pRel = 100.0*pAbs/total; var fRel = 100.0*fAbs/total; return ([pAbs, fAbs, pRel, fRel]); }"
             },
 			"jobs_by_build": {
-				"map": "function(doc, meta){ emit(doc.build, [doc.name, doc.os, doc.component, doc.url, doc.priority, doc.totalCount, doc.build_id, doc.duration]);}",
+				"map": "function(doc, meta){ emit(doc.build, [doc.name, doc.os, doc.component, doc.url, doc.priority, doc.totalCount, doc.build_id, doc.duration, doc.claim]);}",
 				"reduce": "_count"
 			},"all_components": {
 				"map": "function(doc, meta){ emit(doc.component, null);}",
@@ -86,6 +85,7 @@ var VIEW = map[string]int{
 	"url":       5,
 	"bid":       6,
 	"duration":  7,
+	"claim":     8,
 }
 
 var REDUCE = map[string]int{
@@ -122,6 +122,7 @@ type Job struct {
 	Platform string
 	Category string
 	Duration float64
+	Claim    string
 }
 
 type ReduceBuild struct {
@@ -186,10 +187,16 @@ func (api *Api) GetJobs(ctx *web.Context) []byte {
 			url := value[VIEW["url"]].(string)
 			bid := value[VIEW["bid"]].(float64)
 			var duration float64
-			if len(value)==8 && value[7] != nil {
+			var claim string
+			if value[7] != nil {
 				duration = value[7].(float64)
 			} else {
 				duration = 0
+			}
+			if value[8] != nil {
+				claim = value[8].(string)
+			} else {
+				claim = ""
 			}
 
 			jobs = append(jobs, Job{
@@ -204,6 +211,7 @@ func (api *Api) GetJobs(ctx *web.Context) []byte {
 				platform,
 				category,
 				duration,
+				claim,
 			})
 		}
 	}
@@ -234,12 +242,11 @@ func (ds *DataSource) _GetMissingJobs(build string) []Job {
 			continue
 		}
 
-
 		for key, job := range versionJobs {
 			if _, ok := buildJobs[key]; !ok { // job missing
 				// block 4.0 xdcr jobs
-				if(build_v > "3.5"){
-					if(job.Category == "XDCR"){
+				if build_v > "3.5" {
+					if job.Category == "XDCR" {
 						continue
 					}
 				}
@@ -296,10 +303,17 @@ func (ds *DataSource) JobsFromRows(rows []couchbase.ViewRow) map[string]Job {
 		bid := value[6].(float64)
 
 		var duration float64
-		if len(value)==8 && value[7] != nil {
+		if len(value) == 8 && value[7] != nil {
 			duration = value[7].(float64)
 		} else {
 			duration = 0
+		}
+
+		var claim string
+		if value[8] != nil {
+			claim = value[8].(string)
+		} else {
+			claim = ""
 		}
 
 		if _, ok := uniqJobs[name]; ok { // job exists
@@ -318,7 +332,9 @@ func (ds *DataSource) JobsFromRows(rows []couchbase.ViewRow) map[string]Job {
 			"",
 			platform,
 			category,
-			duration}
+			duration,
+			claim,
+		}
 
 	}
 	return uniqJobs

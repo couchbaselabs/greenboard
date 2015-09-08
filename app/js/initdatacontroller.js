@@ -109,8 +109,8 @@ var InitDataCtrl = function ($scope, ViewService, Data, $location){
         $scope.pagerVersions = versions;
         if (selectedVersion){
           Data.selectedVersion = selectedVersion;
-        } else {
-          Data.selectedVersion = versions[versions.length - 1];
+        } else { // not showing latest latest by default
+          Data.selectedVersion = versions[versions.length - 2];
         }
 
         $scope.selectedVersion = Data.selectedVersion;

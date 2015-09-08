@@ -55,7 +55,8 @@ var JobsCtrl = function ($scope, ViewService, Data, $location){
                    "priority": job.Priority,
                    "url": job.Url,
                    "bid": job.Bid,
-                   "duration": msToTime(job.Duration)
+                   "duration": msToTime(job.Duration),
+                   "claim": job.Claim
                 });
                 if(isMissingScope){
                     $scope.testsPending += job.Total;

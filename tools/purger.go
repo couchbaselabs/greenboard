@@ -1,7 +1,6 @@
 package main
 
 import (
-    "os"
     "log"
     "encoding/json"
     "io/ioutil"
@@ -10,6 +9,7 @@ import (
     "time"
     "github.com/couchbaselabs/go-couchbase"
     "github.com/couchbase/gomemcached/client"
+    "fmt"
 )
 
 
@@ -24,18 +24,21 @@ type Config struct {
 
 
 func jobPurger(couchbaseAddress string){
-
+    defer func() {
+	if r :=  recover(); r != nil {
+		fmt.Printf("Recovered from panic: %v", r)
+	}
+    }()
     client, _ := couchbase.Connect(couchbaseAddress)
     pool, _ := client.GetPool("default")
 
     params := map[string]interface{}{
-        "reduce":    false,
-        "include_docs": true,
-        "stale":     "false",
+	"reduce": false,
     }
+
     bucket := "server"
 
-    mc, err := memcached.Connect("tcp","127.0.0.1:11210")
+    mc, err := memcached.Connect("tcp","172.23.121.132:11210")
     _, err = mc.Auth(bucket, "")
     if err != nil {
         log.Fatal(err)
@@ -46,27 +49,33 @@ func jobPurger(couchbaseAddress string){
     if err != nil {
         log.Fatalf("Error reading bucket:  %v", err)
     }
-    vr, err := b.View(bucket, "data_by_build", params)
+
+    vr, err := b.View("server", "jobs_by_build", params)
     if err != nil {
         log.Println(err)
     }
     for _, row := range vr.Rows {
         vals := row.Value.([]interface{})
-        jobUrl := vals[5].(string)
-        resp, _ := http.Head(jobUrl)
-       if resp == nil {
-           continue
-       }
+	if len(vals) < 7 {
+		continue
+	}
+	jobUrl := vals[3].(string)
+	//log.Println("Processing: " +jobUrl)
+	resp, _ := http.Get(jobUrl)
+	if resp.StatusCode == 200 {
+           resp.Body.Close()  
+	   continue
+       	}
 
        if resp.StatusCode == 404 {
            // make sure 404 is not because jenkins is down
           parsedUrl , _:= url.Parse(jobUrl)
-          resp, _ = http.Head(parsedUrl.Scheme+"://"+parsedUrl.Host)
-          if resp != nil && resp.StatusCode != 200{
+          resp, _ = http.Get(parsedUrl.Scheme+"://"+parsedUrl.Host)
+          if resp != nil && resp.StatusCode != 200 {
               log.Println("Jenkins down! skipping: "+jobUrl)
               continue
           }
-
+	  resp.Body.Close()
 
           log.Println("Purging: "+jobUrl)
           id := row.ID 
@@ -80,12 +89,11 @@ func jobPurger(couchbaseAddress string){
          }
         }
     }
+    mc.Close()
 }
 
 func main(){
-
-    pckgDir := os.Getenv("GOPATH") + "/src/github.com/tahmmee/greenboard/"
-    configFile, err := ioutil.ReadFile(pckgDir + "config.json")
+    configFile, err := ioutil.ReadFile("config.json")
     if err != nil {
         log.Fatal(err)
     }
@@ -99,7 +107,8 @@ func main(){
     for true { // ever
         log.Println("Running job Purger")
         jobPurger(config.CouchbaseAddress)
-        time.Sleep(30*time.Minute)
+	log.Println("Sleeping for 30 mins before next run")
+	time.Sleep(30*time.Minute)
     }
 
 }

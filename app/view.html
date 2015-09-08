@@ -166,7 +166,10 @@
           <!-- Nav tabs -->
           <ul class="nav nav-tabs" role="tablist" id="jobTabs">
               <li class="active"><a href="#executed" role="tab" data-toggle="tab"><h4>{{jobsCompleted}} Jobs Completed</h4></a></li>
+              <li><a href="#unstable" role="tab" data-toggle="tab"><h4>{{unstableJobsCount}} Jobs Unstable</h4></a></li>
+              <li><a href="#failed" role="tab" data-toggle="tab"><h4>{{failedJobsCount}} Jobs Failed</h4></a></li>
               <li><a href="#missing" role="tab" data-toggle="tab"><h4>{{jobsPending}} Jobs Pending</h4></a></li>
+
           </ul>
           <div class="tab-content">
             <div class="tab-pane active" id="executed">
@@ -179,6 +182,7 @@
                       <th><a href="" ng-click="predicate = 'passed'; reverse=!reverse">Passed <i class="fa fa-sort"></i></a></th>
                       <th><a href="" ng-click="predicate = 'total'; reverse=!reverse">Total <i class="fa fa-sort"></i></a></th>
                       <th><a href="" ng-click="predicate = 'duration'; reverse=!reverse">Duration <i class="fa fa-sort"></i></a></th>
+                      <th><a href="" ng-click="predicate = 'claim'; reverse=!reverse">Claim<i class="fa fa-sort"></i></a></th>
                       <th><a href="" ng-click="predicate = 'priority'; reverse=!reverse">Priority <i class="fa fa-sort"></i></a></th>
                     </tr>
                   </thead>
@@ -195,6 +199,64 @@
                       <td>{{job.passed}}</td>
                       <td>{{job.total}}</td>
                       <td>{{job.duration}}</td>
+                      <td>{{job.claim}}</td>
+                      <td>{{job.priority}}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div class="tab-pane" id="unstable">
+              <div class="table-responsive">
+                <table class="table table-striped">
+                  <thead>
+                    <tr>
+                      <th><a href="" ng-click="predicate = 'name'; reverse=!reverse">Name <i class="fa fa-sort"></i></a></th>
+                      <th><a href="" ng-click="predicate = 'result'; reverse=!reverse">Result <i class="fa fa-sort"></i></a></th>
+                      <th><a href="" ng-click="predicate = 'passed'; reverse=!reverse">Passed <i class="fa fa-sort"></i></a></th>
+                      <th><a href="" ng-click="predicate = 'total'; reverse=!reverse">Total <i class="fa fa-sort"></i></a></th>
+                      <th><a href="" ng-click="predicate = 'duration'; reverse=!reverse">Duration <i class="fa fa-sort"></i></a></th>
+                      <th><a href="" ng-click="predicate = 'claim'; reverse=!reverse">Claim<i class="fa fa-sort"></i></a></th>
+                      <th><a href="" ng-click="predicate = 'priority'; reverse=!reverse">Priority <i class="fa fa-sort"></i></a></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr ng-repeat="job in unstableJobs | orderBy:predicate:reverse">
+                      <td><a href={{job.url}}{{job.bid}}>{{job.name}}</a></td>
+                      <td><span class={{job.result}}>{{job.result}}</span></td>
+                      <td>{{job.passed}}</td>
+                      <td>{{job.total}}</td>
+                      <td>{{job.duration}}</td>
+                      <td>{{job.claim}}</td>
+                      <td>{{job.priority}}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="tab-pane" id="failed">
+              <div class="table-responsive">
+                <table class="table table-striped">
+                  <thead>
+                    <tr>
+                      <th><a href="" ng-click="predicate = 'name'; reverse=!reverse">Name <i class="fa fa-sort"></i></a></th>
+                      <th><a href="" ng-click="predicate = 'result'; reverse=!reverse">Result <i class="fa fa-sort"></i></a></th>
+                      <th><a href="" ng-click="predicate = 'passed'; reverse=!reverse">Passed <i class="fa fa-sort"></i></a></th>
+                      <th><a href="" ng-click="predicate = 'total'; reverse=!reverse">Total <i class="fa fa-sort"></i></a></th>
+                      <th><a href="" ng-click="predicate = 'duration'; reverse=!reverse">Duration <i class="fa fa-sort"></i></a></th>
+                      <th><a href="" ng-click="predicate = 'claim'; reverse=!reverse">Claim<i class="fa fa-sort"></i></a></th>
+                      <th><a href="" ng-click="predicate = 'priority'; reverse=!reverse">Priority <i class="fa fa-sort"></i></a></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr ng-repeat="job in failedJobs | orderBy:predicate:reverse">
+                      <td><a href={{job.url}}{{job.bid}}>{{job.name}}</a></td>
+                      <td><span class={{job.result}}>{{job.result}}</span></td>
+                      <td>{{job.passed}}</td>
+                      <td>{{job.total}}</td>
+                      <td>{{job.duration}}</td>
+                      <td>{{job.claim}}</td>
                       <td>{{job.priority}}</td>
                     </tr>
                   </tbody>
@@ -222,7 +284,6 @@
                 </table>
               </div>
             </div>
-
           </div>
         </div>
       </div>

@@ -20,5 +20,8 @@
     "start": "http-server -a 0.0.0.0 -p 8000",
     "postinstall": "bower install",
     "test": "node node_modules/karma/bin/karma start test/karma.conf.js"
+  },
+  "dependencies": {
+    "bower": "^1.4.1"
   }
 }
