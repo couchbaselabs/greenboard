@@ -1,5 +1,6 @@
 {
     "CouchbaseAddress": "http://Administrator:password@127.0.0.1:8091",
-    "ListenAddress": "127.0.0.1:8080",
-    "Release": "3.0"
+    "ListenAddress": "127.0.0.1:8100",
+    "Release": "3.0",
+    "StaticDir": "app"
 }

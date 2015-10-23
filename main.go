@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"log"
-	"os"
 	"github.com/hoisie/web"
 )
 
@@ -13,12 +12,10 @@ var pckgDir string
 var api *Api
 
 type Config struct {
-	CouchbaseAddress, ListenAddress string
+	CouchbaseAddress, ListenAddress, StaticDir string
 }
 
 func main() {
-	pckgDir = os.Getenv("GOPATH") + "/src/github.com/tahmmee/greenboard/"
-	web.Config.StaticDir = pckgDir + "app"
 
 	configFile, err := ioutil.ReadFile("config.json")
 	if err != nil {
@@ -30,6 +27,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	web.Config.StaticDir = config.StaticDir
 
     // start web api 
 	api = new(Api)
