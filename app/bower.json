@@ -14,15 +14,16 @@
     "tests"
   ],
   "devDependencies": {
-    "angular-mocks": "~1.2.x"
+    "angular-mocks" : "latest"
   },
   "dependencies": {
-    "angular": "1.2.x",
-    "angular-route": "~1.2.x",
-    "angular-resource": "~1.2.x",
-    "angularjs-nvd3-directives": "~0.0.7",
-    "bootstrap": "~3.1.1",
-    "font-awesome": "~4.2.0",
-    "jquery": "1.10.2"
+    "angular" : "latest",
+    "angular-route" : "latest",
+    "angular-resource" : "latest",
+    "angular-sanitize": "latest",
+    "bootstrap" : "latest",
+    "font-awesome" : "latest",
+    "jquery" : "latest"
+    "d3" : "latest"
   }
 }

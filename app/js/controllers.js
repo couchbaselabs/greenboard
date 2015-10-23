@@ -1,7 +1,7 @@
 //======TESTING=========
 //var app = angular.module('greenboardControllers', ['greenboardServices']);
 //======TESTING=========
-var app = angular.module('greenboardControllers', ['greenboardDirectives', 'greenboardServices', 'ngSanitize']);
+var app = angular.module('greenboardControllers', ['greenboardDirectives', 'greenboardServices']);
 
 
 app.controller('InitDataCtrl', ['$scope', 'ViewService', 'Data', '$location', InitDataCtrl]);
