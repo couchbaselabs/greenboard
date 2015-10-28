@@ -2,6 +2,7 @@
 
 QE Dashboard tool for displaying jenkins test results.  Currently deployed at [greenboard.hq](http://greenboard.couchbase.com)
 
+<img src="/images/arch.png" alt="Architecture" height="400px">
 
 ## Building
 
