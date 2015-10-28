@@ -8,7 +8,7 @@ QE Dashboard tool for displaying jenkins test results.  Currently deployed at [g
 
 To build and deploy your own instance of greenboard:
 
-`git clone https://github.com/tahmmee/greenboard.git`
+`git clone https://github.com/couchbaselabs/greenboard.git`
 
 Have the following dependencies ready before getting started:
 - golang
@@ -42,7 +42,7 @@ Greenboard service should be running on host and port specified from ListenAddre
 
 Now that greenboard is running you will need to collect jobs from jenkins.  This is currently done via jinja.
 
-`git clone https://github.com/tahmmee/jinja.git`
+`git clone https://github.com/couchbaselabs/jinja.git`
 
 `python jinja.py`
 
