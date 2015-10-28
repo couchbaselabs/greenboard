@@ -23,7 +23,7 @@
     "angular-sanitize": "latest",
     "bootstrap" : "latest",
     "font-awesome" : "latest",
-    "jquery" : "latest"
+    "jquery" : "latest",
     "d3" : "latest"
   }
 }
