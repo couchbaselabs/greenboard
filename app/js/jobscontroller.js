@@ -78,7 +78,19 @@ var JobsCtrl = function ($scope, ViewService, Data, $location){
       }
 
       ViewService.jobs(build, platforms, categories).then(function(response){
+        // bid sort
+        response.sort(function(a, b){
+          if(a.Bid && b.Bid) {
+            if(a.Bid > b.Bid){ return -1}
+            if(a.Bid < b.Bid){ return 1}
+          }
+          return 0;
+        })
+
         pushToJobScope(response, $scope.jobs, false);
+
+
+
         $scope.jobsCompleted = $scope.jobs.length;
 
           ViewService.jobs_missing(build, platforms, categories).then(function(response){
