@@ -7,7 +7,6 @@ var app = angular.module('greenBoard', [
   'app.initdatactrl',
   'app.sidebarctrl',
   'app.jobsctrl',
-  'greenboardDirectives'
 ]);
 
 

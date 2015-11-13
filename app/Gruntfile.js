@@ -18,7 +18,7 @@ module.exports = function(grunt) {
                     'js/sidebarcontroller.js',
                     'js/viewservice.js',
                     'js/services.js', 'js/datafactory.js',
-                    'js/directives.js', 'js/d3directives.js',
+                    'js/d3directives.js',
                     'js/d3.tip.js', 'js/d3.legend.js'],
               dest: 'dist/greenboard.js',
             },

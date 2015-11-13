@@ -1,5 +1,5 @@
 
-angular.module('app.timelinectrl', ['greenboardDirectives', 'greenboardServices'])
+angular.module('app.timelinectrl', ['dir.d3', 'greenboardServices'])
 
 .controller('TimelineCtrl', ['$scope', 'ViewService', 'Data', '$location', 
   function ($scope, ViewService, Data, $location){

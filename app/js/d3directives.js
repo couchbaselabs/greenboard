@@ -1,4 +1,7 @@
-function barChartDirective(Data, $location){
+angular.module('dir.d3', [])
+
+.directive("barChart", ['Data', '$location',
+    function (Data, $location){
 
    var margin = {top: 50, right: 10, bottom: 150, left: 50},
        margin2 = {top: 150, right: 10, bottom: 20, left: 50},
@@ -270,9 +273,9 @@ function barChartDirective(Data, $location){
         restrict: 'E',
         scope: false
     }
-}
+}])
 
-function pieChartDirective(){
+.directive("pieChart", [function(){
 
     function link(scope, element, attr){
         var color = d3.scale.category10();
@@ -302,6 +305,6 @@ function pieChartDirective(){
         restrict: 'E',
         scope: false,
     }
-}
+}])
 
 
