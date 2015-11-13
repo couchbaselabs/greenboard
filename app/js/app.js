@@ -1,12 +1,12 @@
 'usev strict'
 var app = angular.module('greenBoard', [
   'ngRoute',
-  'greenboardServices',
   'svc.data',
+  'svc.view',
   'ctl.timeline',
   'ctl.initdata',
   'ctl.sidebar',
-  'ctl.jobs',
+  'ctl.jobs'
 ]);
 
 

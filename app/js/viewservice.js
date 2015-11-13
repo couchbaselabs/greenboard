@@ -1,4 +1,7 @@
-var ViewService = function($http, Data) {
+angular.module('svc.view', [])
+.service("ViewService",['$http', 'Data',
+
+  function($http, Data) {
 
     var mapReduceByCategoryPlatform = function(data, platforms, categories){
 
@@ -165,4 +168,4 @@ var ViewService = function($http, Data) {
         });
       }
     };
-}
+}])

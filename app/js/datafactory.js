@@ -1,4 +1,4 @@
-angular.module('svc.data', ['greenboardServices'])
+angular.module('svc.data', [])
 .provider('Data', [function (){
     this.versions = [];
     this.bucket = "server";
