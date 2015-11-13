@@ -190,7 +190,7 @@ var SidebarCtrl = function ($scope, ViewService, Data, $location){
 
         // update totals for each platform and category
         response.forEach(function(build) {
-
+          
           // add in new categories
           if (!(build.Category in $scope.Categories)) {
               $scope.Categories[build.Category] = {

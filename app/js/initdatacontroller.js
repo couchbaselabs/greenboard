@@ -2,7 +2,7 @@
 var InitDataCtrl = function ($scope, ViewService, Data, $location){
 
 
-  Data.init();
+ // Data.init();
 
   var selectedVersion = null;
   var selectedBuildObj = null;

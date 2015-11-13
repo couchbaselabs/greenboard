@@ -17,7 +17,7 @@ module.exports = function(grunt) {
                     'js/initdatacontroller.js', 'js/jobscontroller.js',
                     'js/sidebarcontroller.js', 'js/controllers.js',
                     'js/viewservice.js',
-                    'js/services.js', 'js/factories.js',
+                    'js/services.js', 'js/datafactory.js',
                     'js/directives.js', 'js/d3directives.js',
                     'js/d3.tip.js', 'js/d3.legend.js'],
               dest: 'dist/greenboard.js',
@@ -40,4 +40,5 @@ module.exports = function(grunt) {
 
     // Default task(s).
     grunt.registerTask('default', ['concat', 'uglify']);
+
 }
