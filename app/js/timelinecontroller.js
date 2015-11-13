@@ -1,12 +1,8 @@
-function lastEl(a){
-  if(a.length > 0) {
-    return a[a.length -1];
-  } else {
-    return a[0];
-  }
-}
 
-var TimelineCtrl = function ($scope, ViewService, Data, $location){
+angular.module('app.timelinectrl', ['greenboardDirectives', 'greenboardServices'])
+
+.controller('TimelineCtrl', ['$scope', 'ViewService', 'Data', '$location', 
+  function ($scope, ViewService, Data, $location){
 
     $scope.data = Data;
     $scope.activeBars = [];
@@ -128,4 +124,12 @@ var TimelineCtrl = function ($scope, ViewService, Data, $location){
       return function(d){ return d.value; };
     };
 
+}])
+
+function lastEl(a){
+  if(a.length > 0) {
+    return a[a.length -1];
+  } else {
+    return a[0];
+  }
 }
