@@ -15,7 +15,7 @@ module.exports = function(grunt) {
             dist: {
               src: ['js/app.js', 'js/timelinecontroller.js',
                     'js/initdatacontroller.js', 'js/jobscontroller.js',
-                    'js/sidebarcontroller.js', 'js/controllers.js',
+                    'js/sidebarcontroller.js',
                     'js/viewservice.js',
                     'js/services.js', 'js/datafactory.js',
                     'js/directives.js', 'js/d3directives.js',
