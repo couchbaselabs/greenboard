@@ -3,7 +3,7 @@ var app = angular.module('greenBoard', [
   'ngRoute',
   'greenboardControllers',
   'greenboardServices',
-  'DataFactory',
+  'app.datafactory',
   'app.timelinectrl',
   'greenboardDirectives',
 ]);

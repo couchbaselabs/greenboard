@@ -1,4 +1,4 @@
-angular.module('DataFactory', ['greenboardServices'])
+angular.module('app.datafactory', ['greenboardServices'])
 .provider('Data', [function (){
     this.versions = [];
     this.bucket = "server";
