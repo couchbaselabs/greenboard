@@ -1,0 +1,28 @@
+{
+  "name": "greenboard",
+  "version": "2.0.0",
+  "description": "qe dashboard",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/couchbaselabs/greenboard.git"
+  },
+  "author": "couchbase",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/couchbaselabs/greenboard/issues"
+  },
+  "homepage": "https://github.com/couchbaselabs/greenboard#readme",
+  "dependencies": {
+    "express": "^4.13.3",
+    "gulp": "^3.9.0"
+  },
+  "devDependencies": {
+    "gulp-express": "^0.3.5",
+    "gulp-live-server": "0.0.29"
+  }
+}
