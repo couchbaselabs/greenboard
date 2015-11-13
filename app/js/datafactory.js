@@ -1,7 +1,5 @@
-angular.module('greenboardFactories', ['greenboardServices'])
-
+angular.module('DataFactory', ['greenboardServices'])
 .provider('Data', [function (){
-
     this.versions = [];
     this.bucket = "server";
     this.selectedVersion = null;
