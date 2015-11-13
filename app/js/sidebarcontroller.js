@@ -1,5 +1,7 @@
+angular.module('app.sidebarctrl', ['greenboardDirectives', 'greenboardServices'])
 
-var SidebarCtrl = function ($scope, ViewService, Data, $location){
+.controller('SidebarCtrl', ['$scope', 'ViewService', 'Data', '$location',
+  function ($scope, ViewService, Data, $location){
 
     // bind scope to data factory
     $scope.data = Data;
@@ -376,4 +378,4 @@ var SidebarCtrl = function ($scope, ViewService, Data, $location){
         selected.checked = !selected.checked;
     }
 
-};
+}])
