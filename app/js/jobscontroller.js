@@ -1,4 +1,4 @@
-angular.module('app.jobsctrl', ['greenboardServices'])
+angular.module('ctl.jobs', ['greenboardServices'])
 .controller('JobsCtrl', ['$scope', 'ViewService', 'Data', '$location',
 
   function ($scope, ViewService, Data, $location){

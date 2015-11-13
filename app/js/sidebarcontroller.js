@@ -1,4 +1,4 @@
-angular.module('app.sidebarctrl', ['greenboardServices'])
+angular.module('ctl.sidebar', ['greenboardServices'])
 
 .controller('SidebarCtrl', ['$scope', 'ViewService', 'Data', '$location',
   function ($scope, ViewService, Data, $location){

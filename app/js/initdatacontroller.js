@@ -1,5 +1,5 @@
 
-angular.module('app.initdatactrl', ['greenboardServices'])
+angular.module('ctl.initdata', ['greenboardServices'])
 
 .controller('InitDataCtrl', ['$scope', 'ViewService', 'Data', '$location',
   function ($scope, ViewService, Data, $location){

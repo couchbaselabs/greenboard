@@ -2,11 +2,11 @@
 var app = angular.module('greenBoard', [
   'ngRoute',
   'greenboardServices',
-  'app.datafactory',
-  'app.timelinectrl',
-  'app.initdatactrl',
-  'app.sidebarctrl',
-  'app.jobsctrl',
+  'svc.data',
+  'ctl.timeline',
+  'ctl.initdata',
+  'ctl.sidebar',
+  'ctl.jobs',
 ]);
 
 
