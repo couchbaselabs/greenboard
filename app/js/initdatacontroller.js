@@ -5,8 +5,6 @@ angular.module('ctl.initdata', [])
   function ($scope, ViewService, Data, $location){
 
 
- // Data.init();
-
   var selectedVersion = null;
   var selectedBuildObj = null;
   var urlArgs = $location.search();
@@ -190,7 +188,6 @@ angular.module('ctl.initdata', [])
   $scope.didSelectVersion = function(version){ // ie 3.0, 3.5
       clearLocations();
       _b = Data.bucket;
-      Data.init();
       Data.bucket = _b;
       clearPlatformCategories();
       Data.selectedVersion = version;
