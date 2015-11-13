@@ -1,5 +1,7 @@
+angular.module('app.jobsctrl', ['greenboardDirectives', 'greenboardServices'])
+.controller('JobsCtrl', ['$scope', 'ViewService', 'Data', '$location',
 
-var JobsCtrl = function ($scope, ViewService, Data, $location){
+  function ($scope, ViewService, Data, $location){
 
     $scope.data = Data;
     $scope.jobsPending = 0;
@@ -103,7 +105,7 @@ var JobsCtrl = function ($scope, ViewService, Data, $location){
 
     }
 
-};
+}])
 
 // https://coderwall.com/p/wkdefg/converting-milliseconds-to-hh-mm-ss-mmm
 function msToTime(duration) {
