@@ -1,5 +1,8 @@
 
-var InitDataCtrl = function ($scope, ViewService, Data, $location){
+angular.module('app.initdatactrl', ['greenboardDirectives', 'greenboardServices'])
+
+.controller('InitDataCtrl', ['$scope', 'ViewService', 'Data', '$location',
+  function ($scope, ViewService, Data, $location){
 
 
  // Data.init();
@@ -226,6 +229,6 @@ var InitDataCtrl = function ($scope, ViewService, Data, $location){
   }
 
   main();
-};
+}])
 
 

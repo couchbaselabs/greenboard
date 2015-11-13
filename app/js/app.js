@@ -5,7 +5,8 @@ var app = angular.module('greenBoard', [
   'greenboardServices',
   'app.datafactory',
   'app.timelinectrl',
-  'greenboardDirectives',
+  'app.initdatactrl',
+  'greenboardDirectives'
 ]);
 
 
