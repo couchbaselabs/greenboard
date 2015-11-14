@@ -33,21 +33,16 @@ angular.module('svc.view', [])
 
     return {
       versions: function() {
-        var config = {"url": "/versions",
-                      params: {"bucket": Data.bucket} };
+        var config = {"url": "/versions/"+Data.bucket};
+
         return $http(config).then(function(response) {
               var data = response.data;
               return Object.keys(data);
         });
       },
       timeline: function(version, filterBy, endVersion) {
-        var config = {"url": "/timeline",
-                      params: {"start_key": version, "bucket": Data.bucket},
+        var config = {"url": "/timeline/"+version+"/"+Data.bucket,
                       cache: true };
-
-        if (endVersion) {
-            config["params"]["end_key"] = endVersion;
-        }
 
         return $http(config).then(function(response) {
 
@@ -128,8 +123,7 @@ angular.module('svc.view', [])
       },
       breakdown: function(build, platforms, categories){
 
-        var config = {"url": "/breakdown",
-                      "params": {"build": build, "bucket": Data.bucket},
+        var config = {"url": "/breakdown/"+build+"/"+Data.bucket,
                       cache: true};
         return $http(config).then(function(response) {
 
@@ -139,8 +133,7 @@ angular.module('svc.view', [])
       },
       jobs: function(build, platforms, categories){
 
-        var config = {"url": "/jobs",
-                      "params": {"build": build, "bucket": Data.bucket},
+        var config = {"url": "/jobs/"+build+"/"+Data.bucket,
                       cache: true};
         return $http(config).then(function(response) {
 
@@ -150,16 +143,14 @@ angular.module('svc.view', [])
 
       categories: function(){
 
-        var config = {"url": "/categories",
-                      "params": {"bucket": Data.bucket},
+        var config = {"url": "/categories/"+Data.bucket,
                       cache: true};
         return $http(config);
 
       },
       jobs_missing: function(build, platforms, categories){
 
-        var config = {"url": "/jobs_missing",
-                      "params": {"build": build, "bucket": Data.bucket},
+        var config = {"url": "/jobs_missing/"+build+"/"+Data.bucket,
                       cache: false};
 
         return $http(config).then(function(response) {

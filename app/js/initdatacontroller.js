@@ -123,8 +123,8 @@ angular.module('ctl.initdata', [])
     // get builds for version
     var filterBy = $scope.filterBy;
     var selectedVersion = Data.selectedVersion;
-    var endVersion = nextVersion(selectedVersion);
-    return ViewService.timeline(selectedVersion, filterBy, endVersion).then(function(response){
+  //  var endVersion = nextVersion(selectedVersion);
+    return ViewService.timeline(selectedVersion, filterBy).then(function(response){
 
       if (response.allBuilds.length > 0 && response.versionBuilds.length == 0){
 
