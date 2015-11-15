@@ -1,6 +1,6 @@
 'usev strict'
 var app = angular.module('greenBoard', [
-  'ngRoute',
+  'ui.router',
   'svc.data',
   'svc.view',
   'ctl.timeline',
@@ -10,18 +10,13 @@ var app = angular.module('greenBoard', [
 ]);
 
 
-app.config(['$routeProvider',
-  function($routeProvider){
-    $routeProvider.
-      when('/', {
-        templateUrl: 'view.html',
-        reloadOnSearch: false
-      }).
-      when('/home', {
-        templateUrl: 'view.html',
-        reloadOnSearch: false
-      }).
-      otherwise({
-        redirectTo: '/'
-      });
+app.config(['$stateProvider', '$urlRouterProvider',
+  function($stateProvider, $urlRouterProvider){
+    $urlRouterProvider.otherwise("/");
+
+    $stateProvider
+      .state('index', {
+        url: "/",
+        templateUrl: "view.html"
+    })
   }]);
