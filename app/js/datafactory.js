@@ -13,6 +13,12 @@ angular.module('svc.data', [])
 
     this.$get = function(){
         return {
+            setBucket: function(bucket){
+                this.bucket = bucket
+            },
+
+
+
             findBuildObj: function(build){
                 var _build = this.versionBuilds.filter(function(b){
                     if(b.Version == build){

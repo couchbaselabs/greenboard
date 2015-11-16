@@ -25,23 +25,35 @@ app.get('/categories/:bucket?', function (req, res) {
   	})
 });
 
-//1 http://localhost:8100/versions?bucket=server
 app.get('/versions/:bucket?', function(req, res){
 
   var bucket = req.params.bucket
-  var dataMap = {}
-
-  client.queryBucket(bucket, "SELECT DISTINCT `build` FROM server ORDER BY `build`")
+  var versions = []
+  client.queryVersions(bucket)
   	.then(function(data){
-  		data.forEach(function(d){
-  			var version = d['build'].split('-')[0]
-  			dataMap[version] = true
+  		versions = data.map(function(d){
+  			return d['version']
   		})
-	 	res.send(dataMap);
+	 	res.send(versions);
   	}).catch(function(err){
   		// err
 		console.log(err)
-		res.send(dataMap)
+		res.send(versions)
+  	})
+})
+
+app.get('/builds/:bucket/:version', function(req, res){
+
+  var bucket = req.params.bucket
+  var version = req.params.version
+  var builds = []
+  client.queryBuilds(bucket, version)
+  	.then(function(data){
+	 	res.send(data);
+  	}).catch(function(err){
+  		// err
+		console.log(err)
+		res.send(builds)
   	})
 })
 

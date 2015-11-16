@@ -260,6 +260,9 @@ angular.module('dir.d3', [])
     }
 
     function link(scope, element, attr){
+         scope.$watch('buildData', function(d){
+            console.log(d)
+         })
         scope.$watch('data.timelineAbsData', function(data){
             if((data != undefined) && (data.length > 0)){
                 d3.select(element[0]).select("svg").remove();
@@ -271,7 +274,9 @@ angular.module('dir.d3', [])
     return {
         link: link,
         restrict: 'E',
-        scope: false
+        scope: {
+            buildData: '=builds'
+        }
     }
 }])
 

@@ -41,36 +41,6 @@ angular.module('ctl.initdata', [])
     $scope.filterBy = $scope.filterMenues[0];
   }
 
-  function initTargets(){
-
-    $scope.viewTargets = [{
-        "title": "Couchbase Server",
-        "bucket": "server",
-        "key": "abspassed",
-        "value": 100,
-        "options": [0, 50, 100, 500],
-        "i": 0
-      },{
-        "title": "SDK",
-        "bucket": "sdk",
-        "key": "abspassed",
-        "value": 0,
-        "options": [0, 50, 100, 500],
-        "i": 1
-      }, {
-        "title": "Mobile",
-        "bucket": "mobile",
-        "key": "abspassed",
-        "value": 0,
-        "options": [0, 50, 100, 500],
-        "i": 2
-      }
-    ];
-
-    // filters
-    $scope.targetBy = $scope.viewTargets[0];
-  }
-
   // pull version and build from urlArgs
   if ("version" in urlArgs){
     selectedVersion = urlArgs.version;
@@ -89,7 +59,6 @@ angular.module('ctl.initdata', [])
   }
 
   initFilters();
-  initTargets();
 
   // pull filter values from urlArgs
   if (("fi" in urlArgs) && ("fv" in urlArgs)){
@@ -98,16 +67,16 @@ angular.module('ctl.initdata', [])
   }
 
   // set target
-  if ("ft" in urlArgs) {
+  /*if ("ft" in urlArgs) {
       $scope.targetBy = $scope.viewTargets[urlArgs.ft];
       Data.bucket = $scope.targetBy.bucket;
-  }
+  }*/
 
   // init controller data
   var selectVersion = function(){
       return ViewService.versions().then(function(versions){
         Data.versions = versions;
-        $scope.pagerVersions = versions;
+      //  $scope.pagerVersions = versions;
         if (selectedVersion){
           Data.selectedVersion = selectedVersion;
         } else { // not showing latest latest by default

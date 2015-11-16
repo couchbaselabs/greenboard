@@ -16,6 +16,7 @@ module.exports = function(){
   })
 
   function _query(bucket, queryStr){
+	  console.log(queryStr)
 	  bucket = bucket || config.DefaultBucket
 	  var db = cluster.openBucket(config.DefaultBucket)
 	  var q = couchbase.N1qlQuery.fromString(queryStr)
@@ -36,6 +37,16 @@ module.exports = function(){
     openBucket: function(bucket){
       bucket = bucket || config.DefaultBucket
 	  return cluster.openBucket(config.DefaultBucket)
+    },
+    queryVersions: function(bucket){
+        var Q = "SELECT DISTINCT SPLIT(`build`,'-')[0] AS version"+
+                " FROM "+bucket+" ORDER BY version"
+        return _query(bucket, Q)
+    },
+    queryBuilds: function(bucket, version){
+        var Q = "SELECT `build`,SUM(failCount) AS Failed,SUM(totalCount)-SUM(failCount) AS Passed"+
+                " FROM "+bucket+" WHERE `build` like '"+version+"%' GROUP BY `build`";
+        return _query(bucket, Q)
     },
     jobsForBuild: function(bucket, build){
   	  var ver = build.split('-')[0]
