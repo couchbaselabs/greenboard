@@ -1,0 +1,80 @@
+<div class="col-sm-3 col-md-2 sidebar">
+  <div class="nav nav-sidebar">
+    <div class="nav-header">
+        <h3>Build</h3>
+        <span class="custom-list-group-item {{build.Status}}">
+        <p>{{build.Version}}
+                       <span ng-click="didClickSlider()">
+                        <span class="testscore">{{100*getPerc(build)| number:0}}%
+                            <i ng-if="showAsPerc" class="fa fa-toggle-on"></i>
+                            <i ng-if="!showAsPerc" class="fa fa-toggle-off"></i></span>
+                         <div ng-if="showAsPerc" class="scoredesc">pass: {{getPercVal(build, build.Passed)| number:0}}%, fail: {{getPercVal(build, build.Failed)| number:0}}%</div>
+                        <div ng-if="!showAsPerc" class="scoredesc">pass: {{build.Passed}}, fail: {{build.Failed}} pend: {{build.Pending}}</div>
+                       </span>
+        </span></p>
+</span>
+
+    </div>
+  </div>
+
+  <div class="nav nav-sidebar">
+    <form>
+      <div class="nav-header">
+        <h3>Platforms</h3>
+        <input type="checkbox" ng-model="showAllPlatforms" ng-init="showAllPlatforms=true">
+        <a ng-click="toggleAll('p')" href="">
+            <i ng-if="showAllPlatforms" class="fa fa-check-square-o"></i>
+            <i ng-if="!showAllPlatforms"  class="fa fa-square-o"></i> all
+        </a>
+        <br/>
+      </div>
+      <div  ng-repeat="os in objAsList(Platforms) | orderBy:orderByPerc">
+        <input type="checkbox" ng-model="os.checked">
+        <span  ng-click="toggleItem(os, 'p')" class="custom-list-group-item {{os.Status}}" >
+          <a href="">
+            <i ng-if="os.checked" class="glyphicon glyphicon-check"></i>
+            <i ng-if="!os.checked" class="glyphicon glyphicon-unchecked"></i>
+             {{os.Platform}}
+            <span ng-if="os.checked">
+              </i><span  class="testscore">{{100*getPerc(os)| number:0}}%</span>
+            </span>
+          </a>
+            <span ng-if="os.checked">
+                <div ng-if="!showAsPerc" class="scoredesc">pass: {{os.Passed}}, fail: {{os.Failed}} pend: {{os.Pending}}</div>
+                <div ng-if="showAsPerc" class="scoredesc">pass: {{getPercVal(os, os.Passed)| number:0}}%, fail: {{getPercVal(os, os.Failed)| number:0}}%</div>
+            </span>
+        </span>
+      </div>
+    </form>
+ </div>
+  <div class="nav nav-sidebar">
+    <form>
+      <div class="nav-header">
+        <h3>Features</h3>
+        <input type="checkbox" ng-model="showAllCategories" ng-init="showAllCategories=true">
+        <a ng-click="toggleAll('c')" href="">
+            <i ng-if="showAllCategories" class="fa fa-check-square-o"></i>
+            <i ng-if="!showAllCategories"  class="fa fa-square-o"></i> all
+        </a>
+        <br/>
+      </div>
+      <div  ng-repeat="category in objAsList(Categories) | orderBy:orderByPerc">
+        <input type="checkbox" ng-model="category.checked">
+        <span ng-click="toggleItem(category, 'c')" class="custom-list-group-item {{category.Status}}">
+        <a href="">
+          <i ng-if="category.checked" class="glyphicon glyphicon-check"></i>
+          <i ng-if="!category.checked" class="glyphicon glyphicon-unchecked"></i>
+           {{category.Category}}
+          <span ng-if="category.checked">
+            <span class="testscore">{{100*getPerc(category)| number:0}}%</span>
+          </span>
+         </a>
+            <span ng-if="category.checked">
+              <div ng-if="!showAsPerc" class="scoredesc">pass: {{category.Passed}}, fail: {{category.Failed}} pend: {{category.Pending}}</div>
+                <div ng-if="showAsPerc" class="scoredesc">pass: {{getPercVal(category, category.Passed)| number:0}}%, fail: {{getPercVal(category, category.Failed)| number:0}}%</div>
+            </span>
+        </span>
+      </div>
+    </form>
+   </div>
+</div>
