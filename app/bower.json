@@ -14,16 +14,17 @@
     "tests"
   ],
   "devDependencies": {
-    "angular-mocks" : "latest"
+    "angular-mocks": "latest"
   },
   "dependencies": {
-    "angular" : "latest",
-    "angular-route" : "latest",
-    "angular-resource" : "latest",
+    "angular": "latest",
+    "angular-route": "latest",
+    "angular-resource": "latest",
     "angular-sanitize": "latest",
-    "bootstrap" : "latest",
-    "font-awesome" : "latest",
-    "jquery" : "latest",
-    "d3" : "latest"
+    "bootstrap": "latest",
+    "font-awesome": "latest",
+    "jquery": "latest",
+    "d3": "latest",
+    "angular-ui-router": "~0.2.15"
   }
 }
