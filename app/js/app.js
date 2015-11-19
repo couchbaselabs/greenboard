@@ -1,4 +1,5 @@
 'usev strict'
+/*
 var app = angular.module('greenBoard', [
   'ui.router',
   'svc.data',
@@ -9,6 +10,13 @@ var app = angular.module('greenBoard', [
   'ctl.initdata',
   'ctl.sidebar',
   'ctl.jobs'
+]);*/
+var app = angular.module('greenBoard', [
+  'ui.router',
+  'svc.data',
+  'svc.query',
+  'app.target',
+  'app.timeline'
 ]);
 
 
@@ -20,13 +28,9 @@ app.config(['$stateProvider', '$urlRouterProvider',
       .state('target', {
         url: "/:target",
         views: {
-          "sidebar": {
-            templateUrl: "partials/sidebar.html",
-            controller: "SidebarCtrl",
-          },
           "main": {
             templateUrl: "view.html",
-            controller: "MainCtrl"
+            controller: "TargetCtrl"
           }
         },
         resolve: {
