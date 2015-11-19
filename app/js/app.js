@@ -5,7 +5,6 @@ var app = angular.module('greenBoard', [
   'svc.view',
   'svc.query',
   'ctl.main',
-  'ctl.version',
   'ctl.timeline',
   'ctl.initdata',
   'ctl.sidebar',
@@ -43,7 +42,12 @@ app.config(['$stateProvider', '$urlRouterProvider',
         // get all builds for selected version
         // make timeline of builds based on version
         url: "/:version",
-        controller: 'VersionCtrl',
+        views: {
+          "timeline": {
+            templateUrl: "partials/timeline.html",
+            controller: "TimelineCtrl",
+          }
+        },
         resolve: {
           selectedVersion: ['$stateParams', 'versions', function($stateParams, versions){
             var version = $stateParams.version

@@ -25,6 +25,8 @@
     "font-awesome": "latest",
     "jquery": "latest",
     "d3": "latest",
-    "angular-ui-router": "~0.2.15"
+    "angular-ui-router": "~0.2.15",
+    "angular-plotly": "*",
+    "plotly": "~0.0.2"
   }
 }

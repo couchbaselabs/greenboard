@@ -10,7 +10,10 @@ angular.module('ctl.main', ['svc.targets'])
 		$scope.viewTargets = ViewTargets.allTargets()
 		$scope.pagerVersions = versions
 
-		
 		Data.setBucket(urlTarget)
+
+	    $scope.didSelectVersion = function(v){
+	      console.log(v)
+	    }
 
   }])
