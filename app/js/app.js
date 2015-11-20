@@ -1,85 +1,73 @@
 'usev strict'
-/*
-var app = angular.module('greenBoard', [
-  'ui.router',
-  'svc.data',
-  'svc.view',
-  'svc.query',
-  'ctl.main',
-  'ctl.timeline',
-  'ctl.initdata',
-  'ctl.sidebar',
-  'ctl.jobs'
-]);*/
-var app = angular.module('greenBoard', [
-  'ui.router',
-  'svc.data',
-  'svc.query',
-  'ctrl.main',
-  'app.target',
-  'app.timeline'
-]);
 
+var app = angular.module('greenBoard', [
+  'plotly',
+  'ui.router',
+  'svc.data',
+  'svc.query',
+  'app.main',
+  'app.target',
+]);
 
 app.config(['$stateProvider', '$urlRouterProvider',
   function($stateProvider, $urlRouterProvider){
-    $urlRouterProvider.otherwise("/server/latest");
+
+    // TODO: external bootstrap with now testing build!
+    $urlRouterProvider.otherwise("/server/4.1.0/latest");
 
     $stateProvider
-      .state('main', {
-        url: "/:target/:version",
+      .state('target', {
+        url: "/:target",
+        abstract: true,
+        template: '<ui-view/>',
+        resolve: {
+          target: ['$stateParams', function($stateParams){
+              return $stateParams.target
+            }],
+          targetVersions: ['$stateParams', 'Data', 'QueryService',
+            function($stateParams, Data, QueryService){
+
+              var target = $stateParams.target
+              var versions = Data.getTargetVersions(target)
+              if(!versions){
+                // get versions for Target
+                versions = QueryService.getVersions(target)
+              }
+              return versions
+          }]
+        }
+      })
+      .state('target.version', {
+        url: "/:version/:build",
         templateUrl: "view.html",
-        controller: "MainCtrl"
+        controller: "NavCtrl",
+        resolve: {
+          version: ['$stateParams', '$location', 'targetVersions', 'target',
+            function($stateParams, $location, targetVersions, target){
+
+              var version = $stateParams.version
+              if ((version == "latest") || targetVersions.indexOf(version) == -1){
+                // uri is either latest version or some unknown version of target
+                // just use latested known version of target
+                version = targetVersions[targetVersions.length-1]
+                $location.path(target+"/"+version)
+              }
+              return version
+            }],
+            build: ['$stateParams', function($stateParams){
+              return $stateParams.build
+            }]
+        }
+      })
+      .state('target.version.build', {
+        templateUrl: "partials/builds.html",
+        controller: "BuildCtrl",
+        resolve: {
+          versionBuilds: ['QueryService', 'target', 'version',
+            function(QueryService, target, version){
+                return QueryService.getBuilds(target, version)
+            }]
+        }
       })
 
-      /*.state('target.version', {  
-        // 
-        // if version is latest get Highest Version no.
-        // get all builds for selected version
-        // make timeline of builds based on version
-        url: "/:version",
-        views: {
-          "timeline": {
-            templateUrl: "partials/timeline.html",
-            controller: "TimelineCtrl",
-          }
-        }
-
-      })*/
-
-      /*
-      ,
-        resolve: {
-          selectedVersion: ['$stateParams', 'ViewTargets', function($stateParams, ViewTargets){
-            var version = $stateParams.version
-            if(version == 'latest'){
-              version = versions[versions.length-1]
-            }
-            return version
-          }]
-        }
-
-
-      .state('target.version.build', {  
-        // if build is latest get Highest build no
-        // jobs for build based on version
-        url: "/:build_id",
-        templateUrl: "partials/jobs.html",
-        controller: "JobsCtrl",
-        resolve:{
-          jobs: ['versions', function(versions){
-            console.log("jobs breakdown", versions)
-            return true
-          }]
-        }
-      })*/
-
   }]);
-
-
-// build state is templateless with child siblings (jobs/sidebar)
-// they each take in target/version/build service to setup data for their views
-
-
-// main controller manages Data Services.  Directives receive data from main ctonroller
-

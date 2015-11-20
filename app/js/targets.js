@@ -1,25 +1,26 @@
 angular.module('app.target', [])
 
-  .directive('targetSelector', ['$stateParams','ViewTargets', 'Data',
+  .directive('targetSelector', ['$state','ViewTargets', 'Data',
   	function($stateParams, ViewTargets, Data){
  	  	return {
 	  		restrict: 'E',
 	  		scope: {
-	  			target: "=",
 	  			changeTarget: "="
 	  		},
 	  		templateUrl: 'partials/targets.html',
 	  		link: function(scope, elem, attrs){
 
 	  			// watch changes from parent scope
-	  			scope.$watch(attrs.target, function(target){
-	  				if(!target) { return }
+	  			scope.$watch(function(){ return Data.getCurrentTarget() }, 
+            function(target){
+  	  				if(!target) { return }
 
-		  			// configure drop down to show all targets
-					scope.viewTargets = ViewTargets.allTargets()
+  		  			// configure drop down to show all targets
+  					  scope.viewTargets = ViewTargets.allTargets()
 
-					// set currently viewed scope target
-					scope.targetBy = ViewTargets.getTarget(target)	
+              // set currently viewed scope target
+  					  scope.targetBy = ViewTargets.getTarget(target)
+
 	  			})
 
 
@@ -33,15 +34,16 @@ angular.module('app.target', [])
 	  		restrict: 'E',
 	  		templateUrl: 'partials/versions.html',
 	  		scope: {
-	  			version: "=",
 	  			changeVersion: "="
 	  		},
 	  		link: function(scope, elem, attrs){
 	
-	  			scope.$watch(attrs.version, function(version){
+	  			scope.$watch(function(){ return Data.getSelectedVersion() }, 
+            function(version){
 	  			  	if(version){
-			  			scope.targetVersions = Data.getTargetVersions()
-			  		}
+                scope.version = version
+			  			  scope.targetVersions = Data.getTargetVersions()
+  			  		}
 	  			})
 	  		}
 	  	}

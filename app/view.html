@@ -25,65 +25,16 @@
         <!-- target and version selector -->
         <div class="row">
           <div class="col-sm-2">
-             <target-selector target="target" change-target="changeTarget" />
+             <target-selector change-target="changeTarget" />
           </div>
           <div class="col-sm-8">
-             <version-selector version="version" change-version="changeVersion" />
-        </div>
-
-        <!--
-        <div ng-if="targetBy.bucket=='mobile'" class="row">
-          <div class="col-sm-12">
-            <ul class="pagination">
-              <li id={{t}} ng-repeat="t in mobileTargets" ng-class="{'active': t == selectedMobileTarget}" class="pagecell">
-                 <a ng-click="didSelectMobileType(t)" href="">{{ t }}</a>
-               </li>
-            </ul>
-         </div>
-        </div>
-
-        <div ng-if="targetBy.bucket=='server'" class="row">
-          <div class="col-sm-12">
-           <div class="btn-group">
-            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-              {{filterBy.title}} <span class="caret"></span>
-            </button>
-            <ul class="dropdown-menu dropdown-menu" role="menu">
-              <li ng-click="didSelectMenu(menu)" ng-repeat="menu in filterMenues">
-                <a href="">{{menu.title}}</a>
-              </li>
-            </ul>
-            <ul class="pagination subpager">
-              <li ng-class="{'active': f == filterBy.value}" ng-repeat="f in filterBy.options">
-                <a ng-click="didSelectFilter(f)" href="">{{f}}</a>
-              </li>
-            </ul>
-          </div>
-         </div>
-        </div>
-        -->
-      </div>
-
-      <div class="row">
-
-        <div class="col-sm-12" id="timeline" class="section" ng-controller="TimelineCtrl">
-          <plotly data="data" 
-                  layout="layout" 
-                  options="options"></plotly>
+             <version-selector change-version="changeVersion" />
         </div>
       </div>
-        
-   <div ui-view></div>
+
+      <!-- build view -->
+      <div ui-view></div>
 
 
-    </div> <!-- eo-contentd-iv -->
-  </div> <!-- eo-container-div -->
-
-  <script>
-   $(function () {
-      $('#jobTabs a').click(function (e) {
-        e.preventDefault()
-        $(this).tab('show')
-      })
-    })
-  </script>
+    </div>
+  </div>

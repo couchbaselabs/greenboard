@@ -1,39 +1,28 @@
-angular.module('ctrl.main', [])
-	.controller("MainCtrl", ['$scope', '$stateParams', 'Data', 'QueryService',
-		function($scope, $stateParams, Data, QueryService){
+angular.module('app.main', [])
+	.controller("NavCtrl", ['$scope', '$state', '$stateParams', 'Data', 'target', 'targetVersions', 'version',
+	  function($scope, $state, $stateParams, Data, target, targetVersions, version){
 
-		function loadTargetVersions(target){
-			$scope.target = target
-			Data.setTarget($scope.target)
+		Data.setTarget(target)
+		Data.setSelectedVersion(version)
+		Data.setTargetVersions(targetVersions)
 
-			// get versions for Target
-			QueryService.getVersions($scope.target)
-				.then(function(versions){
-		            // set selected version of all versions for target
-					var version = $stateParams.version
-		            if(version == 'latest'){
-		              $scope.version = versions[versions.length-1]
-		            } else {
-		              $scope.version = version
-		            }
-
-					// update version info in shared data service
-		            Data.setTargetVersions(versions)
-		            Data.setSelectedVersion($scope.version)
-		        })
-		}
+		// move to build state
+		$state.go("target.version.build")
 
 		// update target versions when drop down target changes
 		$scope.changeTarget = function(target){
-			loadTargetVersions(target)
+            $state.go("target.version", {target: target, version: "latest"})
 		}
 
-		// change version and update builds for version
+		// update target versions when drop down target changes
 		$scope.changeVersion = function(version){
-			$scope.version = version
-			Data.setSelectedVersion($scope.version)
+            $state.go("target.version", {version: version})
 		}
 
-		// initialize ui with url target param
-		loadTargetVersions($stateParams.target)
+	}])
+
+	.controller('BuildCtrl', ['$scope', 'build', 'versionBuilds', 'Data',
+		function($scope, build, versionBuilds, Data){
+			Data.setBuild(build)
+			Data.setVersionBuilds(versionBuilds)
 	}])
