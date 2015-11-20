@@ -22,26 +22,16 @@
     <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
 
       <div>
+        <!-- target and version selector -->
         <div class="row">
-          <div class="col-sm-12">
-           <div class="btn-group">
-            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-              {{targetBy.title}} <span class="caret"></span>
-            </button>
-            <ul class="dropdown-menu dropdown-menu" role="menu">
-              <li ng-click="didSelectTarget(target)" ng-repeat="target in viewTargets">
-                <a href="">{{target.title}}</a>
-              </li>
-            </ul>
-            <ul class="pagination">
-              <li id={{v}} ng-repeat="v in pagerVersions" ng-class="{'active': v == selectedVersion}" class="pagecell">
-                 <a ng-click="didSelectVersion(v)" href="">{{ v }}</a>
-               </li>
-            </ul>
-           </div>
+          <div class="col-sm-2">
+             <target-selector target="target" change-target="changeTarget" />
           </div>
+          <div class="col-sm-8">
+             <version-selector version="version" change-version="changeVersion" />
         </div>
 
+        <!--
         <div ng-if="targetBy.bucket=='mobile'" class="row">
           <div class="col-sm-12">
             <ul class="pagination">
@@ -71,12 +61,15 @@
           </div>
          </div>
         </div>
+        -->
       </div>
 
       <div class="row">
 
-        <div class="col-sm-12" id="timeline" class="section">
-          <div ui-view="timeline"></div>
+        <div class="col-sm-12" id="timeline" class="section" ng-controller="TimelineCtrl">
+          <plotly data="data" 
+                  layout="layout" 
+                  options="options"></plotly>
         </div>
       </div>
         

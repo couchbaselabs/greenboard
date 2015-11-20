@@ -1,0 +1,11 @@
+
+ <div class="btn-group">
+  <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+    {{targetBy.title}} <span class="caret"></span>
+  </button>
+  <ul class="dropdown-menu dropdown-menu" role="menu">
+    <li ng-click="changeTarget(target.bucket)" ng-repeat="target in viewTargets">
+      <a href="">{{target.title}}</a>
+    </li>
+  </ul>
+ </div>

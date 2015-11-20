@@ -15,6 +15,7 @@ var app = angular.module('greenBoard', [
   'ui.router',
   'svc.data',
   'svc.query',
+  'ctrl.main',
   'app.target',
   'app.timeline'
 ]);
@@ -25,22 +26,13 @@ app.config(['$stateProvider', '$urlRouterProvider',
     $urlRouterProvider.otherwise("/server/latest");
 
     $stateProvider
-      .state('target', {
-        url: "/:target",
-        views: {
-          "main": {
-            templateUrl: "view.html",
-            controller: "TargetCtrl"
-          }
-        },
-        resolve: {
-          versions: ['QueryService', '$stateParams', function(QueryService, $stateParams){
-            var target = $stateParams.target
-            return QueryService.getVersions(target)
-          }]
-        }
+      .state('main', {
+        url: "/:target/:version",
+        templateUrl: "view.html",
+        controller: "MainCtrl"
       })
-      .state('target.version', {  
+
+      /*.state('target.version', {  
         // 
         // if version is latest get Highest Version no.
         // get all builds for selected version
@@ -51,9 +43,14 @@ app.config(['$stateProvider', '$urlRouterProvider',
             templateUrl: "partials/timeline.html",
             controller: "TimelineCtrl",
           }
-        },
+        }
+
+      })*/
+
+      /*
+      ,
         resolve: {
-          selectedVersion: ['$stateParams', 'versions', function($stateParams, versions){
+          selectedVersion: ['$stateParams', 'ViewTargets', function($stateParams, ViewTargets){
             var version = $stateParams.version
             if(version == 'latest'){
               version = versions[versions.length-1]
@@ -62,8 +59,7 @@ app.config(['$stateProvider', '$urlRouterProvider',
           }]
         }
 
-      })
-      /*
+
       .state('target.version.build', {  
         // if build is latest get Highest build no
         // jobs for build based on version
@@ -83,4 +79,7 @@ app.config(['$stateProvider', '$urlRouterProvider',
 
 // build state is templateless with child siblings (jobs/sidebar)
 // they each take in target/version/build service to setup data for their views
+
+
+// main controller manages Data Services.  Directives receive data from main ctonroller
 

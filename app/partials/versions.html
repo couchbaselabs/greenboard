@@ -1,0 +1,7 @@
+<ul class="pagination">
+  <li ng-repeat="v in targetVersions" 
+      ng-class="{'active': v == version}" 
+      class="pagecell">
+     	<a ng-click="changeVersion(v)" href="">{{ v }}</a>
+  </li>
+</ul>

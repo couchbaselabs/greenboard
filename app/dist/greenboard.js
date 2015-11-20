@@ -15,6 +15,7 @@ var app = angular.module('greenBoard', [
   'ui.router',
   'svc.data',
   'svc.query',
+  'ctrl.main',
   'app.target',
   'app.timeline'
 ]);
@@ -25,22 +26,13 @@ app.config(['$stateProvider', '$urlRouterProvider',
     $urlRouterProvider.otherwise("/server/latest");
 
     $stateProvider
-      .state('target', {
-        url: "/:target",
-        views: {
-          "main": {
-            templateUrl: "view.html",
-            controller: "TargetCtrl"
-          }
-        },
-        resolve: {
-          versions: ['QueryService', '$stateParams', function(QueryService, $stateParams){
-            var target = $stateParams.target
-            return QueryService.getVersions(target)
-          }]
-        }
+      .state('main', {
+        url: "/:target/:version",
+        templateUrl: "view.html",
+        controller: "MainCtrl"
       })
-      .state('target.version', {  
+
+      /*.state('target.version', {  
         // 
         // if version is latest get Highest Version no.
         // get all builds for selected version
@@ -51,9 +43,14 @@ app.config(['$stateProvider', '$urlRouterProvider',
             templateUrl: "partials/timeline.html",
             controller: "TimelineCtrl",
           }
-        },
+        }
+
+      })*/
+
+      /*
+      ,
         resolve: {
-          selectedVersion: ['$stateParams', 'versions', function($stateParams, versions){
+          selectedVersion: ['$stateParams', 'ViewTargets', function($stateParams, ViewTargets){
             var version = $stateParams.version
             if(version == 'latest'){
               version = versions[versions.length-1]
@@ -62,8 +59,7 @@ app.config(['$stateProvider', '$urlRouterProvider',
           }]
         }
 
-      })
-      /*
+
       .state('target.version.build', {  
         // if build is latest get Highest build no
         // jobs for build based on version
@@ -85,59 +81,84 @@ app.config(['$stateProvider', '$urlRouterProvider',
 // they each take in target/version/build service to setup data for their views
 
 
+// main controller manages Data Services.  Directives receive data from main ctonroller
+
+
 angular.module('svc.data', [])
-.provider('Data', [function (){
-    this.versions = [];
-    this.bucket = "server";
-    this.selectedVersion = null;
-    this.versionBuilds = [];
-    this.selectedBuildObj = null;
-    this.timelineAbsData = [];
-    this.timelineRelData = [];
-    this.refreshSidebar = false;
-    this.refreshTimeline = false;
-    this.refreshJobs = false;    
+    .provider('Data', [function (){
 
-    this.$get = function(){
-        return {
-            setBucket: function(bucket){
-                this.bucket = bucket
-            },
+        this.versions = [];
+        this.target = "server";
+        this.version = null;
+        this.versions = [];  
 
-
-
-            findBuildObj: function(build){
-                var _build = this.versionBuilds.filter(function(b){
-                    if(b.Version == build){
-                        return true;
-                    }
-                });
-                var rc;
-                if (_build.length == 0){
-                    rc = this.lastVersionBuild();
-                } else {
-                    rc = _build[0];
+        this.$get = function(){
+            return {
+                setTarget: function(target){
+                    this.target = target
+                },
+                setTargetVersions: function(versions){
+                    this.versions = versions
+                },
+                setSelectedVersion: function(version){
+                    this.version = version
+                },
+                getCurrentTarget: function(){
+                    return this.target
+                },
+                getTargetVersions: function(){
+                    return this.versions
+                },
+                getSelectedVersion: function(){
+                    return this.version
                 }
-                return rc;
-            },
-            bucket: "server",
-            lastVersionBuild: function(){
-                return lastEl(this.versionBuilds);
-            },
-            knownPlatforms: [],
-            knownCategories: []
+
+            }
         }
-    }
 }])
 
 
-function lastEl(a){
-  if(a.length > 0) {
-    return a[a.length -1];
-  } else {
-    return a[0];
-  }
-}
+
+angular.module('ctrl.main', [])
+	.controller("MainCtrl", ['$scope', '$stateParams', 'Data', 'QueryService',
+		function($scope, $stateParams, Data, QueryService){
+
+		function loadTargetVersions(target){
+			$scope.target = target
+			Data.setTarget($scope.target)
+
+			// get versions for Target
+			QueryService.getVersions($scope.target)
+				.then(function(versions){
+		            // set selected version of all versions for target
+					var version = $stateParams.version
+		            if(version == 'latest'){
+		              $scope.version = versions[versions.length-1]
+		            } else {
+		              $scope.version = version
+		            }
+
+					// update version info in shared data service
+		            Data.setTargetVersions(versions)
+		            Data.setSelectedVersion($scope.version)
+		        })
+		}
+
+		// update target versions when drop down target changes
+		$scope.changeTarget = function(target){
+			loadTargetVersions(target)
+		}
+
+		// change version and update builds for version
+		$scope.changeVersion = function(version){
+			$scope.version = version
+			Data.setSelectedVersion($scope.version)
+		}
+
+		// initialize ui with url target param
+		loadTargetVersions($stateParams.target)
+	}])
+
 angular.module('app.timeline', ['plotly'])
 
   .controller('TimelineCtrl', ['$scope', 'QueryService', 'ViewTargets', 'selectedVersion', 
@@ -584,97 +605,140 @@ angular.module('ctl.sidebar', [])
 
 angular.module('app.target', [])
 
-  .controller('TargetCtrl', ['$scope', '$location', '$stateParams', 
-  	                         'ViewTargets', 'Data', 'versions',
-	function($scope, $location, $stateParams, ViewTargets, Data, versions){
-		var urlTarget = $stateParams.target
-		$scope.targetBy = ViewTargets.getTarget(urlTarget)
-		ViewTargets.setTarget(urlTarget)
+  .directive('targetSelector', ['$stateParams','ViewTargets', 'Data',
+  	function($stateParams, ViewTargets, Data){
+ 	  	return {
+	  		restrict: 'E',
+	  		scope: {
+	  			target: "=",
+	  			changeTarget: "="
+	  		},
+	  		templateUrl: 'partials/targets.html',
+	  		link: function(scope, elem, attrs){
 
-		// setup initial view targets
-		$scope.viewTargets = ViewTargets.allTargets()
-		$scope.pagerVersions = versions
+	  			// watch changes from parent scope
+	  			scope.$watch(attrs.target, function(target){
+	  				if(!target) { return }
 
-		Data.setBucket(urlTarget)
+		  			// configure drop down to show all targets
+					scope.viewTargets = ViewTargets.allTargets()
 
-	    $scope.didSelectVersion = function(v){
-	      console.log(v)
-	    }
+					// set currently viewed scope target
+					scope.targetBy = ViewTargets.getTarget(target)	
+	  			})
 
+
+	  		}
+	  	}
   }])
 
-  
-  .provider('ViewTargets', [function (){
+  .directive('versionSelector', ['$stateParams', 'ViewTargets', 'QueryService', 'Data',
+  	function($stateParams, ViewTargets, QueryService, Data){
+	  	return {
+	  		restrict: 'E',
+	  		templateUrl: 'partials/versions.html',
+	  		scope: {
+	  			version: "=",
+	  			changeVersion: "="
+	  		},
+	  		link: function(scope, elem, attrs){
+	
+	  			scope.$watch(attrs.version, function(version){
+	  			  	if(version){
+			  			scope.targetVersions = Data.getTargetVersions()
+			  		}
+	  			})
+	  		}
+	  	}
+  }])
 
-      var viewTargets = [{
-        "title": "Couchbase Server",
-        "bucket": "server",
-        "key": "abspassed",
-        "value": 100,
-        "options": [0, 50, 100, 500]
-      }, {
-       "title": "SDK",
-        "bucket": "sdk",
-        "key": "abspassed",
-        "value": 0,
-        "options": [0, 50, 100, 500]
-      }, {
-        "title": "Mobile",
-        "bucket": "mobile",
-        "key": "abspassed",
-        "value": 0,
-        "options": [0, 50, 100, 500]
-      }]
 
+  .factory('ViewTargets', ['COUCHBASE_TARGET', 'SDK_TARGET', 'MOBILE_TARGET', 
+  	function (COUCHBASE_TARGET, SDK_TARGET, MOBILE_TARGET){
+
+      var viewTargets = [COUCHBASE_TARGET, SDK_TARGET, MOBILE_TARGET]
       var targetMap = {} // reverse lookup map
 
-      // add index to viewTargets and
-      // setup revers lookup
+      // allow reverse lookup by bucket
       viewTargets = viewTargets.map(function(t, i){
         t['i'] = i
         targetMap[t.bucket] = t
         return t
       })
 
-      this.currentTarget = viewTargets[0]
-
-      this.$get = function(){
-        return {
-            currentTarget:  this.currentTarget,
-            allTargets: function(){ return viewTargets},
-            getTarget: function(target){ return targetMap[target] }, 
-            setTarget: function(target){ this.currentTarget = target }
+      return {
+            allTargets: function(){ 
+            	return viewTargets
+            },
+            getTarget: function(target){ 
+            	return targetMap[target]
+            }
         }
-      }
   }])
+
+
+ .value('COUCHBASE_TARGET', {
+        "title": "Couchbase Server",
+        "bucket": "server",
+        "key": "abspassed",
+        "value": 100,
+        "options": [0, 50, 100, 500]
+  })
+ .value('SDK_TARGET', {
+        "title": "SDK",
+        "bucket": "sdk",
+        "key": "abspassed",
+        "value": 100,
+        "options": [0, 50, 100, 500]
+  })
+ .value('MOBILE_TARGET', {
+        "title": "Mobile",
+        "bucket": "mobile",
+        "key": "abspassed",
+        "value": 0,
+        "options": [0, 50, 100, 500]
+  })
+
 
 
 angular.module('app.timeline', ['plotly'])
 
-  .controller('TimelineCtrl', ['$scope', 'QueryService', 'ViewTargets', 'selectedVersion', 
+  .controller('TimelineCtrl', ['$scope', 'QueryService', 'Data', 
   	                          'PASS_BAR_STYLE', 'FAIL_BAR_STYLE', 'CHART_LAYOUT', 'CHART_OPTIONS',
-	function($scope, QueryService, ViewTargets, selectedVersion, 
+	function($scope, QueryService, Data, 
 			 PASS_BAR_STYLE, FAIL_BAR_STYLE, CHART_LAYOUT, CHART_OPTIONS){
 
-		var target = ViewTargets.currentTarget
 		var passed = PASS_BAR_STYLE
 		var failed = FAIL_BAR_STYLE
 
-    $scope.data = [passed, failed];
-    $scope.options = CHART_OPTIONS;
-    $scope.layout = CHART_LAYOUT; 
-   	$scope.layout.title = selectedVersion
+	    $scope.data = [passed, failed];
+	    $scope.options = CHART_OPTIONS;
+	    $scope.layout = CHART_LAYOUT; 
 
-    // load builds for selected versions
-    QueryService.getBuilds(target, selectedVersion)
-      	.then(function(builds){
-				builds = builds.filter(function(b){ return (b.Passed + b.Failed) > 200})
-				passed.x = failed.x = builds.map(function(b){ return b.build })
-				passed.y = builds.map(function(b){ return b.Passed })
-				failed.y = builds.map(function(b){ return b.Failed })
-				$scope.data[0] = passed
-				$scope.data[1] = failed
-    	})
+	 	$scope._data = Data
+
+	 	// update plot data whenever selected version changes
+		$scope.$watch('_data.getSelectedVersion()', function(selectedVersion){
+
+			if(!selectedVersion){ return }
+
+			// get target/bucket to query
+			var target = Data.getCurrentTarget()
+
+			// set plot title to selected version
+		   	$scope.layout.title = selectedVersion
+
+		    // load build data for selected versions
+		    QueryService.getBuilds(target, selectedVersion)
+		      	.then(function(builds){
+						builds = builds.filter(function(b){ return (b.Passed + b.Failed) > 200})
+						passed.x = failed.x = builds.map(function(b){ return b.build })
+						passed.y = builds.map(function(b){ return b.Passed })
+						failed.y = builds.map(function(b){ return b.Failed })
+						$scope.data[0] = passed
+						$scope.data[1] = failed
+		    	})
+	      })
 
 	}])
 

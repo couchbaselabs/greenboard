@@ -1,53 +1,34 @@
 angular.module('svc.data', [])
-.provider('Data', [function (){
-    this.versions = [];
-    this.bucket = "server";
-    this.selectedVersion = null;
-    this.versionBuilds = [];
-    this.selectedBuildObj = null;
-    this.timelineAbsData = [];
-    this.timelineRelData = [];
-    this.refreshSidebar = false;
-    this.refreshTimeline = false;
-    this.refreshJobs = false;    
+    .provider('Data', [function (){
 
-    this.$get = function(){
-        return {
-            setBucket: function(bucket){
-                this.bucket = bucket
-            },
+        this.versions = [];
+        this.target = "server";
+        this.version = null;
+        this.versions = [];  
 
-
-
-            findBuildObj: function(build){
-                var _build = this.versionBuilds.filter(function(b){
-                    if(b.Version == build){
-                        return true;
-                    }
-                });
-                var rc;
-                if (_build.length == 0){
-                    rc = this.lastVersionBuild();
-                } else {
-                    rc = _build[0];
+        this.$get = function(){
+            return {
+                setTarget: function(target){
+                    this.target = target
+                },
+                setTargetVersions: function(versions){
+                    this.versions = versions
+                },
+                setSelectedVersion: function(version){
+                    this.version = version
+                },
+                getCurrentTarget: function(){
+                    return this.target
+                },
+                getTargetVersions: function(){
+                    return this.versions
+                },
+                getSelectedVersion: function(){
+                    return this.version
                 }
-                return rc;
-            },
-            bucket: "server",
-            lastVersionBuild: function(){
-                return lastEl(this.versionBuilds);
-            },
-            knownPlatforms: [],
-            knownCategories: []
+
+            }
         }
-    }
 }])
 
 
-function lastEl(a){
-  if(a.length > 0) {
-    return a[a.length -1];
-  } else {
-    return a[0];
-  }
-}
