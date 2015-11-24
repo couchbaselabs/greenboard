@@ -250,6 +250,20 @@ func (ds *DataSource) _GetMissingJobs(build string) []Job {
 						continue
 					}
 				}
+				// block old style naming for win > 4.1.0
+				if build_v > "4.0.1" {
+					if job.Platform == "WIN" {
+						if job.Category == "TUNABLE" || job.Category == "VIEW" ||
+				            job.Category == "NSERV" || job.Category == "2I" || job.Category == "EP" {
+					        // match for old style win string
+					        // w012R2-p0-view-vset00-01-query
+				            if strings.Contains(strings.ToLower(job.Name),"w012") {
+					            continue // skip
+					        }
+						   }
+
+					}
+				}
 				if job.Bid < uniqJobs[key].Bid {
 					continue // skip not latest
 				}
