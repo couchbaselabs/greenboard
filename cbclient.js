@@ -56,7 +56,7 @@ module.exports = function(){
 	           " SELECT * FROM "+bucket+" AS pending"+
 	           " WHERE `build` LIKE '"+ver+"%' "+
 	       	     " EXCEPT "+
-	       	     " SELECT * FROM server WHERE `build`='"+build+"'";
+               " SELECT * FROM "+bucket+" WHERE `build`='"+build+"'";
 
       // start the query
       var qp = _query(bucket, Q)
