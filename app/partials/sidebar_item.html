@@ -1,0 +1,13 @@
+<div ng-class="bgColor()"  
+	 ng-click="toggleVisible()">
+	<span  class="custom-list-group-item" >
+          <a href="">
+            <i class="glyphicon" 
+			   ng-class="glyphiconClass">
+            </i>
+             {{title}}
+          	<span  class="testscore">{{getRunPercent()}}</span>
+          </a>
+		<div class="scoredesc">pass: {{getNumOrPerc("pass")}}, fail: {{getNumOrPerc("fail")}} pend: {{getNumOrPerc("pend")}}</div>
+	</span>
+</div>
