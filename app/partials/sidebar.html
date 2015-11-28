@@ -4,8 +4,13 @@
   <div class="nav nav-sidebar">
     <div class="nav-header">
         <h3>Build</h3>
+        <span class="percToggle">
+          <i class="fa"
+             ng-class="{'fa-toggle-on': !showPerc, 'fa-toggle-off': showPerc}" 
+             ng-click="showPerc=!showPerc"></i>
+        </span>
     </div>
-        <sidebar-item title="build.Version" item="build" />
+        <sidebar-item title="build.Version" item="build" show-perc="showPerc" />
   </div>
 
   <!-- platforms -->
@@ -14,7 +19,7 @@
       <h3>Platforms</h3>
     </div>
     <div ng-repeat="item in build.Platforms">
-      <sidebar-item title="item.key" item="item" />
+      <sidebar-item title="item.key" item="item"  show-perc="showPerc" />
     </div>
   </div>
 
@@ -24,7 +29,7 @@
       <h3>Features</h3>
     </div>
     <div ng-repeat="item in build.Features">
-      <sidebar-item title="item.key" item="item" />
+      <sidebar-item title="item.key" item="item"  show-perc="showPerc" />
     </div>
   </div>
 

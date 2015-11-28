@@ -133,6 +133,7 @@ body {
 
 .scoredesc {
   font-size: 10px;
+  margin-top: 10px;
 }
 
 .greyed a{
@@ -190,6 +191,9 @@ body {
 
 [type=checkbox] { display: none; }
 
+.percToggle {
+  margin-left: 5%; 
+}
 
 .nv-multibar rect{
     fill-opacity: 0.5;
