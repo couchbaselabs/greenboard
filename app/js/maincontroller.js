@@ -91,21 +91,20 @@ angular.module('app.main', [])
 			buildBreakdown["Features"] = _.values(componentTotals)
 			Data.setBuildBreakdown(buildBreakdown)
 
-
-			// https://coderwall.com/p/wkdefg/converting-milliseconds-to-hh-mm-ss-mmm
-			$scope.msToTime = function(duration) {
-			    var milliseconds = parseInt((duration%1000)/100)
-			        , seconds = parseInt((duration/1000)%60)
-			        , minutes = parseInt((duration/(1000*60))%60)
-			        , hours = parseInt((duration/(1000*60*60))%24);
-
-			    hours = (hours < 10) ? "0" + hours : hours;
-			    minutes = (minutes < 10) ? "0" + minutes : minutes;
-			    seconds = (seconds < 10) ? "0" + seconds : seconds;
-
-			    return hours + ":" + minutes + ":" + seconds;
-			}
+			$scope.msToTime = msToTime
 	}])
 
+// https://coderwall.com/p/wkdefg/converting-milliseconds-to-hh-mm-ss-mmm
+function msToTime(duration) {
+    var milliseconds = parseInt((duration%1000)/100)
+        , seconds = parseInt((duration/1000)%60)
+        , minutes = parseInt((duration/(1000*60))%60)
+        , hours = parseInt((duration/(1000*60*60))%24);
 
+    hours = (hours < 10) ? "0" + hours : hours;
+    minutes = (minutes < 10) ? "0" + minutes : minutes;
+    seconds = (seconds < 10) ? "0" + seconds : seconds;
+
+    return hours + ":" + minutes + ":" + seconds;
+}
 
