@@ -74,9 +74,9 @@ app.config(['$stateProvider', '$urlRouterProvider',
         templateUrl: "partials/jobs.html",
         controller: "JobsCtrl",
         resolve: {
-          buildJobs: ['QueryService', 'target', 'build', 'version',
-            function(QueryService, target, build, version){
-                build = version+"-"+build
+          buildJobs: ['QueryService', 'target', 'Data', 'version',
+            function(QueryService, target, Data, version){
+                var build = Data.getBuild()
                 return QueryService.getJobs(build, target)
             }]
         }

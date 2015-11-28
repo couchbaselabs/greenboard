@@ -69,7 +69,17 @@ angular.module('svc.data', [])
                     return this.version
                 },
                 getBuild: function(){
-                    return this.build
+                    var build = this.build
+                    if (build == "latest"){
+                        if (this.builds.length > 0){
+                            build = this.builds[this.builds.length-1]
+                        }
+                    }
+                    // prepend with version if necessary
+                    if (build && (build.indexOf("-")==-1)){
+                        build = this.version+"-"+build
+                    }
+                    return build
                 },
                 getVersionBuilds: function(){
                     return this.builds

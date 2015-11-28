@@ -13,11 +13,21 @@ angular.module('app.sidebar', [])
             	function(breakdown){
             		// breakdown has changed
   	  				if(!breakdown) { return }
-  	  				console.log("sidebar", breakdown)
-  	  				breakdown["Version"] = Data.getSelectedVersion()
+  	  				breakdown["Version"] = Data.getBuild()
   	  				scope.build = breakdown
 	  			})
 
 	  		}
 	  	}
+  }])
+
+  .directive('sidebarItem', [function(){
+  	return {
+  		restrict: 'E',
+  		scope: {
+  			item: "=",
+  			title: "="
+  		},
+  		templateUrl: "partials/sidebar_item.html"
+  	}
   }])

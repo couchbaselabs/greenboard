@@ -16,22 +16,31 @@ angular.module('app.main', [])
 
 		// update target versions when drop down target changes
 		$scope.changeVersion = function(version){
-            $state.go("target.version", {version: version})
+            $state.go("target.version", {version: version, build: "latest"})
 		}
 
 	}])
 
 	.controller('BuildCtrl', ['$scope', '$state', 'build', 'versionBuilds', 'Data',
 		function($scope, $state, build, versionBuilds, Data){
-			Data.setBuild(build)
+
+
 			Data.setVersionBuilds(versionBuilds)
-			
+			if (build=="latest"){
+				if (versionBuilds.length>0){
+					build = versionBuilds[versionBuilds.length-1].build
+				}
+			}
+			Data.setBuild(build)
+
 			// activate job state
 			$state.go("target.version.build.jobs")
 
-			$scope.onChange = function(build){
-				build = build.split("-")[1]
-				$state.go("target.version", {build: build})
+			$scope.onChange = function(newBuild){
+				newBuild = newBuild.split("-")[1]
+				if(newBuild!=build){ // avoid reloading same build
+					$state.go("target.version", {build: newBuild})
+				}
 			}
 	}])
 
@@ -40,10 +49,12 @@ angular.module('app.main', [])
 	.controller('JobsCtrl', ['$scope', '$state', 'Data', 'buildJobs',
 		function($scope, $state, Data, buildJobs){
 			
+			if(buildJobs.length == 0){
+				return
+			}
+
 			Data.setBuildJobs(buildJobs)
 			$scope.jobs = buildJobs
-
-			// produce breakdown for sidebar
 
 
 			// map reduce helper method
@@ -60,6 +71,7 @@ angular.module('app.main', [])
 				})
 			}
 	
+			// produce breakdown for sidebar
 			var osBreakdown = _.groupBy(buildJobs, 'os')
 			var osTotals = mapReduceValues(osBreakdown)
 			var componentBreakdown = _.groupBy(buildJobs, 'component')

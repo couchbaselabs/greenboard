@@ -25,20 +25,19 @@
                           var data = [passed, failed]
                           var options = CHART_OPTIONS;
                           var layout = CHART_LAYOUT;
-                          layout.title = Data.getSelectedVersion()+"-"+Data.getBuild()
+                          layout.title = Data.getBuild()
                           Plotly.newPlot(element, data, layout, options);
 
                           $("#builds").bind('plotly_click',
                               function(event,data){
                                   scope.onChange(data.points[0].x)
                           });
-                           /*
-                           scope.$watch(function(){ return Data.getBuild() }, function(build) {
+                          /* scope.$watch(function(){ return Data.getBuild() }, function(build) {
 
                                if (!build)
                                    return;
                               console.log(build)
-                              Plotly.redraw(element);
+                              //Plotly.redraw(element);
                            }, true);*/
                        }
                    };

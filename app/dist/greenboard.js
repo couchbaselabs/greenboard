@@ -25,20 +25,19 @@
                           var data = [passed, failed]
                           var options = CHART_OPTIONS;
                           var layout = CHART_LAYOUT;
-                          layout.title = Data.getSelectedVersion()+"-"+Data.getBuild()
+                          layout.title = Data.getBuild()
                           Plotly.newPlot(element, data, layout, options);
 
                           $("#builds").bind('plotly_click',
                               function(event,data){
                                   scope.onChange(data.points[0].x)
                           });
-                           /*
-                           scope.$watch(function(){ return Data.getBuild() }, function(build) {
+                          /* scope.$watch(function(){ return Data.getBuild() }, function(build) {
 
                                if (!build)
                                    return;
                               console.log(build)
-                              Plotly.redraw(element);
+                              //Plotly.redraw(element);
                            }, true);*/
                        }
                    };
@@ -130,9 +129,9 @@ app.config(['$stateProvider', '$urlRouterProvider',
         templateUrl: "partials/jobs.html",
         controller: "JobsCtrl",
         resolve: {
-          buildJobs: ['QueryService', 'target', 'build', 'version',
-            function(QueryService, target, build, version){
-                build = version+"-"+build
+          buildJobs: ['QueryService', 'target', 'Data', 'version',
+            function(QueryService, target, Data, version){
+                var build = Data.getBuild()
                 return QueryService.getJobs(build, target)
             }]
         }
@@ -211,7 +210,17 @@ angular.module('svc.data', [])
                     return this.version
                 },
                 getBuild: function(){
-                    return this.build
+                    var build = this.build
+                    if (build == "latest"){
+                        if (this.builds.length > 0){
+                            build = this.builds[this.builds.length-1]
+                        }
+                    }
+                    // prepend with version if necessary
+                    if (build && (build.indexOf("-")==-1)){
+                        build = this.version+"-"+build
+                    }
+                    return build
                 },
                 getVersionBuilds: function(){
                     return this.builds
@@ -241,22 +250,31 @@ angular.module('app.main', [])
 
 		// update target versions when drop down target changes
 		$scope.changeVersion = function(version){
-            $state.go("target.version", {version: version})
+            $state.go("target.version", {version: version, build: "latest"})
 		}
 
 	}])
 
 	.controller('BuildCtrl', ['$scope', '$state', 'build', 'versionBuilds', 'Data',
 		function($scope, $state, build, versionBuilds, Data){
-			Data.setBuild(build)
+
+
 			Data.setVersionBuilds(versionBuilds)
-			
+			if (build=="latest"){
+				if (versionBuilds.length>0){
+					build = versionBuilds[versionBuilds.length-1].build
+				}
+			}
+			Data.setBuild(build)
+
 			// activate job state
 			$state.go("target.version.build.jobs")
 
-			$scope.onChange = function(build){
-				build = build.split("-")[1]
-				$state.go("target.version", {build: build})
+			$scope.onChange = function(newBuild){
+				newBuild = newBuild.split("-")[1]
+				if(newBuild!=build){ // avoid reloading same build
+					$state.go("target.version", {build: newBuild})
+				}
 			}
 	}])
 
@@ -265,10 +283,12 @@ angular.module('app.main', [])
 	.controller('JobsCtrl', ['$scope', '$state', 'Data', 'buildJobs',
 		function($scope, $state, Data, buildJobs){
 			
+			if(buildJobs.length == 0){
+				return
+			}
+
 			Data.setBuildJobs(buildJobs)
 			$scope.jobs = buildJobs
-
-			// produce breakdown for sidebar
 
 
 			// map reduce helper method
@@ -285,6 +305,7 @@ angular.module('app.main', [])
 				})
 			}
 	
+			// produce breakdown for sidebar
 			var osBreakdown = _.groupBy(buildJobs, 'os')
 			var osTotals = mapReduceValues(osBreakdown)
 			var componentBreakdown = _.groupBy(buildJobs, 'component')
@@ -373,8 +394,7 @@ angular.module('app.sidebar', [])
             	function(breakdown){
             		// breakdown has changed
   	  				if(!breakdown) { return }
-  	  				console.log("sidebar", breakdown)
-  	  				breakdown["Version"] = Data.getSelectedVersion()
+  	  				breakdown["Version"] = Data.getBuild()
   	  				scope.build = breakdown
 	  			})
 
@@ -382,6 +402,16 @@ angular.module('app.sidebar', [])
 	  	}
   }])
 
+  .directive('sidebarItem', [function(){
+  	return {
+  		restrict: 'E',
+  		scope: {
+  			item: "=",
+  			title: "="
+  		},
+  		templateUrl: "partials/sidebar_item.html"
+  	}
+  }])
 angular.module('app.target', [])
 
   .directive('targetSelector', ['$state','ViewTargets', 'Data',

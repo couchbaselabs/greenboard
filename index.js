@@ -49,6 +49,15 @@ app.get('/builds/:bucket/:version', function(req, res){
   var builds = []
   client.queryBuilds(bucket, version)
   	.then(function(data){
+  		data.sort(function(b1, b2){
+  			if(b1.build > b2.build){
+  				return 1
+  			}
+  			if(b1.build < b2.build){
+  				return -1
+  			}
+  			return 0
+  		})
 	 	res.send(data);
   	}).catch(function(err){
   		// err
