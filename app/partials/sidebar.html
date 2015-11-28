@@ -1,0 +1,30 @@
+<div class="col-sm-3 col-md-2 sidebar">
+  <div class="nav nav-sidebar">
+    <div class="nav-header">
+        <h3>Build</h3>
+    </div>
+        <p>{{build.Version}}</p>
+        <span class="scoredesc">pass: {{build.Passed}}, fail: {{build.Failed}} pend: {{build.Pending}}</span>
+  </div>
+
+  <div class="nav nav-sidebar">
+    <div class="nav-header">
+      <h3>Platforms</h3>
+    </div>
+    <div ng-repeat="item in build.Platforms">
+      <p>{{item.key}}</p>
+      <span class="scoredesc">pass: {{item.Passed}}, fail: {{item.Failed}} pend: {{item.Pending}}</span>
+    </div>
+  </div>
+
+  <div class="nav nav-sidebar">
+    <div class="nav-header">
+      <h3>Features</h3>
+    </div>
+    <div ng-repeat="item in build.Features">
+      <p>{{item.key}}</p>
+      <span class="scoredesc">pass: {{item.Passed}}, fail: {{item.Failed}} pend: {{item.Pending}}</span>
+    </div>
+  </div>
+
+</div>

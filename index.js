@@ -1,3 +1,4 @@
+var _ = require('lodash');
 var express = require('express');
 var client = require('./cbclient.js')
 
@@ -5,7 +6,6 @@ var app = express();
 app.use(express.static('app'));
 
 
-//0 http://localhost:8100/categories?bucket=server
 app.get('/categories/:bucket?', function (req, res) {
 
   var bucket = req.params.bucket
@@ -58,7 +58,6 @@ app.get('/builds/:bucket/:version', function(req, res){
 })
 
 
-//2 http://localhost:8100/timeline?bucket=server&end_key=4.5.0&start_key=4.1.0
 app.get('/timeline/:version/:bucket?', function(req, res){
 	
 	var dataMap = []
@@ -85,30 +84,25 @@ app.get('/timeline/:version/:bucket?', function(req, res){
 
 })
 
-//3 http://localhost:8200/breakdown?bucket=server&build=4.1.0-4933
-app.get('/breakdown/:build/:bucket?', function(req, res){
+app.get('/jobs/:build/:bucket?', function(req, res){
 
 	var bucket = req.params.bucket
     var build = req.params.build
 
 	client.jobsForBuild(bucket, build)
 		.then(function(data){
-			var breakdown = []
-			data.forEach(function(doc){
-				var type = doc['executed']? 'executed': 'pending'
-				var pendingTotal = type=='pending'? doc[type].totalCount: 0
-				var job = doc[type]
 
-				breakdown.push({
-				  	Version: job.build,
-				  	Passed: job.totalCount - job.failCount,
-				  	Failed: job.failCount,
-				  	Pending: pendingTotal,
-				  	Category: job.component,
-				  	Platform: job.os,
-				  	Priority: job.priority
-				})
+			var executed = _.compact(_.pluck(data, "executed"))
+			var pending = _.compact(_.pluck(data, "pending"))
+
+			// convert total to pending for non-executed jobs
+			pending = _.map(_.uniq(pending, 'url'), function(job){
+				job["pending"] = job.totalCount
+				job["totalCount"] = 0
+				job["failCount"] = 0
+				return job
 			})
+			var breakdown = executed.concat(pending)
 			res.send(breakdown)
 		}).catch(function(err){
 			console.log(err)
@@ -116,73 +110,9 @@ app.get('/breakdown/:build/:bucket?', function(req, res){
 
 })
 
-//4 http://localhost:8200/jobs?bucket=server&build=4.1.0-4933
-app.get('/jobs/:build/:bucket?', function(req, res){
-	var bucket = req.params.bucket
-    var build = req.params.build
-	client.jobsForBuild(bucket, build)
-		.then(function(data){
-			var jobs = []
-			data.forEach(function(doc){
-				if(doc['executed']){
-					var job = doc['executed']
-					jobs.push({
-					  	Version: job.build,
-					  	Total: job.totalCount,
-					  	Name: job.name,
-					  	Result: job.result,
-					  	Url: job.url,
-					  	Claim: job.claim,
-					  	Bid: job.build_id,
-					  	Duration: job.duration,
-					  	Passed: job.totalCount - job.failCount,
-					  	Category: job.component,
-					  	Platform: job.os,
-					  	Priority: job.priority
-					})
-				}
-			})
-			res.send(jobs)
-		}).catch(function(err){
-			console.log(err)
-		})
-
-})
-
-//5 http://localhost:8200/jobs_missing?bucket=server&build=4.1.0-4933
-app.get('/jobs_missing/:build/:bucket?', function(req, res){
-	var bucket = req.params.bucket
-    var build = req.params.build
-	client.jobsForBuild(bucket, build)
-		.then(function(data){
-			var jobs = []
-			data.forEach(function(doc){
-				if(doc['pending']){
-					var job = doc['pending']
-					jobs.push({
-					  	Version: job.build,
-					  	Total: job.totalCount,
-					  	Name: job.name,
-					  	Result: job.result,
-					  	Url: job.url,
-					  	Claim: job.claim,
-					  	Bid: job.build_id,
-					  	Duration: job.duration,
-					  	Passed: job.totalCount - job.failCount,
-					  	Category: job.component,
-					  	Platform: job.os,
-					  	Priority: job.priority
-					})
-				}
-			})
-			res.send(jobs)
-		}).catch(function(err){
-			console.log(err)
-		})
-})
 
 var server = app.listen(8200, function () {
   var host = server.address().address;
   var port = server.address().port;
-  console.log('Example app listening at http://%s:%s', host, port);
+  console.log('Greenboard listening at http://%s:%s', host, port);
 });

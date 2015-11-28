@@ -6,7 +6,9 @@
                    return {
                        restrict: 'E',
                        template: '<div></div>',
-                       scope: {},
+                       scope: {
+                        onChange: "="
+                       },
                        link: function(scope, element) {
                           var element = element[0].children[0];
 
@@ -23,8 +25,13 @@
                           var data = [passed, failed]
                           var options = CHART_OPTIONS;
                           var layout = CHART_LAYOUT;
-                          layout.title = Data.getSelectedVersion()+"-"+build
+                          layout.title = Data.getSelectedVersion()+"-"+Data.getBuild()
                           Plotly.newPlot(element, data, layout, options);
+
+                          $("#builds").bind('plotly_click',
+                              function(event,data){
+                                  scope.onChange(data.points[0].x)
+                          });
                            /*
                            scope.$watch(function(){ return Data.getBuild() }, function(build) {
 

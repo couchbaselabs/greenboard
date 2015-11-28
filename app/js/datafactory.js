@@ -7,9 +7,14 @@ angular.module('svc.data', [])
         this.versions = [];
         this.build = null;
         this.builds = [];
+        this.buildJobs = {};
+        this.buildBreakdown = {};
+
 
         this.$get = function(){
             _targetVersions = {}
+            _buildJobs = []
+            _buildBreakdown = []
 
             return {
                 setTarget: function(target){
@@ -30,6 +35,24 @@ angular.module('svc.data', [])
                 },
                 setVersionBuilds: function(builds){
                     this.builds = builds
+                },
+                setBuildJobs: function(jobs, build){
+                    build = build || this.build
+                    //this.buildJobs[build] = jobs
+                    _buildJobs = jobs
+                },
+                setBuildBreakdown: function(breakdown, build){
+                    build = build || this.build
+                    //this.buildBreakdown[build] = breakdown
+                    _buildBreakdown = breakdown
+                },
+                getBuildBreakdown: function(build){
+                    // todo get from cache too
+                    return _buildBreakdown
+                },
+                getBuildJobs: function(build){
+                    // todo get from cache too
+                    return _buildJobs
                 },
                 getCurrentTarget: function(){
                     return this.target

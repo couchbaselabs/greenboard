@@ -21,6 +21,7 @@
     "couchbase": "^2.1.2",
     "express": "^4.13.3",
     "gulp": "^3.9.0",
+    "lodash": "^3.10.1",
     "promise": "^7.0.4"
   },
   "devDependencies": {

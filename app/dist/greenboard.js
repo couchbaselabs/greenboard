@@ -6,7 +6,9 @@
                    return {
                        restrict: 'E',
                        template: '<div></div>',
-                       scope: {},
+                       scope: {
+                        onChange: "="
+                       },
                        link: function(scope, element) {
                           var element = element[0].children[0];
 
@@ -23,8 +25,13 @@
                           var data = [passed, failed]
                           var options = CHART_OPTIONS;
                           var layout = CHART_LAYOUT;
-                          layout.title = Data.getSelectedVersion()+"-"+build
+                          layout.title = Data.getSelectedVersion()+"-"+Data.getBuild()
                           Plotly.newPlot(element, data, layout, options);
+
+                          $("#builds").bind('plotly_click',
+                              function(event,data){
+                                  scope.onChange(data.points[0].x)
+                          });
                            /*
                            scope.$watch(function(){ return Data.getBuild() }, function(build) {
 
@@ -56,6 +63,7 @@ var app = angular.module('greenBoard', [
   'svc.query',
   'app.main',
   'app.target',
+  'app.sidebar'
 ]);
 
 app.config(['$stateProvider', '$urlRouterProvider',
@@ -118,6 +126,17 @@ app.config(['$stateProvider', '$urlRouterProvider',
             }]
         }
       })
+      .state('target.version.build.jobs', {
+        templateUrl: "partials/jobs.html",
+        controller: "JobsCtrl",
+        resolve: {
+          buildJobs: ['QueryService', 'target', 'build', 'version',
+            function(QueryService, target, build, version){
+                build = version+"-"+build
+                return QueryService.getJobs(build, target)
+            }]
+        }
+      })
 
   }]);
 
@@ -130,9 +149,14 @@ angular.module('svc.data', [])
         this.versions = [];
         this.build = null;
         this.builds = [];
+        this.buildJobs = {};
+        this.buildBreakdown = {};
+
 
         this.$get = function(){
             _targetVersions = {}
+            _buildJobs = []
+            _buildBreakdown = []
 
             return {
                 setTarget: function(target){
@@ -153,6 +177,24 @@ angular.module('svc.data', [])
                 },
                 setVersionBuilds: function(builds){
                     this.builds = builds
+                },
+                setBuildJobs: function(jobs, build){
+                    build = build || this.build
+                    //this.buildJobs[build] = jobs
+                    _buildJobs = jobs
+                },
+                setBuildBreakdown: function(breakdown, build){
+                    build = build || this.build
+                    //this.buildBreakdown[build] = breakdown
+                    _buildBreakdown = breakdown
+                },
+                getBuildBreakdown: function(build){
+                    // todo get from cache too
+                    return _buildBreakdown
+                },
+                getBuildJobs: function(build){
+                    // todo get from cache too
+                    return _buildJobs
                 },
                 getCurrentTarget: function(){
                     return this.target
@@ -189,7 +231,7 @@ angular.module('app.main', [])
 		Data.setSelectedVersion(version)
 		Data.setTargetVersions(targetVersions)
 
-		// move to build state
+		// activate build state
 		$state.go("target.version.build")
 
 		// update target versions when drop down target changes
@@ -204,11 +246,82 @@ angular.module('app.main', [])
 
 	}])
 
-	.controller('BuildCtrl', ['$scope', 'build', 'versionBuilds', 'Data',
-		function($scope, build, versionBuilds, Data){
+	.controller('BuildCtrl', ['$scope', '$state', 'build', 'versionBuilds', 'Data',
+		function($scope, $state, build, versionBuilds, Data){
 			Data.setBuild(build)
 			Data.setVersionBuilds(versionBuilds)
+			
+			// activate job state
+			$state.go("target.version.build.jobs")
+
+			$scope.onChange = function(build){
+				build = build.split("-")[1]
+				$state.go("target.version", {build: build})
+			}
 	}])
+
+
+
+	.controller('JobsCtrl', ['$scope', '$state', 'Data', 'buildJobs',
+		function($scope, $state, Data, buildJobs){
+			
+			Data.setBuildJobs(buildJobs)
+			$scope.jobs = buildJobs
+
+			// produce breakdown for sidebar
+
+
+			// map reduce helper method
+			function mapReduceValues(arr){
+				return _.mapValues(arr, function(values, key){
+					var total = _.sum(_.pluck(values, "totalCount"))
+					var fail = _.sum(_.pluck(values, "failCount"))
+					return {
+						    key: key,
+							Passed: total - fail,
+					        Failed:  fail,
+					        Pending: _.sum(_.pluck(values, "pending"))
+					     }
+				})
+			}
+	
+			var osBreakdown = _.groupBy(buildJobs, 'os')
+			var osTotals = mapReduceValues(osBreakdown)
+			var componentBreakdown = _.groupBy(buildJobs, 'component')
+			var componentTotals = mapReduceValues(componentBreakdown) 
+
+
+			// overall totals can be produced from osTotals
+			var osTotalsValues = _.values(osTotals)
+			var buildBreakdown = _.reduce(osTotalsValues, function(result, val){
+				return {
+					Passed: result["Passed"]+val["Passed"],
+					Failed: result["Failed"]+val["Failed"],
+					Pending: result["Pending"]+val["Pending"]
+				}
+			})
+			buildBreakdown["Platforms"] = osTotalsValues,
+			buildBreakdown["Features"] = _.values(componentTotals)
+			Data.setBuildBreakdown(buildBreakdown)
+
+
+			// https://coderwall.com/p/wkdefg/converting-milliseconds-to-hh-mm-ss-mmm
+			$scope.msToTime = function(duration) {
+			    var milliseconds = parseInt((duration%1000)/100)
+			        , seconds = parseInt((duration/1000)%60)
+			        , minutes = parseInt((duration/(1000*60))%60)
+			        , hours = parseInt((duration/(1000*60*60))%24);
+
+			    hours = (hours < 10) ? "0" + hours : hours;
+			    minutes = (minutes < 10) ? "0" + minutes : minutes;
+			    seconds = (seconds < 10) ? "0" + seconds : seconds;
+
+			    return hours + ":" + minutes + ":" + seconds;
+			}
+	}])
+
+
+
 
 angular.module('svc.query', [])
 	.service("QueryService",['$http', 'Data',
@@ -227,9 +340,47 @@ angular.module('svc.query', [])
 		        			.then(function(response){
 		        				return response.data
 		        			})				
+			},
+			getJobs: function(build, target){
+				var url = ["jobs", build, target].join("/")
+		        return $http({"url": url, cache: true})
+		        			.then(function(response){
+		        				return response.data
+		        			})				
+			},
+			getBuildBreakdown: function(build, target){
+				var url = ["breakdown", build, target].join("/")
+		        return $http({"url": url, cache: true})
+		        			.then(function(response){
+		        				return response.data
+		        			})				
 			}
 		  }
 		}])
+
+angular.module('app.sidebar', [])
+
+  .directive('buildSidebar', ['Data', function(Data){
+ 	  	return {
+	  		restrict: 'E',
+	  		scope: {
+	  			onClick: "="
+	  		},
+	  		templateUrl: 'partials/sidebar.html',
+	  		link: function(scope, elem, attrs){
+
+	  		  scope.$watch(function(){ return Data.getBuildBreakdown() }, 
+            	function(breakdown){
+            		// breakdown has changed
+  	  				if(!breakdown) { return }
+  	  				console.log("sidebar", breakdown)
+  	  				breakdown["Version"] = Data.getSelectedVersion()
+  	  				scope.build = breakdown
+	  			})
+
+	  		}
+	  	}
+  }])
 
 angular.module('app.target', [])
 

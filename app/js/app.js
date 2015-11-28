@@ -7,6 +7,7 @@ var app = angular.module('greenBoard', [
   'svc.query',
   'app.main',
   'app.target',
+  'app.sidebar'
 ]);
 
 app.config(['$stateProvider', '$urlRouterProvider',
@@ -66,6 +67,17 @@ app.config(['$stateProvider', '$urlRouterProvider',
           versionBuilds: ['QueryService', 'target', 'version',
             function(QueryService, target, version){
                 return QueryService.getBuilds(target, version)
+            }]
+        }
+      })
+      .state('target.version.build.jobs', {
+        templateUrl: "partials/jobs.html",
+        controller: "JobsCtrl",
+        resolve: {
+          buildJobs: ['QueryService', 'target', 'build', 'version',
+            function(QueryService, target, build, version){
+                build = version+"-"+build
+                return QueryService.getJobs(build, target)
             }]
         }
       })
