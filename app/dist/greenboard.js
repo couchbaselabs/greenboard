@@ -415,6 +415,10 @@ angular.module('app.sidebar', [])
   		templateUrl: "partials/sidebar_item.html",
   		link: function(scope, elem, attrs){
 
+  			// TODO: probably want this from scope
+	  		scope.isVisible = true
+			scope.glyphiconClass="glyphicon-check"
+
 	  		scope.getNumOrPerc = function(key){
 	  			// toggle by number or percentage
 	  			var asNum = scope.asNum
@@ -433,17 +437,38 @@ angular.module('app.sidebar', [])
 	  				return getPercOfValStr(item, item.Pending)
 	  			}
 	  		}
-  			scope.getRunPercent = function(){ return getItemPercStr(scope.item) }
+  			scope.getRunPercent = function(){ 
+  				if(scope.isVisible){
+	  				return getItemPercStr(scope.item)
+	  			}
+  			}
+
+	  		// configure visibility
+	  		scope.toggleVisible = function(){
+	  			scope.isVisible = !scope.isVisible
+	  			if(scope.isVisible){
+		  			scope.glyphiconClass="glyphicon-check"
+		  		} else {
+		  			scope.glyphiconClass="glyphicon-unchecked"
+		  		}
+	  		}
 
 	  		// set item bg
-  			passPerc = scope.getNumOrPerc("pass")
-  			if(passPerc == 100){
-	  			scope.bgColor = "bg-success"
-	  		} else if(passPerc >= 70){
-	  			scope.bgColor = "bg-warning"
-	  		} else {
-	  			scope.bgColor = "bg-danger"
-	  		}
+	  		scope.bgColor = function(){
+	  			if(!scope.isVisible){
+	  				return "greyed"
+	  			}
+
+	  			passPerc = scope.getNumOrPerc("pass")
+	  			if(passPerc == 100){
+		  			color = "bg-success"
+		  		} else if(passPerc >= 70){
+		  			color = "bg-warning"
+		  		} else {
+		  			color = "bg-danger"
+		  		}
+		  		return color
+		  	}
 
   		}
   	}
