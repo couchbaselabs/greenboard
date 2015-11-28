@@ -408,9 +408,9 @@ angular.module('app.sidebar', [])
   	return {
   		restrict: 'E',
   		scope: {
-  			item: "=",
-  			title: "=",
-  			asNum: "=showPerc"
+  			item: "&",
+  			title: "@",
+  			asNum: "&showPerc"
   		},
   		templateUrl: "partials/sidebar_item.html",
   		link: function(scope, elem, attrs){
@@ -421,8 +421,8 @@ angular.module('app.sidebar', [])
 
 	  		scope.getNumOrPerc = function(key){
 	  			// toggle by number or percentage
-	  			var asNum = scope.asNum
-	  			var item = scope.item
+	  			var asNum = scope.asNum()
+	  			var item = scope.item()
 	  			if(!item){ return }
 	  			if(key=="pass"){
 	  				if(asNum){ return item.Passed }
@@ -439,7 +439,7 @@ angular.module('app.sidebar', [])
 	  		}
   			scope.getRunPercent = function(){ 
   				if(scope.isVisible){
-	  				return getItemPercStr(scope.item)
+	  				return getItemPercStr(scope.item())
 	  			}
   			}
 
@@ -458,8 +458,8 @@ angular.module('app.sidebar', [])
 	  			if(!scope.isVisible){
 	  				return "greyed"
 	  			}
-
-	  			passPerc = scope.getNumOrPerc("pass")
+	  			var item = scope.item()
+	  			passPerc = getPercOfVal(item, item.Passed)
 	  			if(passPerc == 100){
 		  			color = "bg-success"
 		  		} else if(passPerc >= 70){
