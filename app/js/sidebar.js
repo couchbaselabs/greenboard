@@ -15,15 +15,15 @@ angular.module('app.sidebar', [])
             	function(breakdown){
             		// breakdown has changed
   	  				if(!breakdown) { return }
-  	  				breakdown["Version"] = Data.getBuild()
   	  				scope.build = breakdown
+  	  				breakdown["Version"] = Data.getBuild()
 	  			})
 
 	  		}
 	  	}
   }])
 
-  .directive('sidebarItem', [function(){
+  .directive('sidebarItem', ['Data', function(Data){
   	return {
   		restrict: 'E',
   		scope: {
@@ -35,8 +35,10 @@ angular.module('app.sidebar', [])
   		link: function(scope, elem, attrs){
 
   			// TODO: probably want this from scope
-	  		scope.isVisible = true
-			scope.glyphiconClass="glyphicon-check"
+ 			if(!scope.item().disabled){
+		  		scope.isVisible = true
+				scope.glyphiconClass="glyphicon-check"
+			}
 
 	  		scope.getNumOrPerc = function(key){
 	  			// toggle by number or percentage
@@ -65,19 +67,23 @@ angular.module('app.sidebar', [])
 	  		// configure visibility
 	  		scope.toggleVisible = function(){
 	  			scope.isVisible = !scope.isVisible
-	  			if(scope.isVisible){
+	  			if(scope.isVisible && !scope.item().disabled){
 		  			scope.glyphiconClass="glyphicon-check"
 		  		} else {
 		  			scope.glyphiconClass="glyphicon-unchecked"
 		  		}
+
+		  		// propagate change up to view
+		  		Data.toggleItem(scope.title, scope.isVisible)
 	  		}
 
 	  		// set item bg
 	  		scope.bgColor = function(){
-	  			if(!scope.isVisible){
+	 			var item = scope.item()
+	  			if(!scope.isVisible || item.disabled){
 	  				return "greyed"
 	  			}
-	  			var item = scope.item()
+
 	  			passPerc = getPercOfVal(item, item.Passed)
 	  			if(passPerc == 100){
 		  			color = "bg-success"

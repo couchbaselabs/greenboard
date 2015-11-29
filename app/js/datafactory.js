@@ -9,12 +9,15 @@ angular.module('svc.data', [])
         this.builds = [];
         this.buildJobs = {};
         this.buildBreakdown = {};
+        this.buildPlatforms = [];
+        this.buildComponents = [];
 
 
         this.$get = function(){
             _targetVersions = {}
             _buildJobs = []
             _buildBreakdown = []
+            _itemBitmask = null
 
             return {
                 setTarget: function(target){
@@ -46,11 +49,23 @@ angular.module('svc.data', [])
                     //this.buildBreakdown[build] = breakdown
                     _buildBreakdown = breakdown
                 },
+                setBuildPlatforms: function(platforms){
+                    this.buildComponents = components
+                },
+                setBuildComponents: function(components){
+                    this.buildPlatforms = platforms
+                },
+                getBuildPlatforms: function(){
+                    return this.buildPlatforms
+                },
+                getBuildComponents: function(){
+                    return this.buildComponents
+                },
                 getBuildBreakdown: function(build){
                     // todo get from cache too
                     return _buildBreakdown
                 },
-                getBuildJobs: function(build){
+                getBuildJobs: function(){
                     // todo get from cache too
                     return _buildJobs
                 },
@@ -83,6 +98,12 @@ angular.module('svc.data', [])
                 },
                 getVersionBuilds: function(){
                     return this.builds
+                },
+                toggleItem: function(name, visible){
+                    _itemBitmask=name
+                },
+                getItemBitmask: function(){
+                    return _itemBitmask
                 }
 
             }

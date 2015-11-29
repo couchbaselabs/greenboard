@@ -49,34 +49,21 @@ angular.module('app.main', [])
 	.controller('JobsCtrl', ['$scope', '$state', 'Data', 'buildJobs',
 		function($scope, $state, Data, buildJobs){
 			
-			if(buildJobs.length == 0){
-				return
-			}
+		if(buildJobs.length == 0){
+			return
+		}
 
-			Data.setBuildJobs(buildJobs)
+		var allPlatforms = _.uniq(_.pluck(buildJobs, "os"))
+		var allComponents = _.uniq(_.pluck(buildJobs, "component"))
+
+	 	function processJobs(buildJobs){
 			$scope.jobs = buildJobs
 
-
-			// map reduce helper method
-			function mapReduceValues(arr){
-				return _.mapValues(arr, function(values, key){
-					var total = _.sum(_.pluck(values, "totalCount"))
-					var fail = _.sum(_.pluck(values, "failCount"))
-					return {
-						    key: key,
-							Passed: total - fail,
-					        Failed:  fail,
-					        Pending: _.sum(_.pluck(values, "pending"))
-					     }
-				})
-			}
-	
 			// produce breakdown for sidebar
 			var osBreakdown = _.groupBy(buildJobs, 'os')
 			var osTotals = mapReduceValues(osBreakdown)
 			var componentBreakdown = _.groupBy(buildJobs, 'component')
 			var componentTotals = mapReduceValues(componentBreakdown) 
-
 
 			// overall totals can be produced from osTotals
 			var osTotalsValues = _.values(osTotals)
@@ -87,13 +74,63 @@ angular.module('app.main', [])
 					Pending: result["Pending"]+val["Pending"]
 				}
 			})
+
 			buildBreakdown["Platforms"] = osTotalsValues,
 			buildBreakdown["Features"] = _.values(componentTotals)
-			Data.setBuildBreakdown(buildBreakdown)
 
+			// add excluded items
+			function appendExcluded(arr, key){
+				arr.forEach(function(p){
+					buildBreakdown[key].push({
+						key: p,
+						Passed: 0,
+						Failed: 0,
+						Pending: 0,
+						disabled: true
+					})
+				})
+			}
+			appendExcluded(_.difference(allPlatforms, _.keys(osTotals)), "Platforms")
+			appendExcluded(_.difference(allComponents, _.keys(componentTotals)), "Features")
+
+			// set build breakdown to be consumed by sidebar
+			Data.setBuildBreakdown(buildBreakdown)
 			$scope.msToTime = msToTime
+		}
+
+	    // watch changes to sidebar bitmask
+	    $scope.$watch(function(){ return Data.getItemBitmask() },
+	    	function(name){
+	    		if(!name){return}
+	    		var key = allPlatforms.indexOf(name) > -1 ? "os": "component"
+	    		var newJobs = _.reject(Data.getBuildJobs(), key, name)
+	    		processJobs(newJobs)
+	    	})
+
+
+		// cache  build job info
+		Data.setBuildJobs(buildJobs)
+
+	   	// initial processing of jobs
+		processJobs(buildJobs)
+
 	}])
 
+// map reduce helper method
+function mapReduceValues(arr){
+	return _.mapValues(arr, function(values, key){
+		var total = _.sum(_.pluck(values, "totalCount"))
+		var fail = _.sum(_.pluck(values, "failCount"))
+		return {
+			    key: key,
+				Passed: total - fail,
+		        Failed:  fail,
+		        Pending: _.sum(_.pluck(values, "pending"))
+		     }
+	})
+}
+	
+	
 // https://coderwall.com/p/wkdefg/converting-milliseconds-to-hh-mm-ss-mmm
 function msToTime(duration) {
     var milliseconds = parseInt((duration%1000)/100)

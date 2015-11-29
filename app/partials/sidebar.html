@@ -18,7 +18,7 @@
     <div class="nav-header">
       <h3>Platforms</h3>
     </div>
-    <div ng-repeat="item in build.Platforms">
+    <div ng-repeat="item in build.Platforms | orderBy:'key'">
       <sidebar-item title="{{item.key}}" item="item"  show-perc="showPerc" />
     </div>
   </div>
@@ -28,7 +28,7 @@
     <div class="nav-header">
       <h3>Features</h3>
     </div>
-    <div ng-repeat="item in build.Features">
+    <div ng-repeat="item in build.Features | orderBy:'key'">
       <sidebar-item title="{{item.key}}" item="item"  show-perc="showPerc" />
     </div>
   </div>
