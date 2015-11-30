@@ -73,10 +73,11 @@ angular.module('app.main', [])
 					Failed: result["Failed"]+val["Failed"],
 					Pending: result["Pending"]+val["Pending"]
 				}
-			})
+			}) || {}
 
 			buildBreakdown["Platforms"] = osTotalsValues,
 			buildBreakdown["Features"] = _.values(componentTotals)
+
 
 			// add excluded items
 			function appendExcluded(arr, key){
@@ -90,8 +91,19 @@ angular.module('app.main', [])
 					})
 				})
 			}
-			appendExcluded(_.difference(allPlatforms, _.keys(osTotals)), "Platforms")
-			appendExcluded(_.difference(allComponents, _.keys(componentTotals)), "Features")
+
+			// get known keys
+			var knownOsItems =  _.keys(osTotals)
+			var knownComponentItems = _.keys(componentTotals)
+
+			// get keys that are deselected and excluded from view
+			var excludedPlatforms = _.difference(allPlatforms, knownOsItems)
+			var excludedComponents = _.difference(allComponents, knownComponentItems)
+			appendExcluded(excludedPlatforms, "Platforms")
+			appendExcluded(excludedComponents, "Features")
+
+
+			Data.dropFromEncluded(excludedPlatforms.concat(excludedComponents))
 
 			// set build breakdown to be consumed by sidebar
 			Data.setBuildBreakdown(buildBreakdown)
@@ -99,12 +111,60 @@ angular.module('app.main', [])
 		}
 
 	    // watch changes to sidebar bitmask
-	    $scope.$watch(function(){ return Data.getItemBitmask() },
-	    	function(name){
-	    		if(!name){return}
-	    		var key = allPlatforms.indexOf(name) > -1 ? "os": "component"
-	    		var newJobs = _.reject(Data.getBuildJobs(), key, name)
-	    		processJobs(newJobs)
+	    $scope.$watch(function(){ return Data.getSidebarFlag() },
+	    	function(flags){
+	    		if(!flags.length){return}  // ignore null case
+
+
+	    		var includedItems = Data.getIncludedItems()
+	    		var dataJobs = Data.getBuildJobs()
+	    		var implicitDeselect = null
+
+	    		var includeItem = flags[0]
+	    		var itemName = flags[1]
+
+	    		function rejectNonMatching(jobs, names, invert){
+	    			// reject any job that doesn't match os or component
+	    			return _.reject(jobs, 
+			    				function(j){
+					    			var isOsIncluded = (names.indexOf(j.os) > -1)
+					    			var isComponentIncluded = (names.indexOf(j.component) > -1)
+					    			// when component matches, the os must be in included items
+					    			if (isComponentIncluded){
+					    				if(includedItems.indexOf(j.os) == -1){
+					    					isComponentIncluded = false
+					    				}
+					    			}
+					    			if (invert){
+					    				return (isOsIncluded || isComponentIncluded)
+					    			} else {
+						    			return (!isOsIncluded  && !isComponentIncluded)
+						    		}
+				    		})	
+	    		}
+
+	    		if(includeItem){
+	    			if(itemName){
+	    				// add jobs matching to itemName to current scope
+	    				var itemJobs = rejectNonMatching(dataJobs, [itemName], false, true)
+	    				console.log(itemJobs, includedItems)
+	    				dataJobs = $scope.jobs.concat(itemJobs)
+		    		} else {
+		    			// special case of initial filtering all by included items
+		    			dataJobs = rejectNonMatching(dataJobs, includedItems)
+		    		}
+	    		} else if(itemName) {
+	    			// do inverted matching to remove from current scope
+	    			// *matching* instead of the default non matching
+	    		    dataJobs = rejectNonMatching($scope.jobs, [itemName], true)
+	    		} else {
+	    			console.log(includedItems)
+	    			// remove from current list of visible jobs using included items
+	    			dataJobs = rejectNonMatching($scope.jobs, includedItems)	    			
+	    		}
+
+				console.log("Process: "+flags)
+	    		processJobs(dataJobs)
 	    	})
 
 

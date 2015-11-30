@@ -28,17 +28,13 @@ angular.module('app.sidebar', [])
   		restrict: 'E',
   		scope: {
   			item: "&",
+  			disabled: "&",
   			title: "@",
   			asNum: "&showPerc"
   		},
   		templateUrl: "partials/sidebar_item.html",
   		link: function(scope, elem, attrs){
 
-  			// TODO: probably want this from scope
- 			if(!scope.item().disabled){
-		  		scope.isVisible = true
-				scope.glyphiconClass="glyphicon-check"
-			}
 
 	  		scope.getNumOrPerc = function(key){
 	  			// toggle by number or percentage
@@ -59,37 +55,32 @@ angular.module('app.sidebar', [])
 	  			}
 	  		}
   			scope.getRunPercent = function(){ 
-  				if(scope.isVisible){
+  				if(!scope.disabled()){
 	  				return getItemPercStr(scope.item())
 	  			}
   			}
 
 	  		// configure visibility
-	  		scope.toggleVisible = function(){
-	  			scope.isVisible = !scope.isVisible
-	  			if(scope.isVisible && !scope.item().disabled){
-		  			scope.glyphiconClass="glyphicon-check"
-		  		} else {
-		  			scope.glyphiconClass="glyphicon-unchecked"
-		  		}
-
-		  		// propagate change up to view
-		  		Data.toggleItem(scope.title, scope.isVisible)
+	  		scope.toggleItem = function(){
+		  		Data.toggleItem(scope.title, scope.disabled())
 	  		}
 
 	  		// set item bg
 	  		scope.bgColor = function(){
-	 			var item = scope.item()
-	  			if(!scope.isVisible || item.disabled){
-	  				return "greyed"
-	  			}
+	  			var color = "greyed"
+	  			if(scope.disabled()){
+					scope.glyphiconClass="glyphicon-unchecked"
+					return color
+				}
 
+	 			var item = scope.item()
+				scope.glyphiconClass="glyphicon-check"
 	  			passPerc = getPercOfVal(item, item.Passed)
 	  			if(passPerc == 100){
 		  			color = "bg-success"
 		  		} else if(passPerc >= 70){
 		  			color = "bg-warning"
-		  		} else {
+		  		} else if(passPerc >= 0) {
 		  			color = "bg-danger"
 		  		}
 		  		return color
@@ -126,6 +117,8 @@ function getItemPerc(item){
 }
 
 function getItemPercStr(item){
-	return getItemPerc(item)+"%"
+	if (getItemPerc(item) >= 0){
+		return getItemPerc(item)+"%"
+	}
 }
 
