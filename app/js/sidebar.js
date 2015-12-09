@@ -1,23 +1,21 @@
 angular.module('app.sidebar', [])
 
-  .directive('buildSidebar', ['Data', function(Data){
+  .directive('viewSidebar', ['Data', function(Data){
  	  	return {
 	  		restrict: 'E',
-	  		scope: {
-	  			onClick: "="
-	  		},
+	  		scope: {},
 	  		templateUrl: 'partials/sidebar.html',
 	  		link: function(scope, elem, attrs){
 
 	  		  scope.showPerc = false
 
-	  		  scope.$watch(function(){ return Data.getBuildBreakdown() }, 
-            	function(breakdown){
-            		// breakdown has changed
-  	  				if(!breakdown) { return }
-  	  				scope.build = breakdown
-  	  				breakdown["Version"] = Data.getBuild()
-	  			})
+			  scope.$watch(function(){ return Data.getSideBarItems() }, 
+				function(items){
+					// breakdown has changed
+					if(!items) { return }
+					scope.buildVersion = Data.getBuild()
+				    scope.sidebarItems = items
+				})
 
 	  		}
 	  	}
@@ -27,61 +25,64 @@ angular.module('app.sidebar', [])
   	return {
   		restrict: 'E',
   		scope: {
-  			item: "&",
-  			disabled: "&",
-  			title: "@",
+  			type: "@",
+  			key: "@",
   			asNum: "&showPerc"
   		},
   		templateUrl: "partials/sidebar_item.html",
   		link: function(scope, elem, attrs){
 
+  			//TODO: allow modify by location url
 
-	  		scope.getNumOrPerc = function(key){
-	  			// toggle by number or percentage
-	  			var asNum = scope.asNum()
-	  			var item = scope.item()
-	  			if(!item){ return }
-	  			if(key=="pass"){
-	  				if(asNum){ return item.Passed }
-	  				return getPercOfValStr(item, item.Passed)
-	  			}
-	  			if(key=="fail"){
-	  				if(asNum){ return item.Failed }
-	  				return getPercOfValStr(item, item.Failed)
-	  			}
-	  			if(key=="pend"){
-	  				if(asNum){ return item.Pending }
-	  				return getPercOfValStr(item, item.Pending)
-	  			}
-	  		}
-  			scope.getRunPercent = function(){ 
-  				if(!scope.disabled()){
-	  				return getItemPercStr(scope.item())
+  			scope.disabled = false
+  			scope.stats = Data.getItemStats(scope.key, scope.type)
+
+
+
+  			scope.getRunPercent = function(){
+  				// NOTE: scope stats are updated on digest loop here
+	  			scope.stats = Data.getItemStats(scope.key, scope.type)
+  				if(!scope.disabled){
+	  				return scope.stats.percStats.run
 	  			}
   			}
 
+	  		scope.getNumOrPerc = function(key){
+	  			// return value by number or percentage
+	  			var stats = scope.stats
+	  			var asNum = scope.asNum()
+	  			return asNum ? stats.absStats[key] : stats.percStats[key]
+	  		}
+
 	  		// configure visibility
 	  		scope.toggleItem = function(){
-		  		Data.toggleItem(scope.title, scope.disabled())
+	  			var newDisabledState = !scope.disabled
+		  		Data.toggleItem(scope.key, scope.type, newDisabledState)
+	  			scope.disabled = newDisabledState
 	  		}
+
 
 	  		// set item bg
 	  		scope.bgColor = function(){
 	  			var color = "greyed"
-	  			if(scope.disabled()){
+	  			var stats = scope.stats
+	  			if(scope.disabled){
 					scope.glyphiconClass="glyphicon-unchecked"
 					return color
 				}
 
-	 			var item = scope.item()
 				scope.glyphiconClass="glyphicon-check"
-	  			passPerc = getPercOfVal(item, item.Passed)
+	  			passPerc = stats.percStats.passedRaw
 	  			if(passPerc == 100){
 		  			color = "bg-success"
 		  		} else if(passPerc >= 70){
 		  			color = "bg-warning"
 		  		} else if(passPerc >= 0) {
-		  			color = "bg-danger"
+		  			// only set color to danger if we can prove jobs actually
+		  			// failed or are pending
+		  			if((stats.absStats.pending + stats.absStats.failed) > 0){
+			  			color = "bg-danger"
+			  		}
 		  		}
 		  		return color
 		  	}
@@ -89,36 +90,3 @@ angular.module('app.sidebar', [])
   		}
   	}
   }])
-
-function getPercOfVal(item, val){
-  if (!item){
-    return 0;
-  }
-
-  var denom = item.Passed + item.Failed;
-  if(denom == 0){ return 0; }
-  return Math.floor(100*((val/denom).toFixed(2)));
-}
-
-function getPercOfValStr(item, val){
-  return getPercOfVal(item, val)+"%"
-}
-
-function getItemPerc(item){
-  if (!item){
-    return 0;
-  }
-
-  var total = item.Passed + item.Failed;
-  var denom = total + item.Pending;
-  if(denom == 0){ return 0; }
-
-  return Math.floor(100*((total/denom).toFixed(2)));
-}
-
-function getItemPercStr(item){
-	if (getItemPerc(item) >= 0){
-		return getItemPerc(item)+"%"
-	}
-}
-

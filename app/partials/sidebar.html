@@ -10,7 +10,7 @@
              ng-click="showPerc=!showPerc"></i>
         </span>
     </div>
-        <sidebar-item disabled="false" title="{{build.Version}}" item="build" show-perc="showPerc" />
+        <sidebar-item key="{{buildVersion}}" type="build" show-perc="showPerc" />
   </div>
 
   <!-- platforms -->
@@ -18,8 +18,8 @@
     <div class="nav-header">
       <h3>Platforms</h3>
     </div>
-    <div ng-repeat="item in build.Platforms | orderBy:'key'">
-      <sidebar-item disabled="item.disabled" title="{{item.key}}" item="item"  show-perc="showPerc" />
+    <div ng-repeat="item in sidebarItems.platforms">
+      <sidebar-item key="{{item.key}}" type="platforms"  show-perc="showPerc" />
     </div>
   </div>
 
@@ -28,8 +28,8 @@
     <div class="nav-header">
       <h3>Features</h3>
     </div>
-    <div ng-repeat="item in build.Features | orderBy:'key'">
-      <sidebar-item disabled="item.disabled" title="{{item.key}}" item="item"  show-perc="showPerc" />
+    <div ng-repeat="item in sidebarItems.features">
+      <sidebar-item key="{{item.key}}" type="features"  show-perc="showPerc" />
     </div>
   </div>
 
