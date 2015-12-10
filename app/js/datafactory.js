@@ -134,9 +134,12 @@ angular.module('svc.data', [])
 
             // filter out just jobs with this key
             var jobtype = type == "platforms" ? "os" : "component"
-            var subset = _.filter(_buildJobsActive, function(job){
-                return job[jobtype] == key
-            })
+            var subset = _buildJobsActive
+            if (type != "build"){
+                subset = _.filter(_buildJobsActive, function(job){
+                    return job[jobtype] == key
+                    })
+            }
 
             // calculate absolute stats
             var absTotal = _.sum(_.pluck(subset, "totalCount"))

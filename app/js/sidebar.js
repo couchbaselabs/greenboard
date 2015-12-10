@@ -56,6 +56,7 @@ angular.module('app.sidebar', [])
 
 	  		// configure visibility
 	  		scope.toggleItem = function(){
+	  			if(scope.type == "build"){ return } // not clickable
 	  			var newDisabledState = !scope.disabled
 		  		Data.toggleItem(scope.key, scope.type, newDisabledState)
 	  			scope.disabled = newDisabledState
