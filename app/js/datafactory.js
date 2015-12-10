@@ -24,6 +24,49 @@ angular.module('svc.data', [])
        })
     }
 
+
+    function disableItem(key, type){
+
+        var jobtype = type == "platforms" ? "os" : "component"
+
+        // diabling item: remove from active list of build jobs
+        _buildJobsActive = _.reject(_buildJobsActive, function(job){
+            return job[jobtype] == key
+        })
+        updateSidebarItemState(type, key, true)
+
+    }
+
+    function enableItem(key, type){
+
+        var jobtype = type == "platforms" ? "os" : "component"
+
+        // enabling item so include in active list of build jobs
+        var includeJobs = _.filter(_buildJobs, function(job){
+
+            // detect if job matches included key
+            if(job[jobtype] == key){
+
+                // get alternate of current type..
+                // ie... so if we are adding back an os key
+                // then get the component listed for this job
+                var altTypes = jobtype == "os" ? ["features", "component"] : ["platforms", "os"]
+                var sideBarItem = _.find(_sideBarItems[altTypes[0]],"key", job[altTypes[1]])
+
+                // only include this job if it's alternate type isn't disabled 
+                // ie.. do not add back goxdcr if os is centos and centos is disabled
+                if (!sideBarItem.disabled){
+                    return true
+                }
+            }
+        })
+        _buildJobsActive = _buildJobsActive.concat(includeJobs)
+
+        // update sidebar state
+        updateSidebarItemState(type, key, false)
+    }
+
+
     return {
         setTarget: function(target){
             _target = target
@@ -88,39 +131,34 @@ angular.module('svc.data', [])
         },
         toggleItem: function(key, type, disabled){
 
-            var jobtype = type == "platforms" ? "os" : "component"
+            // check if item is being disabled
             if(disabled){
-                // remove this item from active list of build jobs
-                _buildJobsActive = _.reject(_buildJobsActive, function(job){
-                    return job[jobtype] == key
-                })
+
+                // if this is first item to be disabled within os/component
+                // then inverse toggling is performed
+                var isAnyOfThisTypeDisabled = _.any(_.pluck(_sideBarItems[type], "disabled"))
+                if(!isAnyOfThisTypeDisabled){
+
+                    // very well then, inverse toggling it is
+                    // disable every item but this one
+                    var siblingItems = _.pluck(_sideBarItems[type], "key")
+                    siblingItems.forEach(function(k){
+                        if(k!=key){
+                            disableItem(k, type)
+                        }
+                    })
+
+                    // re-enable self
+                    updateSidebarItemState(type, key, false)
+                } else {
+                    disableItem(key, type)
+                }
+
             } else {
 
-                // include this item in active list of build jobs
-                var includeJobs = _.filter(_buildJobs, function(job){
-
-                    // detect if job matches included key
-                    if(job[jobtype] == key){
-
-                        // get alternate of current type..
-                        // ie... so if we are adding back an os key
-                        // then get the component listed for this job
-                        var altTypes = jobtype == "os" ? ["features", "component"] : ["platforms", "os"]
-                        var sideBarItem = _.find(_sideBarItems[altTypes[0]],"key", job[altTypes[1]])
-
-                        // only include this job if it's alternate type isn't disabled 
-                        // ie.. do not add back goxdcr if os is centos and centos is disabled
-                        if (!sideBarItem.disabled){
-                            return true
-                        }
-                    }
-                })
-                _buildJobsActive = _buildJobsActive.concat(includeJobs)
+                // enabling item for visibility
+                enableItem(key, type)
             }
-
-            // update sidebar state
-            updateSidebarItemState(type, key, disabled)
-
         },
         setSideBarItems: function(items){
             _sideBarItems = items

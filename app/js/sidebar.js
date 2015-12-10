@@ -53,9 +53,7 @@ angular.module('app.sidebar', [])
 	  		// configure visibility
 	  		scope.toggleItem = function(){
 	  			if(scope.type == "build"){ return } // not clickable
-	  			var newDisabledState = !scope.disabled
-		  		Data.toggleItem(scope.key, scope.type, newDisabledState)
-	  			scope.disabled = newDisabledState
+		  		Data.toggleItem(scope.key, scope.type, !scope.disabled)
 	  		}
 
 
@@ -86,7 +84,15 @@ angular.module('app.sidebar', [])
 
             // deep watch sidebar to update item stats
 		    scope.$watch(function(){ return Data.getSideBarItems() },
-			  function(changed){
+			  function(newSideBarItem){
+
+			  	// we'll get notified here if this item was disabled
+			  	var thisItem = _.find(newSideBarItem[scope.type], "key", scope.key)
+			  	if(thisItem){
+			  		scope.disabled = thisItem.disabled
+			    }
+
+			  	// update item stats
                 scope.stats = Data.getItemStats(scope.key, scope.type)
 			}, true)
 
