@@ -37,11 +37,7 @@ angular.module('app.sidebar', [])
   			scope.disabled = false
   			scope.stats = Data.getItemStats(scope.key, scope.type)
 
-
-
   			scope.getRunPercent = function(){
-  				// NOTE: scope stats are updated on digest loop here
-	  			scope.stats = Data.getItemStats(scope.key, scope.type)
   				if(!scope.disabled){
 	  				return scope.stats.percStats.run
 	  			}
@@ -87,6 +83,12 @@ angular.module('app.sidebar', [])
 		  		}
 		  		return color
 		  	}
+
+            // deep watch sidebar to update item stats
+		    scope.$watch(function(){ return Data.getSideBarItems() },
+			  function(changed){
+                scope.stats = Data.getItemStats(scope.key, scope.type)
+			}, true)
 
   		}
   	}
