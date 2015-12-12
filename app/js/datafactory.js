@@ -204,6 +204,18 @@ angular.module('svc.data', [])
                 percStats: percStats
             }
             
+        },
+        toggleAllSidebarItems: function(type, isDisable){
+
+            // set all sidebar items to disabled value
+            _sideBarItems[type].forEach(function(item){
+                // disable if not already disabled
+                if(isDisable && !item.disabled){
+                    disableItem(item.key, type)
+                } else if (item.disabled) {
+                    enableItem(item.key, type)
+                }
+            })
         }
     }
 

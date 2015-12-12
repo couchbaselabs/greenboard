@@ -17,6 +17,9 @@
   <div class="nav nav-sidebar">
     <div class="nav-header">
       <h3>Platforms</h3>
+      <a ng-click="toggleAll('platforms')" href="">
+          <i class="fa" ng-class="{'fa-check-square-o': !disablePlatforms, 'fa-square-o': disablePlatforms}"></i> all
+      </a>
     </div>
     <div ng-repeat="item in sidebarItems.platforms">
       <sidebar-item key="{{item.key}}" type="platforms"  show-perc="showPerc" />
@@ -27,6 +30,9 @@
   <div class="nav nav-sidebar">
     <div class="nav-header">
       <h3>Features</h3>
+      <a ng-click="toggleAll('features')" href="">
+          <i class="fa" ng-class="{'fa-check-square-o': !disableFeatures, 'fa-square-o': disableFeatures}"></i> all
+      </a>
     </div>
     <div ng-repeat="item in sidebarItems.features">
       <sidebar-item key="{{item.key}}" type="features"  show-perc="showPerc" />

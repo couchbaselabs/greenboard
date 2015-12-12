@@ -8,6 +8,21 @@ angular.module('app.sidebar', [])
 	  		link: function(scope, elem, attrs){
 
 	  		  scope.showPerc = false
+	  		  scope.disablePlatforms = true
+	  		  scope.disableFeatures = true
+
+	  		  scope.toggleAll = function(type){
+	  		  	var isDisabled;
+	  		  	
+	  		  	if(type=="platforms"){
+	  		  		isDisabled = !scope.disablePlatforms
+		  		  	scope.disablePlatforms = isDisabled
+		  		 } else {
+		  		 	isDisabled = !scope.disableFeatures
+		  		 	scope.disableFeatures = isDisabled
+		  		 }
+	  		  	Data.toggleAllSidebarItems(type, isDisabled)
+	  		  }
 
 			  scope.$watch(function(){ return Data.getSideBarItems() }, 
 				function(items){
