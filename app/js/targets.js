@@ -37,12 +37,53 @@ angular.module('app.target', [])
 	  			changeVersion: "="
 	  		},
 	  		link: function(scope, elem, attrs){
-	
+	        scope.hasNext = true
+          scope.hasPrevious = true
+          var versionWindowSize = 3
+
+          function setNextPrevStatus(){
+
+            var lastGroupIndex = scope.versionGroups.length-1
+            scope.hasNext = scope.groupIndex == 0 ? false:true
+            scope.hasPrevious = scope.groupIndex ==  lastGroupIndex ? false:true
+
+          }
+
+          scope.showPrevious = function(){
+            if(scope.hasPrevious){
+              scope.groupIndex++ // previous is higher increment since we're reversed
+              scope.targetVersions = scope.versionGroups[scope.groupIndex]
+              setNextPrevStatus()
+            }
+          }
+          scope.showNext = function(){
+            if(scope.hasNext){
+              scope.groupIndex--
+              scope.targetVersions = scope.versionGroups[scope.groupIndex]
+              setNextPrevStatus()
+            }
+          }
+
 	  			scope.$watch(function(){ return Data.getSelectedVersion() }, 
             function(version){
 	  			  	if(version){
                 scope.version = version
-			  			  scope.targetVersions = Data.getTargetVersions()
+                var targetVersions = _.clone(Data.getTargetVersions())
+                targetVersions.reverse()
+                var versionIndex = _.indexOf(targetVersions, version)
+
+                // construct window of 5 builds
+                scope.versionGroups = _.map(_.chunk(targetVersions, versionWindowSize),
+                  function(group){
+                    group.reverse(); return group
+                })
+
+                // figure out which group we're in
+                scope.groupIndex = Math.floor(versionIndex/versionWindowSize)
+                scope.targetVersions = scope.versionGroups[scope.groupIndex]
+
+
+                setNextPrevStatus()
   			  		}
 	  			})
 	  		}

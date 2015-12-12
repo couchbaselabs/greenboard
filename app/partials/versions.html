@@ -1,7 +1,19 @@
 <ul class="pagination">
+  <li ng-class="{disabled: !hasPrevious}">
+    <a aria-label="Previous"
+       ng-click="showPrevious()">
+      <span aria-hidden="true">&laquo;</span>
+    </a>
+  </li>
   <li ng-repeat="v in targetVersions" 
       ng-class="{'active': v == version}" 
       class="pagecell">
      	<a ng-click="changeVersion(v)" href="">{{ v }}</a>
+  </li>
+  <li ng-class="{disabled: !hasNext}">
+    <a aria-label="Next"
+       ng-click="showNext()">
+      <span aria-hidden="true">&raquo;</span>
+    </a>
   </li>
 </ul>

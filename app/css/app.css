@@ -85,6 +85,10 @@ body {
 }
 
 
+.pagination li a{
+  cursor: pointer;
+}
+
 /*
  * Placeholder dashboard ideas
  */
