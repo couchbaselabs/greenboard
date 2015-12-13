@@ -17,11 +17,28 @@
 
                           var passed = PASS_BAR_STYLE
                           var failed = FAIL_BAR_STYLE
-                          var builds = versionBuilds.filter(function(b){ return (b.Passed + b.Failed) > 200})
-
+                        //  var builds = versionBuilds.filter(function(b){ return (b.Passed + b.Failed) > 200})
+                          var builds = versionBuilds
                           passed.x = failed.x = builds.map(function(b){ return b.build })
                           passed.y = builds.map(function(b){ return b.Passed })
                           failed.y = builds.map(function(b){ return b.Failed })
+                          passed.marker = {color: builds.map(function(b){
+                              var opacity = '0.40'
+                              if(b.build == build){
+                                opacity = '1'
+                              }
+                              return 'rgba(59, 201, 59, '+opacity+')'
+                            })
+                          }
+                          failed.marker = {color: builds.map(function(b){
+                              var opacity = '0.40'
+                              if(b.build == build){
+                                opacity = '1'
+                              }
+                              return 'rgba(222, 0, 0, '+opacity+')'
+                            })
+                          }
+
                           var data = [passed, failed]
                           var options = CHART_OPTIONS;
                           var layout = CHART_LAYOUT;
@@ -32,23 +49,18 @@
                               function(event,data){
                                   scope.onChange(data.points[0].x)
                           });
-                          /* scope.$watch(function(){ return Data.getBuild() }, function(build) {
-
-                               if (!build)
-                                   return;
-                              console.log(build)
-                              //Plotly.redraw(element);
-                           }, true);*/
+                          $("#builds").bind('plotly_relayout',
+                            function(){
+                              Plotly.redraw(element);
+                          })
                        }
                    };
         }])
       .value('PASS_BAR_STYLE', {x: [], y: [], 
-                  type: "bar", name: "Pass",
-                  marker: {color: 'rgba(59, 201, 59, 0.70)'}})
+                  type: "bar", name: "Pass"})
       .value('FAIL_BAR_STYLE', {x: [], y: [], 
-                  type: "bar", name: "Fail",
-                  marker: {color: 'rgba(222, 0, 0, 0.70)'}})
-      .value('CHART_LAYOUT', {height: 300, width: 800, title: "", showlegend:false})
-      .value('CHART_OPTIONS', {showLink: false, displayLogo: false})
+                  type: "bar", name: "Fail"})
+      .value('CHART_LAYOUT', {height: 300, width: 800, title: "", showlegend:false, barmode: 'stack'})
+      .value('CHART_OPTIONS', {showLink: false, displayModeBar: false})
 
 })();
