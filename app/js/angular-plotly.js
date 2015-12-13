@@ -12,19 +12,13 @@
                        link: function(scope, element) {
                           var element = element[0].children[0];
 
-                          var versionBuilds = Data.getVersionBuilds()
                           var build = Data.getBuild()
 
                           function getDataForBuild(){
                             var passed = PASS_BAR_STYLE
                             var failed = FAIL_BAR_STYLE
                             var filterBy = Data.getBuildFilter()
-                            var builds = versionBuilds.filter(function(b){ return (b.Passed + b.Failed) > filterBy})
-                            if((builds.length == 0) && (filterBy != 0)){
-                              // remove filtering
-                              builds = versionBuilds
-                              Data.setBuildFilter(0) 
-                            }
+                            var builds = Data.getVersionBuilds()
                             passed.x = failed.x = builds.map(function(b){ return b.build })
                             passed.y = builds.map(function(b){ return b.Passed })
                             failed.y = builds.map(function(b){ return b.Failed })

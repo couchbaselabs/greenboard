@@ -68,6 +68,16 @@ angular.module('svc.data', [])
     }
 
 
+    function getVersionBuildByFilter(){
+        // return version builds according to filter
+        var builds = _builds.filter(function(b){ return (b.Passed + b.Failed) > _filterBy})
+        if((builds.length == 0) && (_filterBy != 0)){
+            builds = _builds
+            _filterBy = 0
+        }
+        return builds
+    }
+
     return {
         setTarget: function(target){
             _target = target
@@ -127,9 +137,7 @@ angular.module('svc.data', [])
             }
             return build
         },
-        getVersionBuilds: function(){
-            return _builds
-        },
+        getVersionBuilds: getVersionBuildByFilter,
         toggleItem: function(key, type, disabled){
 
             // check if item is being disabled
@@ -223,6 +231,13 @@ angular.module('svc.data', [])
         },
         setBuildFilter: function(filterBy){
             _filterBy = filterBy
+        },
+        getLatestVersionBuild: function(){
+            var builds = getVersionBuildByFilter()
+            if(builds.length > 0){
+                return builds[builds.length-1].build
+            }
+            return "latest"
         }
     }
 

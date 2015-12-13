@@ -27,9 +27,7 @@ angular.module('app.main', [])
 
 			Data.setVersionBuilds(versionBuilds)
 			if (build=="latest"){
-				if (versionBuilds.length>0){
-					build = versionBuilds[versionBuilds.length-1].build
-				}
+				build = Data.getLatestVersionBuild()
 			}
 			Data.setBuild(build)
 
