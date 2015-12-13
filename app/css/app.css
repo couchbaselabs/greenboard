@@ -179,6 +179,11 @@ body {
   font-size: 16px;
 }
 
+.PENDING{
+  color: #aaa;
+  font-weight: bold;
+  font-size: 16px;
+}
 .NONE{
   color: #aaa;
   font-weight: bold;

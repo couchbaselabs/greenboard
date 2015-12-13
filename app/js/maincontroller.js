@@ -49,17 +49,25 @@ angular.module('app.main', [])
 
 		// order by name initially
 		$scope.predicate = "name"
+		$scope.activePanel = 0
 
 		if(buildJobs.length == 0){
 			return
 		}
 
-		function updateScopeWithJobs(jobs){
-			$scope.jobsCompleted = _.reject(jobs, "result", "PENDING")
-			$scope.jobsUnstable = _.filter(jobs, "result", "UNSTABLE")
-			$scope.jobsFailed = _.filter(jobs, "result", "FAILURE")
-			$scope.jobsPending = _.filter(jobs, "result", "PENDING")
 
+		function updateScopeWithJobs(jobs){
+			var jobsCompleted = _.reject(jobs, "result", "PENDING")
+			var jobsUnstable = _.filter(jobs, "result", "UNSTABLE")
+			var jobsFailed = _.filter(jobs, "result", "FAILURE")
+			var jobsPending = _.filter(jobs, "result", "PENDING")
+
+			$scope.panelTabs = [
+				{title: "Jobs Completed", jobs: jobsCompleted, active: true},
+				{title: "Jobs Unstable", jobs: jobsUnstable},
+				{title: "Jobs Failed", jobs: jobsFailed},
+				{title: "Jobs Pending", jobs: jobsPending}
+			]
 		}
 
 		updateScopeWithJobs(buildJobs)
@@ -75,6 +83,10 @@ angular.module('app.main', [])
  	    		return {key: k, disabled: false}
  	    	})
 	   	Data.setSideBarItems({platforms: allPlatforms, features: allFeatures})
+
+	   	$scope.changePanelJobs = function(i){
+	   		$scope.activePanel = i
+	   	}
 
 	   	$scope.$watch(function(){ return Data.getActiveJobs() }, 
 				function(activeJobs){
