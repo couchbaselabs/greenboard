@@ -61,8 +61,6 @@ module.exports = function(){
 
         return qp.then(function(data){
 
-          // cache this response
-          versionCache[ver] = data
 
           // jobs for this build
           data = _.pluck(data, bucket)
@@ -82,7 +80,9 @@ module.exports = function(){
             job["result"] = "PENDING"
             return job
           })
-          return jobs.concat(pending)
+          // cache this response
+          versionCache[ver] = jobs.concat(pending)
+          return versionCache[ver]
         })
       }
 
