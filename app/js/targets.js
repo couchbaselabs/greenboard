@@ -39,7 +39,7 @@ angular.module('app.target', [])
         link: function(scope, elem, attrs){
 
           scope.activeFilter = Data.getBuildFilter()
-          scope.passFilters = [0, 200, 500]
+          scope.passFilters = [0, 500, 2000]
 
           scope.changeFilter = function(f){
             scope.activeFilter = f
