@@ -15,8 +15,10 @@ angular.module('app.main', [])
 		}
 
 		// update target versions when drop down target changes
-		$scope.changeVersion = function(version){
-            $state.go("target.version", {version: version, build: "latest"})
+		$scope.changeVersion = function(newVersion){
+                  if(newVersion != version){ 
+                     $state.go("target.version", {version: newVersion, build: "latest"})
+                  }
 		}
 
 	}])
