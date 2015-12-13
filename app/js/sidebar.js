@@ -8,8 +8,8 @@ angular.module('app.sidebar', [])
 	  		link: function(scope, elem, attrs){
 
 	  		  scope.showPerc = false
-	  		  scope.disablePlatforms = true
-	  		  scope.disableFeatures = true
+	  		  scope.disablePlatforms = false
+	  		  scope.disableFeatures = false
 
 	  		  scope.toggleAll = function(type){
 	  		  	var isDisabled;
@@ -24,13 +24,27 @@ angular.module('app.sidebar', [])
 	  		  	Data.toggleAllSidebarItems(type, isDisabled)
 	  		  }
 
+			  // Detect when build has changed
 			  scope.$watch(function(){ return Data.getSideBarItems() }, 
 				function(items){
-					// breakdown has changed
+
 					if(!items) { return }
-					scope.buildVersion = Data.getBuild()
-				    scope.sidebarItems = items
-				})
+
+					if(!scope.buildVersion){
+						// get build to display on sidebar
+						// along with sidebar items
+						scope.buildVersion = Data.getBuild()
+					    scope.sidebarItems = items
+					}
+
+					// if all sidebar items of a type selected
+					// enable all checkmark
+					var noPlatformsDisabled = !_.any(_.pluck(items["platforms"], "disabled"))
+					var noFeaturesDisabled = !_.any(_.pluck(items["features"], "disabled"))
+					scope.disablePlatforms = noPlatformsDisabled ? false: true
+					scope.disableFeatures = noFeaturesDisabled ? false: true
+
+				}, true)
 
 	  		}
 	  	}
