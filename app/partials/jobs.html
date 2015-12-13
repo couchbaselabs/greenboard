@@ -15,13 +15,13 @@
           <table class="table table-striped">
             <thead>
               <tr>
-                <th><a href="" ng-click="predicate = 'name'; reverse=!reverse">Name <i class="fa fa-sort"></i></a></th>
-                <th width="10%"><a href="" ng-click="predicate = 'result'; reverse=!reverse">Result <i class="fa fa-sort"></i></a></th>
-                <th width="10%"><a href="" ng-click="predicate = 'passed'; reverse=!reverse">Passed <i class="fa fa-sort"></i></a></th>
-                <th width="10%"><a href="" ng-click="predicate = 'total'; reverse=!reverse">Total <i class="fa fa-sort"></i></a></th>
-                <th width="12%"><a href="" ng-click="predicate = 'duration'; reverse=!reverse">Duration <i class="fa fa-sort"></i></a></th>
-                <th width="20%"><a href="" ng-click="predicate = 'claim'; reverse=!reverse">Claim<i class="fa fa-sort"></i></a></th>
-                <th width="10%"><a href="" ng-click="predicate = 'priority'; reverse=!reverse">Priority <i class="fa fa-sort"></i></a></th>
+                <th><a href="" ng-click="predicate = 'name'; reverse=!reverse">Name  <i class="fa fa-sort"></i></a></th>
+                <th><a href="" ng-click="predicate = 'result'; reverse=!reverse">Result</a></th>
+                <th><a href="" ng-click="predicate = 'passed'; reverse=!reverse">Passed</a></th>
+                <th><a href="" ng-click="predicate = 'total'; reverse=!reverse">Total</a></th>
+                <th><a href="" ng-click="predicate = 'duration'; reverse=!reverse">Duration</a></th>
+                <th class="claim-col"><a href="" ng-click="predicate = 'claim'; reverse=!reverse">Claim </a></th>
+                <th><a href="" ng-click="predicate = 'priority'; reverse=!reverse">Priority</a></th>
               </tr>
             </thead>
             <tbody>
@@ -31,7 +31,8 @@
                 <td>{{job.totalCount - job.failCount}}</td>
                 <td>{{job.totalCount || job.pending}}</td>
                 <td>{{msToTime(job.duration)}}</td>
-                <td class="claim-col"><span ng-bind-html="job.claim"></span></td>
+                <td><span ng-bind-html="job.claim"></span>
+</td>
                 <td>{{job.priority}}</td>
               </tr>
             </tbody>
