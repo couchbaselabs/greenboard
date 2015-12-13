@@ -1,0 +1,7 @@
+<ul class="pagination">
+  <li ng-repeat="f in passFilters" 
+      ng-class="{'active': f == activeFilter}" 
+      class="pagecell">
+     	<a ng-click="changeFilter(f)" href=""> <i class="fa fa-plus"></i> {{ f }}</a>
+  </li>
+</ul>
