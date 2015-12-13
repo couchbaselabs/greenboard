@@ -48,7 +48,8 @@ angular.module('app.main', [])
 		function($scope, $state, Data, buildJobs){
 
 		// order by name initially
-		$scope.predicate = "name"
+		$scope.predicate = "claim"
+		$scope.reverse = true
 		$scope.activePanel = 0
 
 		if(buildJobs.length == 0){

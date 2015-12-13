@@ -1,6 +1,7 @@
 'usev strict'
 
 var app = angular.module('greenBoard', [
+  'ngSanitize',
   'plotly',
   'ui.router',
   'svc.data',

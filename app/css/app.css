@@ -198,6 +198,13 @@ body {
   text-decoration: none;
 }
 
+.claim-col {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  max-width: 1px;
+}
+
 [type=checkbox] { display: none; }
 
 .percToggle {
