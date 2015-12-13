@@ -25,7 +25,7 @@
             </thead>
             <tbody>
               <tr ng-repeat="job in jobs | orderBy:predicate:reverse">
-                <td><a href={{job.url}}{{job.bid}}>{{job.name}}</a></td>
+                <td><a href={{job.url}}{{job.build_id}}>{{job.name}}</a></td>
                 <td><span class={{job.result}}>{{job.result}}</span></td>
                 <td>{{job.totalCount - job.failCount}}</td>
                 <td>{{job.totalCount}}</td>
@@ -53,7 +53,7 @@
             </thead>
             <tbody>
               <tr ng-repeat="job in unstableJobs | orderBy:predicate:reverse">
-                <td><a href={{job.url}}{{job.bid}}>{{job.name}}</a></td>
+                <td><a href={{job.url}}{{job.build_id}}>{{job.name}}</a></td>
                 <td><span class={{job.result}}>{{job.result}}</span></td>
                 <td>{{job.passed}}</td>
                 <td>{{job.total}}</td>
@@ -82,7 +82,7 @@
             </thead>
             <tbody>
               <tr ng-repeat="job in failedJobs | orderBy:predicate:reverse">
-                <td><a href={{job.url}}{{job.bid}}>{{job.name}}</a></td>
+                <td><a href={{job.url}}{{job.build_id}}>{{job.name}}</a></td>
                 <td><span class={{job.result}}>{{job.result}}</span></td>
                 <td>{{job.passed}}</td>
                 <td>{{job.total}}</td>
@@ -108,7 +108,7 @@
                 <td>{{testsPending}}</td>
               <tr>
               <tr ng-repeat="job in missingJobs | orderBy:nameSort">
-                <td><a href={{job.url}}{{job.bid}}>{{job.name}}</a></td>
+                <td><a href={{job.url}}{{job.build_id}}>{{job.name}}</a></td>
                 <td>{{job.total}}</td>
               </tr>
             </tbody>
