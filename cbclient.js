@@ -16,11 +16,12 @@ module.exports = function(){
   	buildJobs[b] = {}
   })
 
-  function _query(bucket, queryStr){
+  function _query(bucket, queryStr, adhoc){
 	  console.log(queryStr)
 	  bucket = bucket || config.DefaultBucket
+    adhoc = adhoc ? false: true
 	  var db = cluster.openBucket(config.DefaultBucket)
-	  var q = couchbase.N1qlQuery.fromString(queryStr)
+	  var q = couchbase.N1qlQuery.fromString(queryStr).adhoc(adhoc)
 	  var promise = new Promise(function(resolve, reject){
 		  db.query(q, function(err, components) {
 		  		if(!err){
