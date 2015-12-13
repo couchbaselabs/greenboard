@@ -71,7 +71,7 @@ module.exports = function(){
           job["pending"] = job.totalCount
           job["totalCount"] = 0
           job["failCount"] = 0
-          job["result"] = "Pending"
+          job["result"] = "PENDING"
           return job
         })
         return jobs.concat(pending)

@@ -2,10 +2,10 @@
   <div class="col-sm-12">
     <!-- Nav tabs -->
     <ul class="nav nav-tabs" role="tablist" id="jobTabs">
-        <li class="active"><a href="#executed" role="tab" data-toggle="tab"><h4>{{jobsCompleted}} Jobs Completed</h4></a></li>
-        <li><a href="#unstable" role="tab" data-toggle="tab"><h4>{{unstableJobsCount}} Jobs Unstable</h4></a></li>
-        <li><a href="#failed" role="tab" data-toggle="tab"><h4>{{failedJobsCount}} Jobs Failed</h4></a></li>
-        <li><a href="#missing" role="tab" data-toggle="tab"><h4>{{jobsPending}} Jobs Pending</h4></a></li>
+        <li class="active"><a href="#executed" role="tab" data-toggle="tab"><h4>{{jobsCompleted.length}} Jobs Completed</h4></a></li>
+        <li><a href="#unstable" role="tab" data-toggle="tab"><h4>{{jobsUnstable.length}} Jobs Unstable</h4></a></li>
+        <li><a href="#failed" role="tab" data-toggle="tab"><h4>{{jobsFailed.length}} Jobs Failed</h4></a></li>
+        <li><a href="#missing" role="tab" data-toggle="tab"><h4>{{jobsPending.length}} Jobs Pending</h4></a></li>
 
     </ul>
     <div class="tab-content">
@@ -24,7 +24,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr ng-repeat="job in jobs | orderBy:predicate:reverse">
+              <tr ng-repeat="job in jobsCompleted | orderBy:predicate:reverse">
                 <td><a href={{job.url}}{{job.build_id}}>{{job.name}}</a></td>
                 <td><span class={{job.result}}>{{job.result}}</span></td>
                 <td>{{job.totalCount - job.failCount}}</td>
@@ -52,7 +52,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr ng-repeat="job in unstableJobs | orderBy:predicate:reverse">
+              <tr ng-repeat="job in jobsUnstable | orderBy:predicate:reverse">
                 <td><a href={{job.url}}{{job.build_id}}>{{job.name}}</a></td>
                 <td><span class={{job.result}}>{{job.result}}</span></td>
                 <td>{{job.passed}}</td>
@@ -81,7 +81,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr ng-repeat="job in failedJobs | orderBy:predicate:reverse">
+              <tr ng-repeat="job in jobsFailed | orderBy:predicate:reverse">
                 <td><a href={{job.url}}{{job.build_id}}>{{job.name}}</a></td>
                 <td><span class={{job.result}}>{{job.result}}</span></td>
                 <td>{{job.passed}}</td>
@@ -107,7 +107,7 @@
                 <td>Summary</td>
                 <td>{{testsPending}}</td>
               <tr>
-              <tr ng-repeat="job in missingJobs | orderBy:nameSort">
+              <tr ng-repeat="job in jobsPending | orderBy:nameSort">
                 <td><a href={{job.url}}{{job.build_id}}>{{job.name}}</a></td>
                 <td>{{job.total}}</td>
               </tr>

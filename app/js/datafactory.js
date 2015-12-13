@@ -237,7 +237,7 @@ angular.module('svc.data', [])
             if(builds.length > 0){
                 return builds[builds.length-1].build
             }
-            return "latest"
+            return _build
         }
     }
 

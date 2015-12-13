@@ -54,7 +54,15 @@ angular.module('app.main', [])
 			return
 		}
 
-		$scope.jobs = buildJobs
+		function updateScopeWithJobs(jobs){
+			$scope.jobsCompleted = _.reject(jobs, "result", "PENDING")
+			$scope.jobsUnstable = _.filter(jobs, "result", "UNSTABLE")
+			$scope.jobsFailed = _.filter(jobs, "result", "FAILURE")
+			$scope.jobsPending = _.filter(jobs, "result", "PENDING")
+
+		}
+
+		updateScopeWithJobs(buildJobs)
 		Data.setBuildJobs(buildJobs)
 
 		// set sidebar items from build job data
@@ -71,7 +79,7 @@ angular.module('app.main', [])
 	   	$scope.$watch(function(){ return Data.getActiveJobs() }, 
 				function(activeJobs){
 					if(activeJobs){
-						$scope.jobs = activeJobs
+						updateScopeWithJobs(activeJobs)
 					}
 				})
 	}])
