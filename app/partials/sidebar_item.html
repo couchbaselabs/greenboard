@@ -7,6 +7,7 @@
              {{key}}
           	<span  class="testscore">{{getRunPercent()}}</span>
           </a>
-		<div class="scoredesc">pass: {{getNumOrPerc("passed")}}, fail: {{getNumOrPerc("failed")}}</div>
+		<div class="scoredesc">pass: {{getNumOrPerc("passed")}}, fail: {{getNumOrPerc("failed")}}
+      <span ng-if="asNum()">pend: {{getNumOrPerc("pending")}}</span></div>
 	</span>
 </div>
