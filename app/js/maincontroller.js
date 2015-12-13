@@ -44,8 +44,8 @@ angular.module('app.main', [])
 
 
 
-	.controller('JobsCtrl', ['$scope', '$state', 'Data', 'buildJobs',
-		function($scope, $state, Data, buildJobs){
+	.controller('JobsCtrl', ['$scope', 'Data', 'buildJobs',
+		function($scope, Data, buildJobs){
 
 		// order by name initially
 		$scope.predicate = "claim"
@@ -55,7 +55,6 @@ angular.module('app.main', [])
 		if(buildJobs.length == 0){
 			return
 		}
-
 
 		function updateScopeWithJobs(jobs){
 			var jobsCompleted = _.reject(jobs, "result", "PENDING")

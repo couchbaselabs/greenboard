@@ -1,5 +1,5 @@
 angular.module('svc.data', [])
-  .service('Data', [function (){
+  .service('Data', ['$location', function ($location){
 
     _versions = []
     _target = "server"
@@ -13,6 +13,32 @@ angular.module('svc.data', [])
     _buildJobsActive = []
     _sideBarItems = []
     _filterBy = 500
+    _initUrlParams = {}
+
+   function updateLocationUrl(type, key, disabled){
+        var typeArgs = $location.search()[type]
+        if(!disabled){
+            if(!typeArgs || typeArgs.length==0){
+                typeArgs = key
+            } else if(typeArgs.indexOf(key) == -1) {
+                typeArgs+=","+key
+            }
+            if(!_.any(_.pluck(_sideBarItems[type], "disabled"))){
+                // all items are selected now
+                typeArgs = null
+            }
+            $location.search(type, typeArgs);
+        } else {
+            if(typeArgs){
+                var regex = new RegExp(",?" + key)
+                var typeArgs = typeArgs.replace(regex, "")
+                if(typeArgs == ""){
+                    typeArgs = null
+                }
+                $location.search(type, typeArgs)
+            }
+        }
+    }
 
     function updateSidebarItemState(type, key, disabled){
         // updates disabled flag connected to sidebar item
@@ -23,6 +49,8 @@ angular.module('svc.data', [])
             }
             return item
        })
+
+       updateLocationUrl(type, key, disabled)
     }
 
 
@@ -171,6 +199,33 @@ angular.module('svc.data', [])
         },
         setSideBarItems: function(items){
             _sideBarItems = items
+
+            // default behavior is to initialize sideBarItems
+            // with items param.  UNLESS: initial url params
+            // require some items be disabled on load
+            if(_initUrlParams){
+
+                // disable everything corresponding to filtered type
+                _.mapKeys(items, function(values, type){
+                    if(type in _initUrlParams){
+                        values.forEach(function(v){
+                            disableItem(v.key, type)
+                        })
+                    }
+                })
+
+                // only enable urlParams
+                _.mapKeys(_initUrlParams, function(values, type){
+                    var keys = values.split(",")
+                    keys.forEach(function(k){
+                        enableItem(k, type)
+                    })
+                })
+
+                // drop init params
+                _initUrlParams = null
+   
+            }
         },
         getSideBarItems: function(){
             return _sideBarItems
@@ -238,6 +293,9 @@ angular.module('svc.data', [])
                 return builds[builds.length-1].build
             }
             return _build
+        },
+        setUrlParams: function(params){
+            _initUrlParams = params
         }
     }
 

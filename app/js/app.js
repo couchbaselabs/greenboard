@@ -11,6 +11,13 @@ var app = angular.module('greenBoard', [
   'app.sidebar'
 ]);
 
+app.run(['$location', 'Data', function($location, Data){
+    // detect if jobs need to be filtered by url params
+    var params = $location.search()
+    Data.setUrlParams(params)
+}])
+
+
 app.config(['$stateProvider', '$urlRouterProvider',
   function($stateProvider, $urlRouterProvider){
 
