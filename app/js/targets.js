@@ -46,6 +46,10 @@ angular.module('app.target', [])
             Data.setBuildFilter(scope.activeFilter)
           }
 
+          scope.$watch(function(){ return Data.getBuildFilter() },
+            function(filterBy){
+                scope.activeFilter = filterBy
+            })
 
         }
       }
