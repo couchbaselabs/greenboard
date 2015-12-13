@@ -10,6 +10,8 @@ module.exports = function(){
   var db = cluster.openBucket(config.DefaultBucket)
   var jobQueryCache = {}
   var jobResponseCache = {}
+  var buildsResponseCache = {}
+  var versionsResponseCache = {}
 
   function strToQuery(queryStr, adhoc){
     console.log("QUERY:",queryStr)
@@ -35,12 +37,31 @@ module.exports = function(){
     queryVersions: function(bucket){
         var Q = "SELECT DISTINCT SPLIT(`build`,'-')[0] AS version"+
                 " FROM "+bucket+" ORDER BY version"
-        return _query(bucket, strToQuery(Q))
+        var qp = _query(bucket, strToQuery(Q))
+          .then(function(data){
+            versionsResponseCache[bucket] = data
+            return data
+          })
+
+        if(bucket in versionsResponseCache){
+          return Promise.resolve(versionsResponseCache[bucket])
+        } else {
+          return qp
+        }
     },
     queryBuilds: function(bucket, version){
         var Q = "SELECT `build`,SUM(failCount) AS Failed,SUM(totalCount)-SUM(failCount) AS Passed"+
                 " FROM "+bucket+" WHERE `build` like '"+version+"%' GROUP BY `build`";
-        return _query(bucket, strToQuery(Q, true))
+        var qp = _query(bucket, strToQuery(Q, true))
+          .then(function(data){
+            buildsResponseCache[version] = data
+            return data
+          })
+        if(version in buildsResponseCache){
+          return Promise.resolve(buildsResponseCache[version])
+        } else {
+          return qp
+        }
     },
     jobsForBuild: function(bucket, build){
       var ver = build.split('-')[0]
