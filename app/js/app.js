@@ -11,10 +11,22 @@ var app = angular.module('greenBoard', [
   'app.sidebar'
 ]);
 
-app.run(['$location', 'Data', function($location, Data){
-    // detect if jobs need to be filtered by url params
-    var params = $location.search()
-    Data.setUrlParams(params)
+app.run(['$location', '$rootScope', 'Data', function($location, $rootScope, Data){
+
+    function initUrlParams(){
+      // sets data service job filter params
+      // based on options passed in from url
+      var params = $location.search()
+      Data.setUrlParams(params)
+    }
+
+    // detect if jobs need to be filtered by url params on init
+    initUrlParams()
+
+    // preserve url params between state changes
+    $rootScope.$on('$stateChangeStart', function(e, to, tp, from, fp){
+      initUrlParams()
+    })
 }])
 
 

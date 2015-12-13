@@ -13,7 +13,7 @@ angular.module('svc.data', [])
     _buildJobsActive = []
     _sideBarItems = []
     _filterBy = 500
-    _initUrlParams = {}
+    _initUrlParams = null
 
    function updateLocationUrl(type, key, disabled){
         var typeArgs = $location.search()[type]
@@ -201,13 +201,16 @@ angular.module('svc.data', [])
             _sideBarItems = items
 
             // default behavior is to initialize sideBarItems
-            // with items param.  UNLESS: initial url params
-            // require some items be disabled on load
-            if(_initUrlParams){
+            // with items param.  
+            // UNLESS: initial url params require some items be disabled on load
+            // NOTE: params only apply across same target
+            if(_initUrlParams && (_initUrlParams.target == _target)){
 
                 // disable everything corresponding to filtered type
                 _.mapKeys(items, function(values, type){
                     if(type in _initUrlParams){
+
+                        // type matched what we want to filter
                         values.forEach(function(v){
                             disableItem(v.key, type)
                         })
@@ -216,16 +219,18 @@ angular.module('svc.data', [])
 
                 // only enable urlParams
                 _.mapKeys(_initUrlParams, function(values, type){
+                    if(type == "target"){ return } // ignore non url param key
+
                     var keys = values.split(",")
                     keys.forEach(function(k){
                         enableItem(k, type)
                     })
                 })
-
-                // drop init params
-                _initUrlParams = null
-   
             }
+
+            // drop init params
+            _initUrlParams = null
+   
         },
         getSideBarItems: function(){
             return _sideBarItems
@@ -295,7 +300,11 @@ angular.module('svc.data', [])
             return _build
         },
         setUrlParams: function(params){
-            _initUrlParams = params
+
+            if(_initUrlParams === null){
+                params["target"] = _target
+                _initUrlParams = params
+            }
         }
     }
 
