@@ -15,44 +15,55 @@
                           var versionBuilds = Data.getVersionBuilds()
                           var build = Data.getBuild()
 
-                          var passed = PASS_BAR_STYLE
-                          var failed = FAIL_BAR_STYLE
-                        //  var builds = versionBuilds.filter(function(b){ return (b.Passed + b.Failed) > 200})
-                          var builds = versionBuilds
-                          passed.x = failed.x = builds.map(function(b){ return b.build })
-                          passed.y = builds.map(function(b){ return b.Passed })
-                          failed.y = builds.map(function(b){ return b.Failed })
-                          passed.marker = {color: builds.map(function(b){
-                              var opacity = '0.40'
-                              if(b.build == build){
-                                opacity = '1'
-                              }
-                              return 'rgba(59, 201, 59, '+opacity+')'
-                            })
-                          }
-                          failed.marker = {color: builds.map(function(b){
-                              var opacity = '0.40'
-                              if(b.build == build){
-                                opacity = '1'
-                              }
-                              return 'rgba(222, 0, 0, '+opacity+')'
-                            })
+                          function getDataForBuild(){
+                            var passed = PASS_BAR_STYLE
+                            var failed = FAIL_BAR_STYLE
+                            var filterBy = Data.getBuildFilter()
+                            var builds = versionBuilds.filter(function(b){ return (b.Passed + b.Failed) > filterBy})
+                            passed.x = failed.x = builds.map(function(b){ return b.build })
+                            passed.y = builds.map(function(b){ return b.Passed })
+                            failed.y = builds.map(function(b){ return b.Failed })
+                            passed.marker = {color: builds.map(function(b){
+                                var opacity = '0.40'
+                                if(b.build == build){
+                                  opacity = '1'
+                                }
+                                return 'rgba(59, 201, 59, '+opacity+')'
+                              })
+                            }
+                            failed.marker = {color: builds.map(function(b){
+                                var opacity = '0.40'
+                                if(b.build == build){
+                                  opacity = '1'
+                                }
+                                return 'rgba(222, 0, 0, '+opacity+')'
+                              })
+                            }
+                            return [passed, failed]
                           }
 
-                          var data = [passed, failed]
+                          var data = getDataForBuild()
                           var options = CHART_OPTIONS;
                           var layout = CHART_LAYOUT;
-                          layout.title = Data.getBuild()
+                          layout.title = build
                           Plotly.newPlot(element, data, layout, options);
 
                           $("#builds").bind('plotly_click',
                               function(event,data){
                                   scope.onChange(data.points[0].x)
                           });
+
+                          /*
                           $("#builds").bind('plotly_relayout',
                             function(){
                               Plotly.redraw(element);
-                          })
+                          })*/
+
+                          scope.$watch(function(){ return Data.getBuildFilter() },
+                            function(filterBy){
+                                getDataForBuild()
+                                Plotly.redraw(element);
+                            })
                        }
                    };
         }])

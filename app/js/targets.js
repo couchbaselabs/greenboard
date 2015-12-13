@@ -1,7 +1,7 @@
 angular.module('app.target', [])
 
-  .directive('targetSelector', ['$state','ViewTargets', 'Data',
-  	function($stateParams, ViewTargets, Data){
+  .directive('targetSelector', ['ViewTargets', 'Data',
+  	function(ViewTargets, Data){
  	  	return {
 	  		restrict: 'E',
 	  		scope: {
@@ -26,6 +26,29 @@ angular.module('app.target', [])
 
 	  		}
 	  	}
+  }])
+
+  .directive('filterSelector', ['Data',
+    function(Data){
+      return {
+        restrict: 'E',
+        scope: {
+          changeFilter: "="
+        },
+        templateUrl: 'partials/filters.html',
+        link: function(scope, elem, attrs){
+
+          scope.activeFilter = Data.getBuildFilter()
+          scope.passFilters = [0, 200, 500]
+
+          scope.changeFilter = function(f){
+            scope.activeFilter = f
+            Data.setBuildFilter(scope.activeFilter)
+          }
+
+
+        }
+      }
   }])
 
   .directive('versionSelector', ['$stateParams', 'ViewTargets', 'QueryService', 'Data',

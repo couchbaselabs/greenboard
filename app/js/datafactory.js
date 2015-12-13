@@ -12,6 +12,7 @@ angular.module('svc.data', [])
     _buildJobs = []
     _buildJobsActive = []
     _sideBarItems = []
+    _filterBy = 500
 
     function updateSidebarItemState(type, key, disabled){
         // updates disabled flag connected to sidebar item
@@ -216,6 +217,12 @@ angular.module('svc.data', [])
                     enableItem(item.key, type)
                 }
             })
+        },
+        getBuildFilter: function(){
+            return _filterBy
+        },
+        setBuildFilter: function(filterBy){
+            _filterBy = filterBy
         }
     }
 
