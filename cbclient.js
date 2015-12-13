@@ -1,6 +1,7 @@
 var config = require('./config.js')
 	, couchbase = require('couchbase')
 	, Promise = require('promise');
+var _ = require('lodash');
 
 // no. of stale responses until we force refresh
 var MAX_STALE_RESPONSES = 10;
@@ -49,30 +50,32 @@ module.exports = function(){
         return _query(bucket, Q)
     },
     jobsForBuild: function(bucket, build){
-  	  var ver = build.split('-')[0]
-	  var Q =  "SELECT * FROM "+bucket+" AS executed "+
-	           " WHERE `build`='"+build+"'"+
-	           " UNION"+
-	           " SELECT * FROM "+bucket+" AS pending"+
-	           " WHERE `build` LIKE '"+ver+"%' "+
-	       	     " EXCEPT "+
-               " SELECT * FROM "+bucket+" WHERE `build`='"+build+"'";
-
-      // start the query
+      var ver = build.split('-')[0]
+      var Q = "SELECT * FROM "+bucket+" WHERE `build` LIKE '"+ver+"%'"
       var qp = _query(bucket, Q)
 
-      if((_stale_cnt < MAX_STALE_RESPONSES) && buildJobs[build]){
-      	_stale_cnt++;
-      	// return cached instance
-      	return Promise.resolve(buildJobs[build])
-      }
-
-      // return live results
       return qp.then(function(data){
-    			// cache
-    			buildJobs[build] = data
-    			return data
-    		})
+
+        // jobs for this build
+        data = _.pluck(data, bucket)
+        var jobs = _.filter(data, 'build', build)
+        var jobNames = _.pluck(jobs, 'name')
+
+        var pending = _.filter(data, function(j){
+          // job is pending if name is not in known job names
+          return _.indexOf(jobNames, j.name) == -1
+        })
+
+        // convert total to pending for non-executed jobs
+        pending = _.map(_.uniq(pending, 'url'), function(job){
+          job["pending"] = job.totalCount
+          job["totalCount"] = 0
+          job["failCount"] = 0
+          job["result"] = "Pending"
+          return job
+        })
+        return jobs.concat(pending)
+      })
     },
     queryBucket: _query
 

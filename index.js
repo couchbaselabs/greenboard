@@ -99,19 +99,8 @@ app.get('/jobs/:build/:bucket?', function(req, res){
     var build = req.params.build
 
 	client.jobsForBuild(bucket, build)
-		.then(function(data){
+		.then(function(breakdown){
 
-			var executed = _.compact(_.pluck(data, "executed"))
-			var pending = _.compact(_.pluck(data, "pending"))
-
-			// convert total to pending for non-executed jobs
-			pending = _.map(_.uniq(pending, 'url'), function(job){
-				job["pending"] = job.totalCount
-				job["totalCount"] = 0
-				job["failCount"] = 0
-				return job
-			})
-			var breakdown = executed.concat(pending)
 			res.send(breakdown)
 		}).catch(function(err){
 			console.log(err)
