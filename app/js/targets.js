@@ -66,7 +66,7 @@ angular.module('app.target', [])
 	  		link: function(scope, elem, attrs){
 	        scope.hasNext = true
           scope.hasPrevious = true
-          var versionWindowSize = 3
+          var versionWindowSize = 4
 
           function setNextPrevStatus(){
 
