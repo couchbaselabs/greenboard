@@ -3,27 +3,21 @@ var config = require('./config.js')
 	, Promise = require('promise');
 var _ = require('lodash');
 
-// no. of stale responses until we force refresh
-var MAX_STALE_RESPONSES = 10;
-
 
 module.exports = function(){
 
   var cluster = new couchbase.Cluster(config.Cluster);
-  var _stale_cnt = 0;
-  var buildJobs = {}
-  var jobCache = {}
+  var db = cluster.openBucket(config.DefaultBucket)
+  var jobQueryCache = {}
+  var jobResponseCache = {}
 
-  config.Buckets.forEach(function(b){
-  	buildJobs[b] = {}
-  })
+  function strToQuery(queryStr, adhoc){
+    console.log("QUERY:",queryStr)
+    adhoc = adhoc ? true: false
+    return couchbase.N1qlQuery.fromString(queryStr).adhoc(adhoc)
+  }
 
-  function _query(bucket, queryStr, adhoc){
-	  console.log(queryStr)
-	  bucket = bucket || config.DefaultBucket
-    adhoc = adhoc ? false: true
-	  var db = cluster.openBucket(config.DefaultBucket)
-	  var q = couchbase.N1qlQuery.fromString(queryStr).adhoc(adhoc)
+  function _query(bucket, q){
 	  var promise = new Promise(function(resolve, reject){
 		  db.query(q, function(err, components) {
 		  		if(!err){
@@ -36,67 +30,61 @@ module.exports = function(){
 	  return promise
   }
 
-  var API =  {  
+  var API =  {
 
-    openBucket: function(bucket){
-      bucket = bucket || config.DefaultBucket
-	  return cluster.openBucket(config.DefaultBucket)
-    },
     queryVersions: function(bucket){
         var Q = "SELECT DISTINCT SPLIT(`build`,'-')[0] AS version"+
                 " FROM "+bucket+" ORDER BY version"
-        return _query(bucket, Q)
+        return _query(bucket, strToQuery(Q))
     },
     queryBuilds: function(bucket, version){
         var Q = "SELECT `build`,SUM(failCount) AS Failed,SUM(totalCount)-SUM(failCount) AS Passed"+
                 " FROM "+bucket+" WHERE `build` like '"+version+"%' GROUP BY `build`";
-        return _query(bucket, Q)
+        return _query(bucket, strToQuery(Q, true))
     },
     jobsForBuild: function(bucket, build){
       var ver = build.split('-')[0]
-      var Q = "SELECT * FROM "+bucket+" WHERE `build` LIKE '"+ver+"%'"
-      var qp = _query(bucket, Q)
+      var qStr = "SELECT * FROM "+bucket+" WHERE `build` LIKE '"+ver+"%'"
+      var queryObj = strToQuery(qStr)
+      if(ver in jobQueryCache){
+        queryObj = jobQueryCache[ver]
+      }
 
-      function _jobsForBuild(bucket, build){
+      jobQueryCache[ver] = queryObj
 
-        return qp.then(function(data){
+      // run query
+      var qp = _query(bucket, queryObj).then(function(data){
 
+        // jobs for this build
+        data = _.pluck(data, bucket)
+        var jobs = _.filter(data, 'build', build)
+        var jobNames = _.pluck(jobs, 'name')
 
-          // jobs for this build
-          data = _.pluck(data, bucket)
-          var jobs = _.filter(data, 'build', build)
-          var jobNames = _.pluck(jobs, 'name')
-
-          var pending = _.filter(data, function(j){
-            // job is pending if name is not in known job names
-            return _.indexOf(jobNames, j.name) == -1
-          })
-
-          // convert total to pending for non-executed jobs
-          pending = _.map(_.uniq(pending, 'url'), function(job){
-            job["pending"] = job.totalCount
-            job["totalCount"] = 0
-            job["failCount"] = 0
-            job["result"] = "PENDING"
-            return job
-          })
-          // cache this response
-          jobCache[ver] = jobs.concat(pending)
-          return jobCache[ver]
+        var pending = _.filter(data, function(j){
+          // job is pending if name is not in known job names
+          return _.indexOf(jobNames, j.name) == -1
         })
-      }
 
-      // if already have cached then return cached version
-      if(ver in jobCache){
-        // meanwhile start new query
-        _jobsForBuild(bucket, build)
-        return Promise.resolve(jobCache[ver])
+        // convert total to pending for non-executed jobs
+        pending = _.map(_.uniq(pending, 'url'), function(job){
+          job["pending"] = job.totalCount
+          job["totalCount"] = 0
+          job["failCount"] = 0
+          job["result"] = "PENDING"
+          return job
+        })
+        var breakdown = jobs.concat(pending)
+        jobResponseCache[ver] = breakdown
+        return breakdown
+      })
+
+      if(ver in jobResponseCache){
+        return Promise.resolve(jobResponseCache[ver])
       } else {
-        return _jobsForBuild(bucket, build)
+        return qp
       }
 
-    },
-    queryBucket: _query
+    }
 
   }
 

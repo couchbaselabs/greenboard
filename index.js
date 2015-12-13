@@ -6,25 +6,6 @@ var app = express();
 app.use(express.static('app'));
 
 
-app.get('/categories/:bucket?', function (req, res) {
-
-  var bucket = req.params.bucket
-  var dataMap = {"component": [], "os": []}
-
-  client.queryBucket(bucket, "SELECT DISTINCT os FROM server UNION SELECT DISTINCT component FROM server")
-  	.then(function(data){
-  		data.forEach(function(d){
-  			type = d['component'] ? 'component': 'os'
-  			dataMap[type].push(d[type])
-  		})
-	 	res.send(dataMap);
-  	}).catch(function(err){
-  		// err
-		console.log(err)
-		res.send(dataMap)
-  	})
-});
-
 app.get('/versions/:bucket?', function(req, res){
 
   var bucket = req.params.bucket
