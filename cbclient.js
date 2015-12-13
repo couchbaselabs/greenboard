@@ -12,7 +12,7 @@ module.exports = function(){
   var cluster = new couchbase.Cluster(config.Cluster);
   var _stale_cnt = 0;
   var buildJobs = {}
-  var versionCache = {}
+  var jobCache = {}
 
   config.Buckets.forEach(function(b){
   	buildJobs[b] = {}
@@ -81,16 +81,16 @@ module.exports = function(){
             return job
           })
           // cache this response
-          versionCache[ver] = jobs.concat(pending)
-          return versionCache[ver]
+          jobCache[ver] = jobs.concat(pending)
+          return jobCache[ver]
         })
       }
 
       // if already have cached then return cached version
-      if(ver in versionCache){
+      if(ver in jobCache){
         // meanwhile start new query
         _jobsForBuild(bucket, build)
-        return Promise.resolve(versionCache[ver])
+        return Promise.resolve(jobCache[ver])
       } else {
         return _jobsForBuild(bucket, build)
       }
