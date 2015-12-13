@@ -12,6 +12,8 @@ module.exports = function(){
   var cluster = new couchbase.Cluster(config.Cluster);
   var _stale_cnt = 0;
   var buildJobs = {}
+  var versionCache = {}
+
   config.Buckets.forEach(function(b){
   	buildJobs[b] = {}
   })
@@ -55,28 +57,44 @@ module.exports = function(){
       var Q = "SELECT * FROM "+bucket+" WHERE `build` LIKE '"+ver+"%'"
       var qp = _query(bucket, Q)
 
-      return qp.then(function(data){
+      function _jobsForBuild(bucket, build){
 
-        // jobs for this build
-        data = _.pluck(data, bucket)
-        var jobs = _.filter(data, 'build', build)
-        var jobNames = _.pluck(jobs, 'name')
+        return qp.then(function(data){
 
-        var pending = _.filter(data, function(j){
-          // job is pending if name is not in known job names
-          return _.indexOf(jobNames, j.name) == -1
+          // cache this response
+          versionCache[ver] = data
+
+          // jobs for this build
+          data = _.pluck(data, bucket)
+          var jobs = _.filter(data, 'build', build)
+          var jobNames = _.pluck(jobs, 'name')
+
+          var pending = _.filter(data, function(j){
+            // job is pending if name is not in known job names
+            return _.indexOf(jobNames, j.name) == -1
+          })
+
+          // convert total to pending for non-executed jobs
+          pending = _.map(_.uniq(pending, 'url'), function(job){
+            job["pending"] = job.totalCount
+            job["totalCount"] = 0
+            job["failCount"] = 0
+            job["result"] = "PENDING"
+            return job
+          })
+          return jobs.concat(pending)
         })
+      }
 
-        // convert total to pending for non-executed jobs
-        pending = _.map(_.uniq(pending, 'url'), function(job){
-          job["pending"] = job.totalCount
-          job["totalCount"] = 0
-          job["failCount"] = 0
-          job["result"] = "PENDING"
-          return job
-        })
-        return jobs.concat(pending)
-      })
+      // if already have cached then return cached version
+      if(ver in versionCache){
+        // meanwhile start new query
+        _jobsForBuild(bucket, build)
+        return Promise.resolve(versionCache[ver])
+      } else {
+        return _jobsForBuild(bucket, build)
+      }
+
     },
     queryBucket: _query
 
