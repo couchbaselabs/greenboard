@@ -32,6 +32,7 @@ angular.module('svc.data', [])
             if(typeArgs){
                 var regex = new RegExp(",?" + key)
                 var typeArgs = typeArgs.replace(regex, "")
+                                    .replace(/^,/,"")
                 if(typeArgs == ""){
                     typeArgs = null
                 }
