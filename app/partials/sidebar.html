@@ -21,8 +21,8 @@
           <i class="fa" ng-class="{'fa-check-square-o': !disablePlatforms, 'fa-square-o': disablePlatforms}"></i> all
       </a>
     </div>
-    <div ng-repeat="item in sidebarItems.platforms">
-      <sidebar-item key="{{item.key}}" type="platforms"  show-perc="showPerc" />
+    <div ng-repeat="key in sidebarItems.platforms | orderBy:key">
+      <sidebar-item key="{{key}}" type="platforms"  show-perc="showPerc" />
     </div>
   </div>
 
@@ -34,8 +34,8 @@
           <i class="fa" ng-class="{'fa-check-square-o': !disableFeatures, 'fa-square-o': disableFeatures}"></i> all
       </a>
     </div>
-    <div ng-repeat="item in sidebarItems.features">
-      <sidebar-item key="{{item.key}}" type="features"  show-perc="showPerc" />
+    <div ng-repeat="key in sidebarItems.features | orderBy:key">
+      <sidebar-item key="{{key}}" type="features"  show-perc="showPerc" />
     </div>
   </div>
 

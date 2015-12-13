@@ -34,7 +34,10 @@ angular.module('app.sidebar', [])
 						// get build to display on sidebar
 						// along with sidebar items
 						scope.buildVersion = Data.getBuild()
-					    scope.sidebarItems = items
+					    scope.sidebarItems = {
+					        platforms: _.pluck(items["platforms"], "key"),
+					        features: _.pluck(items["features"], "key")
+					    }
 					}
 
 					// if all sidebar items of a type selected
