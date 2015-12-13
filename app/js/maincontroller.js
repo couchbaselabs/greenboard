@@ -89,6 +89,8 @@ angular.module('app.main', [])
 	   		$scope.activePanel = i
 	   	}
 
+        $scope.msToTime = msToTime
+
 	   	$scope.$watch(function(){ return Data.getActiveJobs() }, 
 				function(activeJobs){
 					if(activeJobs){
