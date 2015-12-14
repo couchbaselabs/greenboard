@@ -8,8 +8,6 @@ module.exports = function(){
 
   var cluster = new couchbase.Cluster(config.Cluster);
   var db = cluster.openBucket(config.DefaultBucket)
-  var jobQueryCache = {}
-  var jobResponseCache = {}
   var buildsResponseCache = {}
   var versionsResponseCache = {}
 
@@ -50,28 +48,41 @@ module.exports = function(){
         }
     },
     queryBuilds: function(bucket, version){
-        var Q = "SELECT `build`,SUM(failCount) AS Failed,SUM(totalCount)-SUM(failCount) AS Passed"+
-                " FROM "+bucket+" WHERE `build` like '"+version+"%' GROUP BY `build`";
+        var Q = "SELECT * FROM "+bucket+" WHERE `build` LIKE '"+version+"%'"
+
+        function processBuild(data){
+            // group all jobs by build and aggregate data for timeline
+            var builds = _.chain(data).pluck("server").groupBy('build')
+                .map(function(buildSet){
+                  var total = _.sum(_.pluck(buildSet, "totalCount"))
+                  var failed = _.sum(_.pluck(buildSet, "failCount"))
+                  var passed = total - failed
+                  return {
+                    Failed: failed,
+                    Passed: passed,
+                    build: buildSet[0].build
+                  }
+                })
+            return builds     
+        }
+
         var qp = _query(bucket, strToQuery(Q, true))
           .then(function(data){
-            buildsResponseCache[version] = data
-            return data
+            buildsResponseCache[version] = _.cloneDeep(data)
+            return processBuild(data)
           })
+
         if(version in buildsResponseCache){
-          return Promise.resolve(buildsResponseCache[version])
+          var data = buildsResponseCache[version]
+          var response = processBuild(data)
+          return Promise.resolve(response)
         } else {
           return qp
         }
     },
     jobsForBuild: function(bucket, build){
       var ver = build.split('-')[0]
-      var qStr = "SELECT * FROM "+bucket+" WHERE `build` LIKE '"+ver+"%'"
-      var queryObj = strToQuery(qStr)
-      if(ver in jobQueryCache){
-        queryObj = jobQueryCache[ver]
-      }
-
-      jobQueryCache[ver] = queryObj
+      var Q = "SELECT * FROM "+bucket+" WHERE `build` LIKE '"+ver+"%'"
 
       function processJobs(queryData){
 
@@ -98,14 +109,14 @@ module.exports = function(){
       }
 
       // run query
-      var qp = _query(bucket, queryObj).then(function(data){
+      var qp = _query(bucket, strToQuery(Q)).then(function(data){
         // cache response
-        jobResponseCache[ver] = _.cloneDeep(data)
+        buildsResponseCache[ver] = _.cloneDeep(data)
         return processJobs(data)
       })
 
-      if(ver in jobResponseCache){
-        var data = jobResponseCache[ver]
+      if(ver in buildsResponseCache){
+        var data = buildsResponseCache[ver]
         var response = processJobs(data)
         return Promise.resolve(response)
       } else {
