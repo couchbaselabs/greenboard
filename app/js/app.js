@@ -84,9 +84,10 @@ app.config(['$stateProvider', '$urlRouterProvider',
         templateUrl: "partials/builds.html",
         controller: "BuildCtrl",
         resolve: {
-          versionBuilds: ['QueryService', 'target', 'version',
-            function(QueryService, target, version){
-                return QueryService.getBuilds(target, version)
+          versionBuilds: ['QueryService', 'Data', 'target', 'version',
+            function(QueryService, Data, target, version){
+                var params = Data.getUrlParams()
+                return QueryService.getBuilds(target, version, params)
             }]
         }
       })

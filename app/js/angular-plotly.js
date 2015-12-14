@@ -1,8 +1,8 @@
 (function(){
     'use strict';
     angular.module('plotly', [])
-        .directive('plotly', ['Data', 'PASS_BAR_STYLE',  'FAIL_BAR_STYLE', 'CHART_LAYOUT', 'CHART_OPTIONS',
-            function(Data, PASS_BAR_STYLE, FAIL_BAR_STYLE, CHART_LAYOUT, CHART_OPTIONS) {
+        .directive('plotly', ['$location', 'QueryService', 'Data', 'PASS_BAR_STYLE',  'FAIL_BAR_STYLE', 'CHART_LAYOUT', 'CHART_OPTIONS',
+            function($location, QueryService, Data, PASS_BAR_STYLE, FAIL_BAR_STYLE, CHART_LAYOUT, CHART_OPTIONS) {
                    return {
                        restrict: 'E',
                        template: '<div></div>',
@@ -11,13 +11,14 @@
                        },
                        link: function(scope, element) {
                           var element = element[0].children[0];
-
                           var build = Data.getBuild()
+                          var target = Data.getCurrentTarget()
+                          var version =  Data.getSelectedVersion()
+                          scope.hasTransitioned = false
 
                           function getDataForBuild(){
                             var passed = PASS_BAR_STYLE
                             var failed = FAIL_BAR_STYLE
-                            var filterBy = Data.getBuildFilter()
                             var builds = Data.getVersionBuilds()
                             passed.x = failed.x = builds.map(function(b){ return b.build })
                             passed.y = builds.map(function(b){ return b.Passed })
@@ -52,17 +53,30 @@
                                   scope.onChange(data.points[0].x)
                           });
 
-                          /*
-                          $("#builds").bind('plotly_relayout',
-                            function(){
-                              Plotly.redraw(element);
-                          })*/
-
+                          // redraw timeline when build filterBy value changes
                           scope.$watch(function(){ return Data.getBuildFilter() },
                             function(filterBy){
                                 getDataForBuild()
                                 Plotly.redraw(element);
                             })
+
+                          // redraw timeline when url adds inclusive keys
+                          scope.$watch(function(){ return $location.search() }, 
+                            function(params, lastParams){
+                              
+                              if(_.keys(lastParams).length==0 && !scope.hasTransitioned){
+                                // not a param change
+                                return
+                              }
+                              scope.hasTransitioned = true
+                              QueryService.getBuilds(target, version, params)
+                                .then(function(versionBuilds){
+                                  Data.setVersionBuilds(versionBuilds)
+                                  getDataForBuild()
+                                  Plotly.redraw(element);
+                                })
+                          }, true)
+
                        }
                    };
         }])

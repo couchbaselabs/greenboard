@@ -28,8 +28,11 @@ app.get('/builds/:bucket/:version', function(req, res){
 
   var bucket = req.params.bucket
   var version = req.params.version
+  var platforms = req.query.platforms
+  var features = req.query.features
   var builds = []
-  client.queryBuilds(bucket, version)
+
+  client.queryBuilds(bucket, version, platforms, features)
   	.then(function(data){
   		data.sort(function(b1, b2){
   			if(b1.build > b2.build){

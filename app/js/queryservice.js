@@ -1,6 +1,6 @@
 angular.module('svc.query', [])
-	.service("QueryService",['$http', 'Data',
-		function($http, Data){
+	.service("QueryService",['$http',
+		function($http){
 		  return {
 			getVersions: function(target){
 				var url = ["versions", target].join("/")
@@ -9,9 +9,9 @@ angular.module('svc.query', [])
 		        				return response.data
 		        			})
 			},
-			getBuilds: function(target, version){
+			getBuilds: function(target, version, params){
 				var url = ["builds", target, version].join("/")
-		        return $http({"url": url, cache: true})
+		        return $http({"url": url, params: params, cache: false})
 		        			.then(function(response){
 		        				return response.data
 		        			})				

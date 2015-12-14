@@ -47,12 +47,27 @@ module.exports = function(){
           return qp
         }
     },
-    queryBuilds: function(bucket, version){
+    queryBuilds: function(bucket, version, platforms, features){
         var Q = "SELECT * FROM "+bucket+" WHERE `build` LIKE '"+version+"%'"
 
         function processBuild(data){
             // group all jobs by build and aggregate data for timeline
-            var builds = _.chain(data).pluck("server").groupBy('build')
+            var builds = _.pluck(data, "server")
+
+            // include only matching platforms and features (if provided)
+            if(platforms){
+              builds = _.filter(builds, function(b){
+                return platforms.indexOf(b.os) > -1
+              })
+            }
+            if(features){
+              builds = _.filter(builds, function(b){
+                return features.indexOf(b.component) > -1
+              })
+            }
+
+            builds = _.chain(builds)
+                .groupBy('build')
                 .map(function(buildSet){
                   var total = _.sum(_.pluck(buildSet, "totalCount"))
                   var failed = _.sum(_.pluck(buildSet, "failCount"))

@@ -97,7 +97,8 @@ angular.module('svc.data', [])
 
 
     function getVersionBuildByFilter(){
-        // return version builds according to filter
+
+        // select version builds according to run filter
         var builds = _builds.filter(function(b){ return (b.Passed + b.Failed) > _filterBy})
         if((builds.length == 0) && (_filterBy != 0)){
             builds = _builds
@@ -305,6 +306,9 @@ angular.module('svc.data', [])
                 params["target"] = _target
                 _initUrlParams = params
             }
+        },
+        getUrlParams: function(params){
+            return _initUrlParams
         }
     }
 
