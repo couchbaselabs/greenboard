@@ -27,13 +27,13 @@ angular.module('app.sidebar', [])
 
 			  // Detect when build has changed
 			  scope.$watch(function(){ return Data.getSideBarItems() }, 
-				function(items){
-					var build = Data.getBuild()
+				function(items, last){
+
 					if(!items) { return }
 
 					// only update sidebar items on build change
-					if(build!=scope.buildVersion){
-						scope.buildVersion = build
+					if(items.buildVersion != last.buildVersion){
+						scope.buildVersion = items.buildVersion
 					    scope.sidebarItems = {
 					        platforms: _.pluck(items["platforms"], "key"),
 					        features: _.pluck(items["features"], "key")

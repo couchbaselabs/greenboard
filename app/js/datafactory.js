@@ -198,6 +198,7 @@ angular.module('svc.data', [])
         },
         setSideBarItems: function(items){
             _sideBarItems = items
+            _sideBarItems['buildVersion'] = _build
 
             // default behavior is to initialize sideBarItems
             // with items param.  
