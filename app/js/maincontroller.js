@@ -26,7 +26,7 @@ angular.module('app.main', [])
 	.controller('BuildCtrl', ['$scope', '$state', 'build', 'versionBuilds', 'Data',
 		function($scope, $state, build, versionBuilds, Data){
 
-
+			Data.setBuildFilter()
 			Data.setVersionBuilds(versionBuilds)
 			if (build=="latest"){
 				build = Data.getLatestVersionBuild()

@@ -1,5 +1,6 @@
 angular.module('svc.data', [])
-  .service('Data', ['$location', function ($location){
+  .value("DEFAULT_FILTER_BY", 500)
+  .service('Data', ['$location', 'DEFAULT_FILTER_BY', function ($location, DEFAULT_FILTER_BY){
 
     _versions = []
     _target = "server"
@@ -11,7 +12,7 @@ angular.module('svc.data', [])
     _buildJobs = []
     _buildJobsActive = []
     _sideBarItems = []
-    _filterBy = 500
+    _filterBy = DEFAULT_FILTER_BY
     _initUrlParams = null
 
    function updateLocationUrl(type, key, disabled){
@@ -291,7 +292,7 @@ angular.module('svc.data', [])
             return _filterBy
         },
         setBuildFilter: function(filterBy){
-            _filterBy = filterBy
+            _filterBy = filterBy || DEFAULT_FILTER_BY
         },
         getLatestVersionBuild: function(){
             var builds = getVersionBuildByFilter()
