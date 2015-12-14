@@ -18,14 +18,7 @@ angular.module('svc.query', [])
 			},
 			getJobs: function(build, target){
 				var url = ["jobs", build, target].join("/")
-		        return $http({"url": url, cache: true})
-		        			.then(function(response){
-		        				return response.data
-		        			})				
-			},
-			getBuildBreakdown: function(build, target){
-				var url = ["breakdown", build, target].join("/")
-		        return $http({"url": url, cache: true})
+		        return $http({"url": url, cache: false})
 		        			.then(function(response){
 		        				return response.data
 		        			})				

@@ -7,7 +7,6 @@ angular.module('svc.data', [])
     _versions = []
     _build = null
     _builds = []
-    _buildJobs = {}
     _targetVersions = {}
     _buildJobs = []
     _buildJobsActive = []
