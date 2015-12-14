@@ -73,9 +73,10 @@ module.exports = function(){
 
       jobQueryCache[ver] = queryObj
 
-      function processJobs(data){
+      function processJobs(queryData){
+
         // jobs for this build
-        data = _.pluck(data, bucket)
+        var data = _.pluck(queryData, bucket)
         var jobs = _.filter(data, 'build', build)
         var jobNames = _.pluck(jobs, 'name')
 
@@ -99,7 +100,7 @@ module.exports = function(){
       // run query
       var qp = _query(bucket, queryObj).then(function(data){
         // cache response
-        jobResponseCache[ver] = data
+        jobResponseCache[ver] = _.cloneDeep(data)
         return processJobs(data)
       })
 
