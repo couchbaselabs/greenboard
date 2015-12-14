@@ -107,6 +107,20 @@ angular.module('svc.data', [])
         return builds
     }
 
+    function buildNameWithVersion(){
+        var build = _build
+        if (build == "latest"){
+            if (_builds.length > 0){
+                build = _builds[_builds.length-1]
+            }
+        }
+        // prepend with version if necessary
+        if (build && (build.indexOf("-")==-1)){
+            build = _version+"-"+build
+        }
+        return build
+    }
+
     return {
         setTarget: function(target){
             _target = target
@@ -153,17 +167,7 @@ angular.module('svc.data', [])
             return _version
         },
         getBuild: function(){
-            var build = _build
-            if (build == "latest"){
-                if (_builds.length > 0){
-                    build = _builds[_builds.length-1]
-                }
-            }
-            // prepend with version if necessary
-            if (build && (build.indexOf("-")==-1)){
-                build = _version+"-"+build
-            }
-            return build
+            return buildNameWithVersion()
         },
         getVersionBuilds: getVersionBuildByFilter,
         toggleItem: function(key, type, disabled){
@@ -199,7 +203,7 @@ angular.module('svc.data', [])
         },
         setSideBarItems: function(items){
             _sideBarItems = items
-            _sideBarItems['buildVersion'] = _build
+            _sideBarItems['buildVersion'] = buildNameWithVersion()
 
             // default behavior is to initialize sideBarItems
             // with items param.  
