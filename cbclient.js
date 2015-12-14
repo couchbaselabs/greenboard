@@ -73,9 +73,7 @@ module.exports = function(){
 
       jobQueryCache[ver] = queryObj
 
-      // run query
-      var qp = _query(bucket, queryObj).then(function(data){
-
+      function processJobs(data){
         // jobs for this build
         data = _.pluck(data, bucket)
         var jobs = _.filter(data, 'build', build)
@@ -95,12 +93,20 @@ module.exports = function(){
           return job
         })
         var breakdown = jobs.concat(pending)
-        jobResponseCache[ver] = breakdown
         return breakdown
+      }
+
+      // run query
+      var qp = _query(bucket, queryObj).then(function(data){
+        // cache response
+        jobResponseCache[ver] = data
+        return processJobs(data)
       })
 
       if(ver in jobResponseCache){
-        return Promise.resolve(jobResponseCache[ver])
+        var data = jobResponseCache[ver]
+        var response = processJobs(data)
+        return Promise.resolve(response)
       } else {
         return qp
       }

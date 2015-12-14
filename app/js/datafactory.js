@@ -127,8 +127,7 @@ angular.module('svc.data', [])
         setVersionBuilds: function(builds){
             _builds = builds
         },
-        setBuildJobs: function(jobs, build){
-            build = build || _build
+        setBuildJobs: function(jobs){
             _buildJobs = jobs
             _buildJobsActive = jobs
         },
