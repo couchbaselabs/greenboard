@@ -219,7 +219,7 @@ angular.module('svc.data', [])
                 // only enable urlParams
                 _.mapKeys(_initUrlParams, function(values, type){
 
-                    if(type in ["platforms", "features"]){
+                    if(["platforms", "features"].indexOf(type) != -1){
                         var keys = values.split(",")
                         keys.forEach(function(k){
                             enableItem(k, type)
