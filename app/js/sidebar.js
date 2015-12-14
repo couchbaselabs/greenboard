@@ -10,7 +10,7 @@ angular.module('app.sidebar', [])
 	  		  scope.showPerc = false
 	  		  scope.disablePlatforms = false
 	  		  scope.disableFeatures = false
-              scope.lastBuild = Data.getBuild()
+              scope.buildVersion = Data.getBuild()
 
 	  		  scope.toggleAll = function(type){
 	  		  	var isDisabled;
@@ -29,11 +29,11 @@ angular.module('app.sidebar', [])
 			  scope.$watch(function(){ return Data.getSideBarItems() }, 
 				function(items){
 					var build = Data.getBuild()
-					if(!items || build==scope.lastBuild) {
+					if(!items || build==scope.buildVersion) {
 						// sidebar items doesn't need update within same build
 						return
 					}
-					scope.lastBuild = build
+					scope.buildVersion = build
 
 				    scope.sidebarItems = {
 				        platforms: _.pluck(items["platforms"], "key"),
