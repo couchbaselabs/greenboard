@@ -29,16 +29,16 @@ angular.module('app.sidebar', [])
 			  scope.$watch(function(){ return Data.getSideBarItems() }, 
 				function(items){
 					var build = Data.getBuild()
-					if(!items || build==scope.buildVersion) {
-						// sidebar items doesn't need update within same build
-						return
-					}
-					scope.buildVersion = build
+					if(!items) { return }
 
-				    scope.sidebarItems = {
-				        platforms: _.pluck(items["platforms"], "key"),
-				        features: _.pluck(items["features"], "key")
-				    }
+					// only update sidebar items on build change
+					if(build!=scope.buildVersion){
+						scope.buildVersion = build
+					    scope.sidebarItems = {
+					        platforms: _.pluck(items["platforms"], "key"),
+					        features: _.pluck(items["features"], "key")
+					    }
+					}
 
 					// if all sidebar items of a type selected
 					// enable all checkmark
