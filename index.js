@@ -1,6 +1,7 @@
 var _ = require('lodash');
 var express = require('express');
 var client = require('./cbclient.js')
+var config = require('./config.js')
 
 var app = express();
 app.use(express.static('app'));
@@ -90,7 +91,7 @@ app.get('/jobs/:build/:bucket?', function(req, res){
 })
 
 
-var server = app.listen(8200, function () {
+var server = app.listen(config.httpPort, config.httpListen, function () {
   var host = server.address().address;
   var port = server.address().port;
   console.log('Greenboard listening at http://%s:%s', host, port);
