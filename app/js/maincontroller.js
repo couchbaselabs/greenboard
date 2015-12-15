@@ -11,6 +11,7 @@ angular.module('app.main', [])
 
 		// update target versions when drop down target changes
 		$scope.changeTarget = function(target){
+			Data.setBuildFilter()
             $state.go("target.version", {target: target, version: "latest", build: "latest"})
 		}
 
