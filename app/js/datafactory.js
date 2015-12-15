@@ -296,7 +296,10 @@ angular.module('svc.data', [])
             return _filterBy
         },
         setBuildFilter: function(filterBy){
-            _filterBy = filterBy || DEFAULT_FILTER_BY
+            if(filterBy===undefined){
+                filterBy = DEFAULT_FILTER_BY
+            }
+            _filterBy = filterBy
         },
         getLatestVersionBuild: function(){
             var builds = getVersionBuildByFilter()
