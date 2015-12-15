@@ -202,7 +202,7 @@ body {
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
-  max-width: 1px;
+  min-width: 20px;
 }
 
 [type=checkbox] { display: none; }
