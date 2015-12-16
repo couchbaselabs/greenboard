@@ -86,7 +86,7 @@ module.exports = function(){
         })
 
         // convert total to pending for non-executed jobs
-        pending = _.map(_.uniq(pending, 'url'), function(job){
+        pending = _.map(_.uniq(pending, 'name'), function(job){
           job["pending"] = job.totalCount || job.pending
           job["totalCount"] = 0
           job["failCount"] = 0
