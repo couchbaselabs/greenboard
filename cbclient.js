@@ -7,15 +7,11 @@ var _ = require('lodash');
 module.exports = function(){
 
   var cluster = new couchbase.Cluster(config.Cluster);
-  var dbs = {}
+  var db = cluster.openBucket(config.DefaultBucket)
   var jobQueryCache = {}
   var jobResponseCache = {}
   var buildsResponseCache = {}
   var versionsResponseCache = {}
-
-  // init dbs
-  config.Buckets.map(function(b){
-      return dbs[b] = cluster.openBucket(config.DefaultBucket) })
 
   function strToQuery(queryStr, adhoc){
     console.log("QUERY:",queryStr)
@@ -25,7 +21,7 @@ module.exports = function(){
 
   function _query(bucket, q){
 	  var promise = new Promise(function(resolve, reject){
-		  dbs[bucket].query(q, function(err, components) {
+		  db.query(q, function(err, components) {
 		  		if(!err){
 			  		resolve(components)
 			  	} else {
@@ -68,7 +64,8 @@ module.exports = function(){
         }
     },
     getBuildInfo: function(bucket, build, fun){
-      dbs[bucket].get(build, fun)
+      var db = cluster.openBucket(bucket)
+      db.get(build, fun)
     },
     jobsForBuild: function(bucket, build){
       var ver = build.split('-')[0]

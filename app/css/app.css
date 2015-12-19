@@ -26,6 +26,9 @@ body {
   border: 0;
 }
 
+.light {
+  opacity: .5;
+}
 /*
  * Sidebar
  */
@@ -212,8 +215,17 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
   width: 100%;
+  cursor: pointer;
 }
 
+.change-msg{
+  font-size:11px;
+  padding-left: 20px;
+}
+
+.code-path{
+  font-size:10px;
+}
 .infobar {
   margin-top: 30px;
 }

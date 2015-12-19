@@ -41,8 +41,8 @@ angular.module('app.main', [])
 
 			if(buildInfo){
 				$scope.timestamp = buildInfo.timestamp
-				Data.setBuildInfo(buildInfo)
 			}
+			Data.setBuildInfo(buildInfo)
 
 			// activate job state
 			$state.go("target.version.build.jobs")

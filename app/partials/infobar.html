@@ -4,8 +4,20 @@
     <h3 class="panel-title">Changes</h3>
   </div>
   <div class="panel-body">
-      <div ng-repeat="change in info.changeSet.items" class="build-msg">
-        <i class="glyphicon glyphicon-expand"></i><span> {{change.msg}}</span>
+      <div ng-repeat="change in info.changeSet.items" ng-click="expandChange($index)">
+      	<p class="build-msg">
+	        <i ng-if="!isExpanded($index)" class="glyphicon glyphicon-expand light"></i>
+		    <i ng-if="isExpanded($index)" class="glyphicon glyphicon-collapse-down"></i>
+	        <span> {{change.msg}}</span>
+        </p>
+        <div ng-if="isExpanded($index)">
+	        <p class="change-msg" ng-bind-html="formatChangeMsg(change.msg)"</p>
+	        <ul>
+	        	<li ng-repeat="path in change.affectedPaths" class="code-path">
+	        		{{path}}
+	        	</li>
+	    	</ul>
+    	</p>
       </div>
   </div>
 
