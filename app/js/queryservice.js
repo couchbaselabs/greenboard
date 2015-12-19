@@ -22,6 +22,13 @@ angular.module('svc.query', [])
 		        			.then(function(response){
 		        				return response.data
 		        			})				
+			},
+			getBuildInfo: function(build, target){
+				var url = ["info", build, target].join("/")
+				return $http({"url": url, cache: true})
+                           .then(function(response){
+                               return response.data
+                        })
 			}
 		  }
 		}])

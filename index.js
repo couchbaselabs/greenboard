@@ -90,6 +90,18 @@ app.get('/jobs/:build/:bucket?', function(req, res){
 
 })
 
+app.get('/info/:build/:bucket', function(req, res){
+
+	var build = req.params.build
+	var bucket = req.params.bucket
+
+	client.getBuildInfo(bucket, build, function(err, info){
+		if(err){ console.log(err) }
+		else {
+			res.send(info)
+		}
+	})
+})
 
 var server = app.listen(config.httpPort, config.httpListen, function () {
   var host = server.address().address;
