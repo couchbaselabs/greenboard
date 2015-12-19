@@ -25,14 +25,24 @@ angular.module('app.main', [])
 
 	}])
 
-	.controller('BuildCtrl', ['$scope', '$state', 'build', 'versionBuilds', 'Data',
-		function($scope, $state, build, versionBuilds, Data){
+	.controller('BuildCtrl', ['$scope', '$state', 'build', 'versionBuilds', 'Data', 'buildInfo',
+		function($scope, $state, build, versionBuilds, Data, buildInfo){
 
 			Data.setVersionBuilds(versionBuilds)
 			if (build=="latest"){
 				build = Data.getLatestVersionBuild()
+				var buildShort = build.split("-")
+				$state.go("target.version", {build: buildShort[1]})
+				return
 			}
 			Data.setBuild(build)
+
+			$scope.build = Data.getBuild()
+
+			if(buildInfo){
+				$scope.timestamp = buildInfo.timestamp
+				Data.setBuildInfo(buildInfo)
+			}
 
 			// activate job state
 			$state.go("target.version.build.jobs")

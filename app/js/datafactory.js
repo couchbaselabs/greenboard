@@ -14,6 +14,7 @@ angular.module('svc.data', [])
     _sideBarItems = []
     _filterBy = DEFAULT_FILTER_BY
     _initUrlParams = null
+    _buildInfo = {}
 
    function updateLocationUrl(type, key, disabled){
         var typeArgs = $location.search()[type]
@@ -137,6 +138,12 @@ angular.module('svc.data', [])
         },
         setBuild: function(build){
             _build = build
+        },
+        setBuildInfo: function(info){
+            _buildInfo = info
+        },
+        getBuildInfo: function(){
+            return _buildInfo
         },
         setVersionBuilds: function(builds){
             _builds = builds

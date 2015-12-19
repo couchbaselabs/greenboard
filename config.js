@@ -1,4 +1,4 @@
-exports.Cluster = 'couchbase://greenboard.hq.couchbase.com'
+exports.Cluster = '127.0.0.1'
 exports.DefaultBucket = 'server'
 exports.Buckets = ['server', 'sdk', 'mobile']
 exports.httpListen = '127.0.0.1'

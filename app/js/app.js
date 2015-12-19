@@ -8,7 +8,8 @@ var app = angular.module('greenBoard', [
   'svc.query',
   'app.main',
   'app.target',
-  'app.sidebar'
+  'app.sidebar',
+  'app.infobar'
 ]);
 
 app.run(['$location', '$rootScope', 'Data', function($location, $rootScope, Data){
@@ -87,6 +88,17 @@ app.config(['$stateProvider', '$urlRouterProvider',
           versionBuilds: ['QueryService', 'target', 'version',
             function(QueryService, target, version){
                 return QueryService.getBuilds(target, version)
+            }],
+          buildInfo: ['QueryService', 'target', 'version', 'build',
+            function(QueryService, target, version, build){
+              var build = version+"-"+build
+              return QueryService.getBuildInfo(build, target)
+                .then(function(response){
+                  var info = {}
+                  info = response['value']
+                  if(response.err){ console.log(build, response.err) }
+                  return info
+                })
             }]
         }
       })

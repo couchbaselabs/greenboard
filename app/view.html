@@ -18,11 +18,11 @@
   </div>
   <div class="container-fluid">
 
-  <div class="col-sm-3 col-md-2 sidebar">
+  <div class="col-sm-2 sidebar">
     <view-sidebar></view-sidebar>
   </div>
 
-    <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+    <div class="col-sm-8 col-sm-offset-2 main">
 
       <div>
         <!-- target and version selector -->
@@ -30,7 +30,7 @@
           <div class="col-sm-2">
              <target-selector change-target="changeTarget" />
           </div>
-          <div class="col-sm-5">
+          <div class="col-sm-6">
              <version-selector change-version="changeVersion" />
           </div>
           <div class="col-sm-4">
@@ -40,7 +40,8 @@
 
       <!-- build view -->
       <div ui-view></div>
-
-
     </div>
+  </div>
+  <div class="col-sm-2 infobar">
+       <view-infobar></view-infobar>
   </div>

@@ -206,6 +206,17 @@ body {
   min-width: 20px;
 }
 
+.build-msg {
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+.infobar {
+  margin-top: 30px;
+}
 .build-info{
   text-align: center;
 }
@@ -214,6 +225,12 @@ body {
   font-size: 35px;
   font-family: "HelveticaNeue-UltraLight";
 }
+.build-subtitle{
+  font-size: 11px;
+  font-weight: 600;
+  height:12px;
+}
+
 [type=checkbox] { display: none; }
 
 .percToggle {

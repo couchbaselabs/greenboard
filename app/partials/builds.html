@@ -1,12 +1,18 @@
 <div class="row">
-	<div class="col-sm-10" id="timeline" class="section">
+	<div class="col-sm-12 build-info">
+	  <p class="build-title">{{build}}</p>
+	  <p class="build-subtitle">{{timestamp | date:'MMM d, yyyy'}}</p>
+	</div>
+</div>
+<div class="row">
+	<div class="col-sm-12 section" id="timeline">
 	  <plotly id="builds" on-change="onChange" />
 	</div>
 </div>
 </br>
 <div class="row">
    <!-- build jobs -->
-   <div class="col-sm-10">
+   <div class="col-sm-12">
 	   <ui-view />
    </div>
 </div>

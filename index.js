@@ -96,8 +96,10 @@ app.get('/info/:build/:bucket', function(req, res){
 	var bucket = req.params.bucket
 
 	client.getBuildInfo(bucket, build, function(err, info){
-		if(err){ console.log(err) }
-		else {
+		if(err){
+			console.log(err)
+			res.send({err: err})
+		}  else {
 			res.send(info)
 		}
 	})

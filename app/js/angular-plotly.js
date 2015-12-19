@@ -44,7 +44,7 @@
                           var data = getDataForBuild()
                           var options = CHART_OPTIONS;
                           var layout = CHART_LAYOUT;
-                          layout.title = build
+                          //layout.title = build
                           Plotly.newPlot(element, data, layout, options);
 
                           $("#builds").bind('plotly_click',
@@ -70,7 +70,8 @@
                   type: "bar", name: "Pass"})
       .value('FAIL_BAR_STYLE', {x: [], y: [], 
                   type: "bar", name: "Fail"})
-      .value('CHART_LAYOUT', {height: 300, width: 800, title: "", showlegend:false, barmode: 'stack'})
+      .value('CHART_LAYOUT', {height: 300, width: 800, margin: {t: 20},
+                              title: "", showlegend:false, barmode: 'stack'})
       .value('CHART_OPTIONS', {showLink: false, displayModeBar: false})
 
 })();
