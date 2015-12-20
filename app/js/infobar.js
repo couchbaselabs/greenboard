@@ -13,11 +13,9 @@ angular.module('app.infobar', [])
             if(scope.isExpanded(index)){
               // collapse
               var at = _.indexOf(scope.expandedIndexes, index)
-              console.log('pop', index, at)
               scope.expandedIndexes.splice(at, 1)
             } else {
               // expand
-              console.log('push', index)
               scope.expandedIndexes.push(index)
             }
           }
