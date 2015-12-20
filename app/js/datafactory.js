@@ -146,6 +146,17 @@ angular.module('svc.data', [])
             return _buildInfo
         },
         setVersionBuilds: function(builds){
+
+            // sort by build
+            builds.sort(function(a, b){
+              if(a.build < b.build){
+                return -1
+              }
+              if(a.build > b.build){
+                return 1
+              }
+              return 0
+            })
             _builds = builds
         },
         setBuildJobs: function(jobs){

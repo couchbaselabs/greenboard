@@ -19,15 +19,6 @@
                             var failed = FAIL_BAR_STYLE
                             var filterBy = Data.getBuildFilter()
                             var builds = Data.getVersionBuilds()
-                            builds.sort(function(a, b){
-                              if(a.build < b.build){
-                                return -1
-                              }
-                              if(a.build > b.build){
-                                return 1
-                              }
-                              return 0
-                            })
                             passed.x = failed.x = builds.map(function(b){ return b.build })
                             passed.y = builds.map(function(b){ return b.Passed })
                             failed.y = builds.map(function(b){ return b.Failed })
