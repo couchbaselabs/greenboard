@@ -251,12 +251,13 @@
                     yScale = getYScale(yStackMax)
                     var yAxis = getYAxis(yScale, yStackMax)
 
+                    // identify build to highlight before rendering bars
+                    setHighlightedBuild(xLabels)
+
                     layer = appendLayersToSvg(svg, layers)
                     rect = appendRectToLayers(xScale, layer)
                     animateRectBarHeight(yScale, rect)
 
-                    // set build to highlight when rendering
-                    setHighlightedBuild(xLabels)
 
                     // configure toolTips behavior
                     configureToolTips(svg, layers, rect)
