@@ -43,8 +43,8 @@
               var _domId;
               var svg, layer, rect, yScale
 
-              var margin = {top: 40, right: 10, bottom: 100, left: 40},
-                  width = 700 - margin.left - margin.right,
+              var margin = {top: 40, right: 10, bottom: 100, left: 70},
+                  width = 800 - margin.left - margin.right,
                   height = 300 - margin.top - margin.bottom;
               var color = ['rgba(59, 201, 59, 0.5)', 'rgba(222, 0, 0, 0.5)']
               var color_selected = ['rgba(59, 201, 59, 1)', 'rgba(222, 0, 0, 1)']
