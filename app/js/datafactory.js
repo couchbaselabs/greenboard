@@ -98,8 +98,9 @@ angular.module('svc.data', [])
     }
 
 
-    function getVersionBuildByFilter(){
+    function getVersionBuildByFilter(builds){
         // return version builds according to filter
+        _builds = builds || _builds
         var builds = _builds.filter(function(b){ return (b.Passed + b.Failed) > _filterBy})
         if((builds.length == 0) && (_filterBy != 0)){
             builds = _builds
@@ -146,17 +147,6 @@ angular.module('svc.data', [])
             return _buildInfo
         },
         setVersionBuilds: function(builds){
-
-            // sort by build
-            builds.sort(function(a, b){
-              if(a.build < b.build){
-                return -1
-              }
-              if(a.build > b.build){
-                return 1
-              }
-              return 0
-            })
             _builds = builds
         },
         setBuildJobs: function(jobs){

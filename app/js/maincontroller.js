@@ -2,24 +2,25 @@ angular.module('app.main', [])
 	.controller("NavCtrl", ['$scope', '$state', '$stateParams', 'Data', 'target', 'targetVersions', 'version',
 	  function($scope, $state, $stateParams, Data, target, targetVersions, version){
 
+	  	targetVersions = _.compact(targetVersions)
 		Data.setTarget(target)
 		Data.setSelectedVersion(version)
 		Data.setTargetVersions(targetVersions)
 
 		// activate build state
-		$state.go("target.version.build")
+		$state.go("target.version._.build")
 
 		// update target versions when drop down target changes
 		$scope.changeTarget = function(target){
 			Data.setBuildFilter()
-            $state.go("target.version", {target: target, version: "latest", build: "latest"})
+            $state.go("target.version", {target: target, version: "latest"})
 		}
 
 		// update target versions when drop down target changes
 		$scope.changeVersion = function(newVersion){
                   if(newVersion != version){ 
                      Data.setBuildFilter()
-                     $state.go("target.version", {version: newVersion, build: "latest"})
+                     $state.go("target.version", {version: newVersion})
                   }
 		}
 
@@ -29,12 +30,6 @@ angular.module('app.main', [])
 		function($scope, $state, build, versionBuilds, Data, Timeline){
 
 			Data.setVersionBuilds(versionBuilds)
-			if (build=="latest"){
-				build = Data.getLatestVersionBuild()
-				var buildShort = build.split("-")
-				$state.go("target.version", {build: buildShort[1]})
-				return
-			}
 			Data.setBuild(build)
 			$scope.build = Data.getBuild()
 
@@ -42,11 +37,11 @@ angular.module('app.main', [])
 			$scope.onBuildChange = function(build){
 				$scope.build = build
 				Data.setBuild(build)
-				$state.reload("target.version.build.jobs")
+				$state.reload("target.version._.build.jobs")
 			}
 
 			// activate job state
-			$state.go("target.version.build.jobs")
+			$state.go("target.version._.build.jobs")
 	}])
 
 

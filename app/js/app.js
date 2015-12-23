@@ -60,38 +60,60 @@ app.config(['$stateProvider', '$urlRouterProvider',
         }
       })
       .state('target.version', {
-        url: "/:version/:build",
+        url: "/:version",
         templateUrl: "view.html",
         controller: "NavCtrl",
         resolve: {
-          version: ['$stateParams', '$location', 'targetVersions', 'target',
-            function($stateParams, $location, targetVersions, target){
+          version: ['$stateParams', '$state', '$location', 'targetVersions', 'target',
+            function($stateParams, $state, $location, targetVersions, target){
 
               var version = $stateParams.version
               if ((version == "latest") || targetVersions.indexOf(version) == -1){
                 // uri is either latest version or some unknown version of target
                 // just use latested known version of target
                 version = targetVersions[targetVersions.length-1]
-                $location.path(target+"/"+version)
               }
+              $stateParams.version = version
               return version
-            }],
-            build: ['$stateParams', function($stateParams){
-              return $stateParams.build
             }]
         }
       })
-      .state('target.version.build', {
+     .state('target.version._', {
+        abstract: true,
+        template: '<ui-view/>',
+        resolve: {
+          versionBuilds: ['$stateParams', 'QueryService', 'Data', 'target', 'version',
+            function($stateParams, QueryService, Data, target, version){
+                return QueryService.getBuilds(target, version).then(function(builds){
+                  // sort by build
+                  builds.sort(function(a, b){
+                    if(a.build < b.build){ return -1 }
+                    if(a.build > b.build){ return 1 }
+                    return 0
+                  })
+                  builds = Data.getVersionBuilds(builds)
+                  return builds
+                })
+            }]
+        }
+      })
+      .state('target.version._.build', {
+        url: "/:build",
         templateUrl: "partials/builds.html",
         controller: "BuildCtrl",
         resolve: {
-          versionBuilds: ['QueryService', 'target', 'version',
-            function(QueryService, target, version){
-                return QueryService.getBuilds(target, version)
+          build: ['$stateParams', 'versionBuilds',
+            function($stateParams, versionBuilds){
+                var build = $stateParams.build || "latest"
+                if((build == "latest") && (versionBuilds.length > 0)){
+                  var vbuild = versionBuilds[versionBuilds.length-1].build
+                  $stateParams.build = vbuild.split('-')[1]
+                }
+                return $stateParams.build
             }]
         }
       })
-      .state('target.version.build.jobs', {
+      .state('target.version._.build.jobs', {
         templateUrl: "partials/jobs.html",
         controller: "JobsCtrl",
         resolve: {
