@@ -31,6 +31,7 @@
                         Timeline.update(builds, id)
                       }
                     })
+
                 }
               }
 
@@ -228,8 +229,14 @@
                     .call(yAxis)
               }
 
+              function setHighlightedBuild(buildNames){
+                build = Data.getBuild()
+                // make sure build is in builds
+                if(buildNames.indexOf(build) == -1){
+                  build = buildNames[buildNames.length-1]
+                }
+              }
               function _render(builds){
-                    build = Data.getBuild()
 
                     var stack = d3.layout.stack()
                     var xLabels = _.pluck(builds, 'build')
@@ -244,11 +251,12 @@
                     yScale = getYScale(yStackMax)
                     var yAxis = getYAxis(yScale, yStackMax)
 
-
-
                     layer = appendLayersToSvg(svg, layers)
                     rect = appendRectToLayers(xScale, layer)
                     animateRectBarHeight(yScale, rect)
+
+                    // set build to highlight when rendering
+                    setHighlightedBuild(xLabels)
 
                     // configure toolTips behavior
                     configureToolTips(svg, layers, rect)

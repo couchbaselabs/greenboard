@@ -12,7 +12,7 @@ module.exports = function(){
   var versionsResponseCache = {}
 
   function strToQuery(queryStr, adhoc){
-    console.log("QUERY:",queryStr)
+    console.log(new Date(), "QUERY:",queryStr)
     adhoc = adhoc ? true: false
     return couchbase.N1qlQuery.fromString(queryStr).adhoc(adhoc)
   }

@@ -80,7 +80,8 @@ app.config(['$stateProvider', '$urlRouterProvider',
       })
      .state('target.version._', {
         abstract: true,
-        template: '<ui-view/>',
+        templateUrl: "partials/timeline.html",
+        controller: "TimelineCtrl",
         resolve: {
           versionBuilds: ['$stateParams', 'QueryService', 'Data', 'target', 'version',
             function($stateParams, QueryService, Data, target, version){
@@ -94,8 +95,12 @@ app.config(['$stateProvider', '$urlRouterProvider',
       })
       .state('target.version._.build', {
         url: "/:build",
-        templateUrl: "partials/builds.html",
-        controller: "BuildCtrl",
+        template: "<ui-view />",
+        controller: ['$state', 'build', 'Data', function($state, build, Data){
+          // forwarder
+          Data.setBuild(build)
+          $state.go('target.version._.build.jobs')
+        }],
         resolve: {
           build: ['$stateParams', 'versionBuilds',
             function($stateParams, versionBuilds){
@@ -112,8 +117,8 @@ app.config(['$stateProvider', '$urlRouterProvider',
         templateUrl: "partials/jobs.html",
         controller: "JobsCtrl",
         resolve: {
-          buildJobs: ['QueryService', 'Data', 'target',
-            function(QueryService, Data, target){
+          buildJobs: ['$stateParams', 'QueryService', 'Data', 'target',
+            function($stateParams, QueryService, Data, target){
               var build = Data.getBuild()
               return QueryService.getJobs(build, target)
             }]

@@ -23,28 +23,31 @@ angular.module('app.main', [])
 		}
 
 	}])
-
-	.controller('BuildCtrl', ['$scope', '$state', 'build', 'versionBuilds', 'Data', 'Timeline',
-		function($scope, $state, build, versionBuilds, Data, Timeline){
-
-			Data.setBuild(build)
+	.controller('TimelineCtrl', ['$scope', '$state', 'versionBuilds', 'Data',
+		function($scope, $state, versionBuilds, Data){
 			$scope.versionBuilds = versionBuilds
-			$scope.build = Data.getBuild()
 
 			// on build change reload jobs view
 			$scope.onBuildChange = function(build){
 				$scope.build = build
 				Data.setBuild(build)
-				$state.reload("target.version._.build.jobs")
+				if(build.indexOf("-") != -1){ build = build.split("-")[1]}
+				$state.go("target.version._.build", {build: build})
 			}
 
-			// activate job state
-			$state.go("target.version._.build.jobs")
+			// when build changes update timeline title
+			$scope.$watch(function(){ return Data.getBuild()},
+			function(build){
+			  $scope.build = build
+			})
+
+			// activate generic build state
+			$state.go("target.version._.build", {build: "latest"})
 	}])
 
 
-	.controller('JobsCtrl', ['$scope', '$state', 'Data', 'buildJobs',
-		function($scope, $state, Data, buildJobs){
+	.controller('JobsCtrl', ['$scope', '$state', '$stateParams', 'Data', 'buildJobs',
+		function($scope, $state, $stateParams, Data, buildJobs){
 
 		// order by name initially
 		$scope.predicate = "claim"
