@@ -6,10 +6,12 @@
               return {
                 restrict: 'E',
                 scope: {
-                   onChange: "="
+                   onChange: "=",
+                   builds: "="
                 },
                 link: function(scope, elem, attrs){
-                  var builds = Data.getVersionBuilds()
+
+                  var builds = scope.builds
                   var id = "#"+elem.attr('id')
 
                   // Render timeline for version builds
@@ -21,6 +23,7 @@
                   // re-render if filterBy has changed
                   scope.$watch(function(){ return Data.getBuildFilter() },
                     function(filterBy, lastFilterBy){
+
                       if((lastFilterBy != undefined) && (filterBy != lastFilterBy)){
                         builds = Data.getVersionBuilds()
 
@@ -34,6 +37,7 @@
             }])
         .service('Timeline', ['Data', '$timeout',
             function(Data, $timeout) {
+              var build
               var _clickBuildCallback;
               var _domId;
               var svg, layer, rect, yScale
@@ -137,7 +141,9 @@
                         .attr("y", height)
                         .attr("width", x.rangeBand())
                         .attr("height", 0)
-                        .style("fill", function(d, i, l) { return color[l]; })
+                        .style("fill", function(d, i, l) { 
+                          return d.x == build ? color_selected[l] : color[l]
+                        })
 
                       // fade out on remove
                       rect.exit().transition()
@@ -223,6 +229,8 @@
               }
 
               function _render(builds){
+                    build = Data.getBuild()
+
                     var stack = d3.layout.stack()
                     var xLabels = _.pluck(builds, 'build')
                     var passFailLayers = ['Passed', 'Failed'].map(function(k){

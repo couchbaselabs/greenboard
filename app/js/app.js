@@ -85,14 +85,9 @@ app.config(['$stateProvider', '$urlRouterProvider',
           versionBuilds: ['$stateParams', 'QueryService', 'Data', 'target', 'version',
             function($stateParams, QueryService, Data, target, version){
                 return QueryService.getBuilds(target, version).then(function(builds){
-                  // sort by build
-                  builds.sort(function(a, b){
-                    if(a.build < b.build){ return -1 }
-                    if(a.build > b.build){ return 1 }
-                    return 0
-                  })
-                  builds = Data.getVersionBuilds(builds)
-                  return builds
+                  Data.setBuildFilter()
+                  Data.setVersionBuilds(builds)
+                  return Data.getVersionBuilds()
                 })
             }]
         }

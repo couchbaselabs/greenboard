@@ -12,25 +12,24 @@ angular.module('app.main', [])
 
 		// update target versions when drop down target changes
 		$scope.changeTarget = function(target){
-			Data.setBuildFilter()
+	       // Data.setSelectedVersion("latest")
             $state.go("target.version", {target: target, version: "latest"})
 		}
 
 		// update target versions when drop down target changes
 		$scope.changeVersion = function(newVersion){
-                  if(newVersion != version){ 
-                     Data.setBuildFilter()
-                     $state.go("target.version", {version: newVersion})
-                  }
+	      if(newVersion != version){ 
+	         $state.go("target.version", {version: newVersion})
+	      }
 		}
 
 	}])
 
 	.controller('BuildCtrl', ['$scope', '$state', 'build', 'versionBuilds', 'Data', 'Timeline',
 		function($scope, $state, build, versionBuilds, Data, Timeline){
-
-			Data.setVersionBuilds(versionBuilds)
 			Data.setBuild(build)
+
+			$scope.versionBuilds = versionBuilds
 			$scope.build = Data.getBuild()
 
 			// on build change reload jobs view
