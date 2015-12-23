@@ -74,7 +74,7 @@
 
                 // down sample tick domain to at least 30 points
                 var domain = xScale.domain()
-                var skipBy = Math.floor(domain.length/30)
+                var skipBy = Math.floor(domain.length/20)
                 if(skipBy > 1){
                   var tickValues = domain.filter(function(t, i){ return (i%skipBy) == 0 })
                   xaxis.tickValues(tickValues)
