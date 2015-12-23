@@ -137,6 +137,9 @@ angular.module('svc.data', [])
             _version = version
         },
         setBuild: function(build){
+            if(build.indexOf("-") == -1 && _version){
+                build = _version+"-"+build
+            }
             _build = build
         },
         setBuildInfo: function(info){

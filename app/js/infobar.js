@@ -1,7 +1,7 @@
 angular.module('app.infobar', [])
 
-  .directive('viewInfobar', ['Data',
-  	function(Data){
+  .directive('viewInfobar', ['Data', 'QueryService',
+  	function(Data, QueryService){
  	  	return {
 	  		restrict: 'E',
 	  		scope: {},
@@ -35,11 +35,17 @@ angular.module('app.infobar', [])
             return html
           }
 
-          scope.$watch(function(){return Data.getBuildInfo()},
-            function(info){
-              if(info){
-                scope.info = info
-              }
+          // watch for changes in active build and attempt to get info
+          scope.$watch(function(){return Data.getBuild()},
+            function(build, lastbuild){
+                var target = Data.getCurrentTarget()
+                QueryService.getBuildInfo(build, target)
+                  .then(function(response){
+                    var info = {}
+                    info = response['value']
+                    if(response.err){ console.log(build, response.err) }
+                    scope.info = info
+                  })
             })
 
 	  		}

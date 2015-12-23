@@ -116,17 +116,6 @@ app.config(['$stateProvider', '$urlRouterProvider',
             function(QueryService, Data, target){
               var build = Data.getBuild()
               return QueryService.getJobs(build, target)
-            }],
-          buildInfo: ['QueryService', 'target', 'Data',
-            function(QueryService, target, Data){
-              var build = Data.getBuild()
-              return QueryService.getBuildInfo(build, target)
-                .then(function(response){
-                  var info = {}
-                  info = response['value']
-                  if(response.err){ console.log(build, response.err) }
-                  return info
-                })
             }]
         }
       })

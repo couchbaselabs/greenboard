@@ -12,7 +12,6 @@ angular.module('app.main', [])
 
 		// update target versions when drop down target changes
 		$scope.changeTarget = function(target){
-	       // Data.setSelectedVersion("latest")
             $state.go("target.version", {target: target, version: "latest"})
 		}
 
@@ -27,8 +26,8 @@ angular.module('app.main', [])
 
 	.controller('BuildCtrl', ['$scope', '$state', 'build', 'versionBuilds', 'Data', 'Timeline',
 		function($scope, $state, build, versionBuilds, Data, Timeline){
-			Data.setBuild(build)
 
+			Data.setBuild(build)
 			$scope.versionBuilds = versionBuilds
 			$scope.build = Data.getBuild()
 
@@ -44,14 +43,8 @@ angular.module('app.main', [])
 	}])
 
 
-
-	.controller('JobsCtrl', ['$scope', '$state', 'Data', 'buildJobs', 'buildInfo',
-		function($scope, $state, Data, buildJobs, buildInfo){
-
-		if(buildInfo){
-			$scope.timestamp = buildInfo.timestamp
-		}
-		Data.setBuildInfo(buildInfo)
+	.controller('JobsCtrl', ['$scope', '$state', 'Data', 'buildJobs',
+		function($scope, $state, Data, buildJobs){
 
 		// order by name initially
 		$scope.predicate = "claim"
