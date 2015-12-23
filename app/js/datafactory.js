@@ -101,6 +101,10 @@ angular.module('svc.data', [])
     function getVersionBuildByFilter(){
         // return version builds according to filter
         var builds = _builds.filter(function(b){ return (b.Passed + b.Failed) > _filterBy})
+        if(_filterBy == 0){
+            // also do high pass so that we can view the low builds
+            builds = _builds.filter(function(b){ return (b.Passed + b.Failed) < DEFAULT_FILTER_BY})
+        }
         if((builds.length == 0) && (_filterBy != 0)){
             builds = _builds
             _filterBy = 0
