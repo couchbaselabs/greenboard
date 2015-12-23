@@ -304,6 +304,7 @@
                     $timeout(function(){
                         // remove x axis from dom
                         svg.select(".x").remove()
+                        svg.select(".y").remove()
                         // remove bars from dom
                         layer.remove()
                         // re-render timeline
