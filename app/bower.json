@@ -27,6 +27,7 @@
     "d3": "latest",
     "angular-ui-router": "~0.2.15",
     "lodash": "~3.10.1",
-    "d3-tip": "~0.6.7"
+    "d3-tip": "~0.6.7",
+    "angular-animate": "~1.4.8"
   }
 }

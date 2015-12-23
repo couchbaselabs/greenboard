@@ -378,3 +378,25 @@ body {
   content: "\25BC";
 }
 
+
+/* animation */
+
+/* The starting CSS styles for the enter animation */
+/* The starting CSS styles for the enter animation */
+.el-fade.ng-enter {
+  transition:0.2s linear all;
+  opacity:0;
+}
+
+/* The finishing CSS styles for the enter animation */
+.el-fade.ng-enter.ng-enter-active {
+  opacity:1;
+}
+
+.el-fade.ng-leave {
+  transition:0.1s linear all;
+  opacity:1;
+}
+.el-fade.ng-leave.ng-leave-active {
+  opacity:0;
+}

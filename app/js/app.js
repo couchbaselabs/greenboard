@@ -2,6 +2,7 @@
 
 var app = angular.module('greenBoard', [
   'ngSanitize',
+  'ngAnimate',
   'ui.router',
   'svc.data',
   'svc.query',
