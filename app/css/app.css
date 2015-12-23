@@ -88,9 +88,31 @@ body {
   margin-top: 0;
 }
 
-
+.nav-buttons {
+  font-size: 13px;
+}
 .pagination li a{
   cursor: pointer;
+}
+
+
+.x.axis path,
+.x.axis line{
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+.y.axis path {
+  display: none;
+}
+
+.y.axis .tick line {
+    stroke: lightgrey;
+    opacity: 0.3 !important;
+}
+
+.grid path {
+      stroke-width: 0;
 }
 
 /*
@@ -289,14 +311,32 @@ body {
 
 /* tool tip */
 .d3-tip {
-  line-height: 1;
   font-weight: bold;
+  line-height: 1;
   padding: 12px;
   background: rgba(0, 0, 0, 0.8);
-  color: #fff;
   border-radius: 2px;
   text-align: center;
+  color: #fff;
 }
+
+.d3-tip-pass{
+    background: rgba(59, 201, 59, 0.5) !important;
+    padding: 2px !important;
+}
+
+.d3-tip-fail{
+    background: rgba(255, 0, 0, 0.5) !important;
+    padding: 2px !important;
+}
+
+.d3-tip-pass:after{
+  color: rgba(59, 201, 59, 0.5) !important;
+}
+.d3-tip-fail:after{
+  color: rgba(255, 0, 0, 0.5) !important;
+}
+
 
 /* Creates a small triangle extender for the tooltip */
 .d3-tip:after {
@@ -306,16 +346,32 @@ body {
   width: 100%;
   line-height: 1;
   color: rgba(0, 0, 0, 0.8);
-  content: "\25BC";
   position: absolute;
-  text-align: center;
 }
 
-/* Style northward tooltips differently */
+
+/* Style eastward tooltips */
+.d3-tip.e:after {
+  content: "\25C0";
+  margin: 5px 0 0 0;
+  top: 0;
+  left: -10px;
+  text-align: left;
+}
+
+/* Style westward tooltip */
+.d3-tip.w:after {
+  content: "\25B6";
+  margin: 5px 0 0 0;
+  top: 0;
+  right: -10px;
+  text-align: right;
+}
+
 .d3-tip.n:after {
   margin: -1px 0 0 0;
   top: 100%;
   left: 0;
+  content: "\25BC";
 }
-
 

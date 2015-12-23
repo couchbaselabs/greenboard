@@ -2,10 +2,10 @@
 
 var app = angular.module('greenBoard', [
   'ngSanitize',
-  'plotly',
   'ui.router',
   'svc.data',
   'svc.query',
+  'svc.timeline',
   'app.main',
   'app.target',
   'app.sidebar',
@@ -88,17 +88,6 @@ app.config(['$stateProvider', '$urlRouterProvider',
           versionBuilds: ['QueryService', 'target', 'version',
             function(QueryService, target, version){
                 return QueryService.getBuilds(target, version)
-            }],
-          buildInfo: ['QueryService', 'target', 'version', 'build',
-            function(QueryService, target, version, build){
-              var build = version+"-"+build
-              return QueryService.getBuildInfo(build, target)
-                .then(function(response){
-                  var info = {}
-                  info = response['value']
-                  if(response.err){ console.log(build, response.err) }
-                  return info
-                })
             }]
         }
       })
@@ -106,10 +95,21 @@ app.config(['$stateProvider', '$urlRouterProvider',
         templateUrl: "partials/jobs.html",
         controller: "JobsCtrl",
         resolve: {
-          buildJobs: ['QueryService', 'target', 'Data', 'version',
-            function(QueryService, target, Data, version){
-                var build = Data.getBuild()
-                return QueryService.getJobs(build, target)
+          buildJobs: ['QueryService', 'Data', 'target',
+            function(QueryService, Data, target){
+              var build = Data.getBuild()
+              return QueryService.getJobs(build, target)
+            }],
+          buildInfo: ['QueryService', 'target', 'Data',
+            function(QueryService, target, Data){
+              var build = Data.getBuild()
+              return QueryService.getBuildInfo(build, target)
+                .then(function(response){
+                  var info = {}
+                  info = response['value']
+                  if(response.err){ console.log(build, response.err) }
+                  return info
+                })
             }]
         }
       })

@@ -25,8 +25,8 @@ angular.module('app.main', [])
 
 	}])
 
-	.controller('BuildCtrl', ['$scope', '$state', 'build', 'versionBuilds', 'Data', 'buildInfo',
-		function($scope, $state, build, versionBuilds, Data, buildInfo){
+	.controller('BuildCtrl', ['$scope', '$state', 'build', 'versionBuilds', 'Data', 'Timeline',
+		function($scope, $state, build, versionBuilds, Data, Timeline){
 
 			Data.setVersionBuilds(versionBuilds)
 			if (build=="latest"){
@@ -36,38 +36,33 @@ angular.module('app.main', [])
 				return
 			}
 			Data.setBuild(build)
-
 			$scope.build = Data.getBuild()
 
-			if(buildInfo){
-				$scope.timestamp = buildInfo.timestamp
+			// on build change reload jobs view
+			$scope.onBuildChange = function(build){
+				$scope.build = build
+				Data.setBuild(build)
+				$state.reload("target.version.build.jobs")
 			}
-			Data.setBuildInfo(buildInfo)
 
 			// activate job state
 			$state.go("target.version.build.jobs")
-
-			$scope.onChange = function(newBuild){
-				newBuild = newBuild.split("-")[1]
-				if(newBuild!=build){ // avoid reloading same build
-					$state.go("target.version", {build: newBuild})
-				}
-			}
 	}])
 
 
 
-	.controller('JobsCtrl', ['$scope', 'Data', 'buildJobs',
-		function($scope, Data, buildJobs){
+	.controller('JobsCtrl', ['$scope', '$state', 'Data', 'buildJobs', 'buildInfo',
+		function($scope, $state, Data, buildJobs, buildInfo){
+
+		if(buildInfo){
+			$scope.timestamp = buildInfo.timestamp
+		}
+		Data.setBuildInfo(buildInfo)
 
 		// order by name initially
 		$scope.predicate = "claim"
 		$scope.reverse = true
 		$scope.activePanel = 0
-
-		if(buildJobs.length == 0){
-			return
-		}
 
 		function updateScopeWithJobs(jobs){
 			var jobsCompleted = _.reject(jobs, "result", "PENDING")
@@ -83,6 +78,7 @@ angular.module('app.main', [])
 			]
 		}
 
+
 		updateScopeWithJobs(buildJobs)
 		Data.setBuildJobs(buildJobs)
 
@@ -97,6 +93,8 @@ angular.module('app.main', [])
  	    	})
 	   	Data.setSideBarItems({platforms: allPlatforms, features: allFeatures})
 
+
+
 	   	$scope.changePanelJobs = function(i){
 	   		$scope.activePanel = i
 	   	}
@@ -109,6 +107,8 @@ angular.module('app.main', [])
 						updateScopeWithJobs(activeJobs)
 					}
 				})
+
+
 	}])
 
 	

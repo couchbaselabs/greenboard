@@ -1,6 +1,11 @@
 <div ng-if="info.changeSet" class="panel panel-default">
 
   <div class="panel-heading">
+    <h3 class="panel-title">Published</h3>
+  </div>
+  <div class="panel-body">{{info.timestamp | date:'MMM d, yyyy H:mm a'}}</div>
+
+  <div class="panel-heading">
     <h3 class="panel-title">Changes</h3>
   </div>
   <div class="panel-body">

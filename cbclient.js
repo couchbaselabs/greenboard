@@ -66,7 +66,7 @@ module.exports = function(){
             return builds     
         }
 
-        var qp = _query(bucket, strToQuery(Q, true))
+        var qp = _query(bucket, strToQuery(Q))
           .then(function(data){
             buildsResponseCache[version] = _.cloneDeep(data)
             return processBuild(data)

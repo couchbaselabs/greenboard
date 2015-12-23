@@ -26,7 +26,7 @@
     "jquery": "latest",
     "d3": "latest",
     "angular-ui-router": "~0.2.15",
-    "plotly": "~0.0.2",
-    "lodash": "~3.10.1"
+    "lodash": "~3.10.1",
+    "d3-tip": "~0.6.7"
   }
 }
