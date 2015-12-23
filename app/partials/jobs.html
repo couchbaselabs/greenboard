@@ -4,6 +4,7 @@
     <ul class="nav nav-tabs" role="tablist" id="jobTabs">
         <li ng-click="changePanelJobs($index)"
             ng-repeat="tab in panelTabs" 
+            class="job-panel-tab"
             ng-class="{active: tab.active}">
               <a role="tab" data-toggle="tab"><h4>{{tab.jobs.length}} {{tab.title}}</h4></a>
         </li>

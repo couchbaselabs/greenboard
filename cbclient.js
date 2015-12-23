@@ -52,7 +52,7 @@ module.exports = function(){
 
         function processBuild(data){
             // group all jobs by build and aggregate data for timeline
-            var builds = _.chain(data).pluck("server").groupBy('build')
+            var builds = _.chain(data).pluck(bucket).groupBy('build')
                 .map(function(buildSet){
                   var total = _.sum(_.pluck(buildSet, "totalCount"))
                   var failed = _.sum(_.pluck(buildSet, "failCount"))

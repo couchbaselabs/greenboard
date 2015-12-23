@@ -70,6 +70,9 @@ body {
   background-color: #428bca;
 }
 
+.job-panel-tab {
+  cursor: pointer;
+}
 
 /*
  * Main content
