@@ -105,11 +105,12 @@ angular.module('app.sidebar', [])
 		  		} else if(passPerc >= 70){
 		  			color = "bg-warning"
 		  		} else if(passPerc >= 0) {
-		  			// only set color to danger if we can prove jobs actually
-		  			// failed or are pending
-		  			if((stats.absStats.pending + stats.absStats.failed) > 0){
-			  			color = "bg-danger"
-			  		}
+            // only set color to danger if we can prove jobs actually are failing
+            if(stats.absStats.failed > 0){
+              color = "bg-danger"
+            } else {
+              color = "bg-muted"
+            }
 		  		}
 		  		return color
 		  	}
