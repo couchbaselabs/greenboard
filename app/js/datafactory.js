@@ -1,5 +1,5 @@
 angular.module('svc.data', [])
-  .value("DEFAULT_FILTER_BY", 500)
+  .value("DEFAULT_FILTER_BY", 1000)
   .service('Data', ['$location', 'DEFAULT_FILTER_BY', function ($location, DEFAULT_FILTER_BY){
 
     _versions = []
