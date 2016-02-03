@@ -32,8 +32,8 @@
                 <td>{{job.totalCount - job.failCount}}</td>
                 <td>{{job.totalCount || job.pending}}</td>
                 <td>{{msToTime(job.duration)}}</td>
-                <td><span ng-bind-html="job.claim"></span>
-</td>
+                <td><claim-cell job="job"></claim-cell>
+                </td>
                 <td>{{job.priority}}</td>
               </tr>
             </tbody>

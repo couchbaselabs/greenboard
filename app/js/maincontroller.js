@@ -50,7 +50,7 @@ angular.module('app.main', [])
 		function($scope, $state, $stateParams, Data, buildJobs){
 
 		// order by name initially
-		$scope.predicate = "claim"
+		$scope.predicate = "result"
 		$scope.reverse = true
 		$scope.activePanel = 0
 
@@ -100,6 +100,32 @@ angular.module('app.main', [])
 
 
 	}])
+  .directive('claimCell', ['Data', 'QueryService', function(Data, QueryService){
+ 	  	return {
+	  		restrict: 'E',
+	  		scope: {job: "="},
+	  		templateUrl: 'partials/claimcell.html',
+	  		link: function(scope, elem, attrs){
+	  			// publish on blur
+	  			scope.editClaim = false
+	  			scope.saveClaim = function(){
+	  				// publish
+	  				var target = Data.getCurrentTarget()
+	  				var name = scope.job.name
+	  				var build_id = scope.job.build_id
+	  				var claim = scope.job.claim
+	  				QueryService.claimJob(target, name, build_id, claim)
+	  					.catch(function(err){
+	  						scope.job.claim = "error saving claim: "+err.err
+	  					})
+	  				scope.editClaim = false
+
+	  			}
+	  		}
+	  	}
+	  }])
+
+
 
 	
 // https://coderwall.com/p/wkdefg/converting-milliseconds-to-hh-mm-ss-mmm

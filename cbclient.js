@@ -30,6 +30,18 @@ module.exports = function(){
 	  return promise
   }
 
+  function doUpsert(bucket, key, doc){
+    var db = cluster.openBucket(bucket)
+	  var promise = new Promise(function(resolve, reject){
+      db.upsert(key, doc, function(err, result){
+        if(err){ reject({err: err}) }
+        else {
+          resolve(result)
+        }
+      })
+    })
+    return promise
+  }
   var API =  {
 
     queryVersions: function(bucket){
@@ -127,7 +139,28 @@ module.exports = function(){
         return qp
       }
 
-    }
+    },
+   claimJobs: function(bucket, name, build_id, claim){
+
+     // claim this build an all newer builds
+      var Q = "SELECT meta("+bucket+").id,* FROM "+bucket+" WHERE name='"+name+"' AND build_id >= "+build_id
+      var _ps = []
+	    var promise = new Promise(function(resolve, reject){
+        _query(bucket, strToQuery(Q)).catch(reject)
+          .then(function(jobs){
+            jobs.forEach(function(d){
+               var key = d.id
+               var doc = d.server
+               doc.claim = claim  // save new claim tag
+               var p = doUpsert(bucket, key, doc)
+               _ps.push(p)
+            })
+            Promise.all(_ps) // resolve upsert promises
+              .then(resolve).catch(reject)
+        })
+      })
+	    return promise
+   },
 
   }
 

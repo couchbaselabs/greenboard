@@ -2,10 +2,11 @@ var _ = require('lodash');
 var express = require('express');
 var client = require('./cbclient.js')
 var config = require('./config.js')
+var bodyParser = require('body-parser')
 
 var app = express();
 app.use(express.static('app'));
-
+app.use(bodyParser.json());
 
 app.get('/versions/:bucket?', function(req, res){
 
@@ -104,6 +105,22 @@ app.get('/info/:build/:bucket', function(req, res){
 		}
 	})
 })
+
+app.post('/claim/:bucket/:name/:build_id', function (req, res) {
+  var bucket = req.params.bucket
+  var name = req.params.name
+  var build_id = req.params.build_id
+  var claim = req.body.claim
+
+  client.claimJobs(bucket, name, build_id, claim)
+    .then(function(jobs){
+      res.send('POST request to the homepage');
+    }).catch(function(err){
+      res.send({err: err})
+    })
+
+});
+
 
 var server = app.listen(config.httpPort, config.httpListen, function () {
   var host = server.address().address;

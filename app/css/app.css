@@ -400,3 +400,17 @@ body {
 .el-fade.ng-leave.ng-leave-active {
   opacity:0;
 }
+
+.icon-margin-right {
+  margin-right: 5px;
+}
+
+.light-text {
+  color: #666;
+  font-size: 11px;
+}
+
+.float-right{
+  float:right;
+  width: 90%;
+}

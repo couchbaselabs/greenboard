@@ -29,6 +29,10 @@ angular.module('svc.query', [])
                            .then(function(response){
                                return response.data
                         })
+			},
+			claimJob: function(target, name, build_id, claim){
+				var url = ["claim", target, name, build_id].join("/")
+				return $http.post(url, {claim: claim})
 			}
 		  }
 		}])
