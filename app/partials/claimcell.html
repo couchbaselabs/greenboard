@@ -1,0 +1,9 @@
+<i ng-click="editClaim=!editClaim" class="fa icon-margin-right"
+   ng-class="{'fa-pencil-square-o': !editClaim}">
+</i>
+<div class="light-text float-right">
+	<span ng-if="!editClaim" ng-bind-html="job.claim"></span>
+	<label ng-if="editClaim">
+		<textarea rows="5" ng-blur="saveClaim()" type="text" name="claim" ng-model="job.claim">
+	</label>
+</textarea>
