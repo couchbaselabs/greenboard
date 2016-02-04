@@ -106,6 +106,11 @@ angular.module('app.main', [])
 	  		scope: {job: "="},
 	  		templateUrl: 'partials/claimcell.html',
 	  		link: function(scope, elem, attrs){
+
+          if(scope.job.customClaim){  // override claim
+            scope.job.claim = scope.job.customClaim
+          }
+
 	  			// publish on blur
 	  			scope.editClaim = false
 	  			scope.saveClaim = function(){

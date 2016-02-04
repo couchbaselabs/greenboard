@@ -151,7 +151,7 @@ module.exports = function(){
             jobs.forEach(function(d){
                var key = d.id
                var doc = d.server
-               doc.claim = claim  // save new claim tag
+               doc.customClaim = claim  // save new claim tag
                var p = doUpsert(bucket, key, doc)
                _ps.push(p)
             })
