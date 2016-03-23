@@ -2,8 +2,6 @@
 
 QE Dashboard tool for displaying jenkins test results.  Currently deployed at [greenboard.hq](http://greenboard.couchbase.com)
 
-<img src="/images/arch.png" alt="Architecture" height="400px">
-
 ## Building
 
 To build and deploy your own instance of greenboard:
@@ -11,15 +9,12 @@ To build and deploy your own instance of greenboard:
 `git clone https://github.com/couchbaselabs/greenboard.git`
 
 Have the following dependencies ready before getting started:
-- golang
-- nodejs
+- nodejs + npm
 - local instance of couchbase server with 3 buckets (mobile, sdk, server)
 
 Build Backend service.  From top of repo run
 
-`go build`
-
-`go install`
+`npm install`
 
 Build UI:
 
@@ -33,7 +28,7 @@ Build UI:
 
 Open config.json and verify CouchbaseAddress and ListenAddress for greenboard service are correct.
 
-`greenboard`
+`node index.js`
 
 Greenboard service should be running on host and port specified from ListenAddress.  Default [localhost:8181](http://localhost:8181)
 
