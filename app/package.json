@@ -17,7 +17,6 @@
   "scripts": {
     "prestart": "grunt default",
     "start": "http-server -a 0.0.0.0 -p 8000",
-    "postinstall": "./node_modules/bower/bin/bower install",
     "test": "node node_modules/karma/bin/karma start test/karma.conf.js"
   },
   "dependencies": {
