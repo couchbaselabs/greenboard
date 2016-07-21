@@ -50,31 +50,6 @@ app.get('/builds/:bucket/:version', function(req, res){
 })
 
 
-app.get('/timeline/:version/:bucket?', function(req, res){
-	
-	var dataMap = []
-	var version = req.params.version
-    var bucket = req.params.bucket
-	var Q = "select `build` AS Version,"+
-					"SUM(totalCount) AS AbsPassed,"+
-					"SUM(failCount) AS AbsFailed,"+
-					"((SUM(totalCount)-SUM(failCount))/SUM(totalCount))*100 AS RelPassed "+
-						"FROM server WHERE `build` LIKE '"+version+"%' GROUP BY `build` ;"
-	client.queryBucket(bucket, Q)
-	  	.then(function(data){
-	  		data.forEach(function(d){
-	  			d['RelFailed']=100-d['AbsFailed']
-	  			dataMap.push(d)
-	  		})
-	  		// console.log(dataMap)
-		 	res.send(dataMap);
-	  	}).catch(function(err){
-	  		// err
-			console.log(err)
-			res.send(dataMap)
-	  	})
-
-})
 
 app.get('/jobs/:build/:bucket?', function(req, res){
 
@@ -89,6 +64,20 @@ app.get('/jobs/:build/:bucket?', function(req, res){
 			console.log(err)
 		})
 
+})
+
+app.get('/sidebar/:build/:bucket', function(req, res){
+
+
+    var bucket = req.params.bucket
+    var build = req.params.build
+    client.sidebarStatsForBuild(bucket, build)
+        .then(function(stats){
+            res.send(stats)
+        }).catch(function(err){
+            console.log(err)
+            res.send({err: err})
+        })
 })
 
 app.get('/info/:build/:bucket', function(req, res){

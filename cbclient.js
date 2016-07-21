@@ -42,11 +42,46 @@ module.exports = function(){
     })
     return promise
   }
+
+  function queryBuild(bucket, build){
+        var ver = build.split('-')[0]
+
+        // get total and fail count for every os and component of build along
+        // with the totalCount from All builds in version to calculate pending
+        var Q = "SELECT os,SUM(totalCount) AS total,SUM(failCount) AS fail"+
+                  " FROM server USE INDEX (os_stats)"+
+                  " WHERE `build` == '"+build+"'"+
+                  " GROUP BY os"+
+                " UNION"+
+                " SELECT component,SUM(totalCount) AS total,SUM(failCount) AS fail"+
+                  " FROM server USE INDEX (component_stats)"+
+                  " WHERE `build` == '"+build+"'"+
+                  " GROUP BY component"+
+                " UNION"+
+                " SELECT os,SUM(totalCount) AS os_ver_total"+
+                  " FROM server USE INDEX (os_stats)"+
+                  " WHERE `build` like '"+ver+"%'"+
+                  " GROUP BY os"+
+                " UNION"+
+                " SELECT component,SUM(totalCount) AS comp_ver_total"+
+                  " FROM server USE INDEX (component_stats)"+
+                  " WHERE `build` like '"+ver+"%'"+
+                  " GROUP BY component";
+
+        var qp = _query(bucket, strToQuery(Q))
+          .then(function(data){
+            return data
+          })
+
+        return qp
+    }
+
   var API =  {
 
     queryVersions: function(bucket){
         var Q = "SELECT DISTINCT SPLIT(`build`,'-')[0] AS version"+
-                " FROM "+bucket+" ORDER BY version"
+                " FROM "+bucket+" WHERE `build` IS NOT NULL"+
+                " ORDER BY version"
         var qp = _query(bucket, strToQuery(Q))
           .then(function(data){
             versionsResponseCache[bucket] = data
@@ -60,11 +95,12 @@ module.exports = function(){
         }
     },
     queryBuilds: function(bucket, version){
-        var Q = "SELECT * FROM "+bucket+" WHERE `build` LIKE '"+version+"%'"
+        var Q = "SELECT `build`,totalCount,failCount FROM "+bucket+
+                " WHERE `build` LIKE '"+version+"%'"
 
         function processBuild(data){
             // group all jobs by build and aggregate data for timeline
-            var builds = _.chain(data).pluck(bucket).groupBy('build')
+            var builds = _.chain(data).groupBy('build')
                 .map(function(buildSet){
                   var total = _.sum(_.pluck(buildSet, "totalCount"))
                   var failed = _.sum(_.pluck(buildSet, "failCount"))
@@ -75,7 +111,7 @@ module.exports = function(){
                     build: buildSet[0].build
                   }
                 })
-            return builds     
+            return builds
         }
 
         var qp = _query(bucket, strToQuery(Q))
@@ -101,7 +137,6 @@ module.exports = function(){
       var Q = "SELECT * FROM "+bucket+" WHERE `build` LIKE '"+ver+"%'"
 
       function processJobs(queryData){
-
         // jobs for this build
         var data = _.pluck(queryData, bucket)
         var jobs = _.filter(data, 'build', build)
@@ -160,6 +195,45 @@ module.exports = function(){
         })
       })
 	    return promise
+   },
+   sidebarStatsForBuild: function(bucket, build){
+
+       var ver = build.split('-')[0]
+	    var promise = new Promise(function(resolve, reject){
+          // get active jobs for this build
+          queryBuild(bucket, build)
+            .then(function(rc){
+                var stats = {}
+                _.each(rc, function(item){
+                   var key = "os"
+                   if ("component" in item){
+                       key = "component"
+                   }
+                    var ikey = item[key]
+                    var total = item.total || 0
+                    var fail = item.fail || 0
+                    var ver_total = item.os_ver_total || item.comp_ver_total || 0
+                    var passed = total - fail
+                    var pending = ver_total - total
+                    if (ikey in stats){ // exists
+                        stats[ikey].passed += passed
+                        stats[ikey].failed += fail
+                        stats[ikey].pending += pending
+                    } else{ // new
+                        stats[ikey] = {
+                            passed: passed,
+                            failed: fail,
+                            pending: pending,
+                            _type: key,
+                        }
+                    }
+
+                })
+                resolve(stats)
+            })
+        })
+
+        return promise
    },
 
   }
