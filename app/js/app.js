@@ -100,7 +100,7 @@ app.config(['$stateProvider', '$urlRouterProvider',
         controller: ['$state', 'build', 'Data', function($state, build, Data){
           // forwarder
           Data.setBuild(build)
-          $state.go('target.version._.build.jobs')
+          $state.go('target.version._.build.sidebar')
         }],
         resolve: {
           build: ['$stateParams', 'versionBuilds',
@@ -111,6 +111,17 @@ app.config(['$stateProvider', '$urlRouterProvider',
                   $stateParams.build = vbuild.split('-')[1]
                 }
                 return $stateParams.build
+            }]
+        }
+      })
+      .state('target.version._.build.sidebar', {
+        templateUrl: "partials/sidebar.html",
+        controller: "SidebarCtrl",
+        resolve: {
+          stats: ['$stateParams', 'QueryService', 'Data', 'target',
+            function($stateParams, QueryService, Data, target){
+              var build = Data.getBuild()
+              return QueryService.getSidebarStats(build, target)
             }]
         }
       })

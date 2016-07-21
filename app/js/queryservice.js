@@ -23,6 +23,13 @@ angular.module('svc.query', [])
 		        				return response.data
 		        			})				
 			},
+			getSidebarStats: function(build, target){
+				var url = ["sidebar", build, target].join("/")
+		        return $http({"url": url, cache: false})
+		        			.then(function(response){
+		        				return response.data
+		        			})				
+			},
 			getBuildInfo: function(build, target){
 				var url = ["info", build, target].join("/")
 				return $http({"url": url, cache: true})

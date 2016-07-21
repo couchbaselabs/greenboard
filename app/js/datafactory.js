@@ -265,22 +265,37 @@ angular.module('svc.data', [])
             // enabled build jobs
 
             // filter out just jobs with this key
-            var jobtype = type == "platforms" ? "os" : "component"
+            /*
             var subset = _buildJobsActive
             if (type != "build"){
                 subset = _.filter(_buildJobsActive, function(job){
-                    return job[jobtype] == key
+                    return job[type] == key
                     })
             }
+            */
 
             // calculate absolute stats
-            var absTotal = _.sum(_.pluck(subset, "totalCount"))
-            var absFail = _.sum(_.pluck(subset, "failCount"))
-            var absPending = _.sum(_.pluck(subset, "pending"))
+            var stats = {passed: 0, failed: 0, pending: 0}
+            if (type == "build" && key != ""){
+                // cumulative stats
+                _.each(_sideBarItems["platforms"], function(item){
+                    stats.passed += item.stats.passed 
+                    stats.failed += item.stats.failed
+                    stats.pending += item.stats.pending
+                })
+                _.each(_sideBarItems["features"], function(item){
+                    stats.passed += item.stats.passed 
+                    stats.failed += item.stats.failed
+                    stats.pending += item.stats.pending
+                })
+            } else if (key != "") {
+                var item = _.find(_sideBarItems[type], {"key": key})
+                stats = item.stats
+            }
             var absStats = {
-                passed: absTotal-absFail,
-                failed: absFail,
-                pending: absPending
+                passed: stats.passed,
+                failed: stats.failed,
+                pending: stats.pending 
             }
 
             // calculate percentage based stats

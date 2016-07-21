@@ -45,6 +45,33 @@ angular.module('app.main', [])
 			$state.go("target.version._.build", {build: "latest"})
 	}])
 
+	.controller('SidebarCtrl', ['$scope', '$state', '$stateParams', 'Data', 'stats',
+		function($scope, $state, $stateParams, Data, stats){
+
+            // set sidebar items from build job data
+            var allOs = [] 
+            var allComponents = [] 
+            _.keys(stats)
+                .map(function(k){
+                    if (stats[k]._type == "os") {
+                        allOs.push({
+                            key: k,
+                            stats: stats[k],
+                            disabled: false,
+                        })
+                    } else {
+                        allComponents.push({
+                            key: k,
+                            stats: stats[k],
+                            disabled: false,
+                        })
+                    }
+                })
+            Data.setSideBarItems({platforms: allOs, features: allComponents})
+
+
+        }])
+
 
 	.controller('JobsCtrl', ['$scope', '$state', '$stateParams', 'Data', 'buildJobs',
 		function($scope, $state, $stateParams, Data, buildJobs){
@@ -129,7 +156,6 @@ angular.module('app.main', [])
 	  		}
 	  	}
 	  }])
-
 
 
 	

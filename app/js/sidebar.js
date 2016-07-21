@@ -68,7 +68,6 @@ angular.module('app.sidebar', [])
 
   			scope.disabled = false
   			scope.stats = Data.getItemStats(scope.key, scope.type)
-
   			scope.getRunPercent = function(){
   				if(!scope.disabled){
 	  				return scope.stats.percStats.run
