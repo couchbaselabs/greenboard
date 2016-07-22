@@ -8,8 +8,10 @@ module.exports = function(){
 
   var cluster = new couchbase.Cluster(config.Cluster);
   var db = cluster.openBucket(config.DefaultBucket)
-  var buildsResponseCache = {}
   var versionsResponseCache = {}
+  var buildsResponseCache = {}
+  var jobsResponseCache = {}
+  var pendingVerResponseCache = {} 
 
   function strToQuery(queryStr, adhoc){
     console.log(new Date(), "QUERY:",queryStr)
@@ -75,6 +77,32 @@ module.exports = function(){
 
         return qp
     }
+    function _jobsForBuild(bucket, build){
+          var Q = "SELECT * FROM "+bucket+" WHERE `build` == '"+build+"'"
+
+
+          function updateJobsCache(){
+            return _query(bucket, strToQuery(Q)).then(function(data){
+                // cache and return response
+                var rc  = _.chain(data)
+                                               .cloneDeep()
+                                               .map(bucket)
+                                               .value()
+                jobsResponseCache[build] = rc
+                return  rc 
+            })
+          }
+           
+          if(build in jobsResponseCache){
+            var data = jobsResponseCache[build]
+            updateJobsCache()
+            return Promise.resolve(data)
+          } else {
+            return updateJobsCache()
+
+          }
+
+     }
 
   var API =  {
 
@@ -94,16 +122,21 @@ module.exports = function(){
           return qp
         }
     },
+    getBuildInfo: function(bucket, build, fun){
+      var db = cluster.openBucket(bucket)
+      db.get(build, fun)
+    },
+
     queryBuilds: function(bucket, version){
         var Q = "SELECT `build`,totalCount,failCount FROM "+bucket+
                 " WHERE `build` LIKE '"+version+"%'"
-
+    
         function processBuild(data){
             // group all jobs by build and aggregate data for timeline
             var builds = _.chain(data).groupBy('build')
                 .map(function(buildSet){
-                  var total = _.sum(_.pluck(buildSet, "totalCount"))
-                  var failed = _.sum(_.pluck(buildSet, "failCount"))
+                  var total = _.sum(_.map(buildSet, "totalCount"))
+                  var failed = _.sum(_.map(buildSet, "failCount"))
                   var passed = total - failed
                   return {
                     Failed: failed,
@@ -113,13 +146,13 @@ module.exports = function(){
                 })
             return builds
         }
-
+    
         var qp = _query(bucket, strToQuery(Q))
           .then(function(data){
             buildsResponseCache[version] = _.cloneDeep(data)
             return processBuild(data)
           })
-
+    
         if(version in buildsResponseCache){
           var data = buildsResponseCache[version]
           var response = processBuild(data)
@@ -128,50 +161,54 @@ module.exports = function(){
           return qp
         }
     },
-    getBuildInfo: function(bucket, build, fun){
-      var db = cluster.openBucket(bucket)
-      db.get(build, fun)
-    },
-    jobsForBuild: function(bucket, build){
+
+    jobsForBuild: _jobsForBuild,
+    jobsPendingForBuild: function(bucket, build){
+
       var ver = build.split('-')[0]
-      var Q = "SELECT * FROM "+bucket+" WHERE `build` LIKE '"+ver+"%'"
+      var allQ = "SELECT * FROM "+bucket+
+                " WHERE `build` LIKE '"+ver+"%'";
+      var Q = "SELECT * FROM "+bucket+
+                " WHERE `build` LIKE '"+ver+"%'"+
+                " EXCEPT"+
+                " SELECT * FROM "+bucket+" WHERE `build` == '"+build+"'";
 
-      function processJobs(queryData){
-        // jobs for this build
-        var data = _.pluck(queryData, bucket)
-        var jobs = _.filter(data, 'build', build)
-        var jobNames = _.pluck(jobs, 'name')
 
-        var pending = _.filter(data, function(j){
-          // job is pending if name is not in known job names
-          return _.indexOf(jobNames, j.name) == -1
+      // 1. check if pending for version and job already exists
+      //    - yes? get jobs for build and compute pending
+      //    - no? continue
+      // 2. do special query to quickly return pending and
+      //    save all jobs for use in step 2
+
+      function updatePendingCache(){
+        // get all jobs and cache for faster results
+        _query(bucket, strToQuery(allQ)).then(function(allData){
+            pendingVerResponseCache[ver] = _.cloneDeep(allData)
         })
-
-        // convert total to pending for non-executed jobs
-        pending = _.map(_.uniq(pending, 'name'), function(job){
-          job["pending"] = job.totalCount || job.pending
-          job["totalCount"] = 0
-          job["failCount"] = 0
-          job["result"] = "PENDING"
-          return job
-        })
-        var breakdown = jobs.concat(pending)
-        return breakdown
       }
 
-      // run query
-      var qp = _query(bucket, strToQuery(Q)).then(function(data){
-        // cache response
-        buildsResponseCache[ver] = _.cloneDeep(data)
-        return processJobs(data)
-      })
+      if((ver in pendingVerResponseCache) && (build in jobsResponseCache)){
+        var allJobs = pendingVerResponseCache[ver]
+        var buildJobs = jobsResponseCache[build]
 
-      if(ver in buildsResponseCache){
-        var data = buildsResponseCache[ver]
-        var response = processJobs(data)
-        return Promise.resolve(response)
+        var jobNames = _.map(buildJobs, function(item){ return item.name })
+        var pending = _.chain(allJobs)
+                .filter(function(j){
+                  // job is pending if name is not in known job names
+                  return _.indexOf(jobNames, j[bucket].name) == -1
+                })
+                .map(bucket)
+                .value()
+        updatePendingCache()
+        return Promise.resolve(pending)
+
       } else {
-        return qp
+        return _query(bucket, strToQuery(Q)).then(function(data){
+            updatePendingCache()
+
+            // just return n1ql response 
+            return _.map(data, function(j){return j[bucket]})
+        })
       }
 
     },

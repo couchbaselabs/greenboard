@@ -65,7 +65,6 @@ angular.module('app.sidebar', [])
   		link: function(scope, elem, attrs){
 
   			//TODO: allow modify by location url
-
   			scope.disabled = false
   			scope.stats = Data.getItemStats(scope.key, scope.type)
   			scope.getRunPercent = function(){

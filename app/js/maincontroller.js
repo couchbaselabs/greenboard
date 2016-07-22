@@ -45,36 +45,31 @@ angular.module('app.main', [])
 			$state.go("target.version._.build", {build: "latest"})
 	}])
 
-	.controller('SidebarCtrl', ['$scope', '$state', '$stateParams', 'Data', 'stats',
-		function($scope, $state, $stateParams, Data, stats){
+    // loads data for both sidebar and jobs window
+	.controller('JobsCtrl', ['$scope', 'QueryService', '$state', '$stateParams', 'Data', 'buildJobs', 'stats',
+		function($scope, QueryService, $state, $stateParams, Data, buildJobs, stats){
 
-            // set sidebar items from build job data
-            var allOs = [] 
-            var allComponents = [] 
-            _.keys(stats)
-                .map(function(k){
-                    if (stats[k]._type == "os") {
-                        allOs.push({
-                            key: k,
-                            stats: stats[k],
-                            disabled: false,
-                        })
-                    } else {
-                        allComponents.push({
-                            key: k,
-                            stats: stats[k],
-                            disabled: false,
-                        })
-                    }
-                })
-            Data.setSideBarItems({platforms: allOs, features: allComponents})
+        // set sidebar items from build job data
+        var allOs = [] 
+        var allComponents = [] 
+        _.keys(stats)
+            .map(function(k){
+                if (stats[k]._type == "os") {
+                    allOs.push({
+                        key: k,
+                        stats: stats[k],
+                        disabled: false,
+                    })
+                } else {
+                    allComponents.push({
+                        key: k,
+                        stats: stats[k],
+                        disabled: false,
+                    })
+                }
+            })
+        Data.setSideBarItems({platforms: allOs, features: allComponents})
 
-
-        }])
-
-
-	.controller('JobsCtrl', ['$scope', '$state', '$stateParams', 'Data', 'buildJobs',
-		function($scope, $state, $stateParams, Data, buildJobs){
 
 		// order by name initially
 		$scope.predicate = "result"
@@ -95,22 +90,14 @@ angular.module('app.main', [])
 			]
 		}
 
-
 		updateScopeWithJobs(buildJobs)
 		Data.setBuildJobs(buildJobs)
 
-		// set sidebar items from build job data
-	    var allPlatforms = _.uniq(_.pluck(buildJobs, "os"))
-	    	.map(function(k){
-	    		return {key: k, disabled: false}
-	    	})
- 	    var allFeatures = _.uniq(_.pluck(buildJobs, "component"))
- 	    	.map(function(k){
- 	    		return {key: k, disabled: false}
- 	    	})
-	   	Data.setSideBarItems({platforms: allPlatforms, features: allFeatures})
-
-
+        // fetch pending jobs
+        QueryService.getPendingJobs(Data.getBuild(), Data.getCurrentTarget())
+            .then(function(pending){
+                $scope.panelTabs[3].jobs = pending
+            })
 
 	   	$scope.changePanelJobs = function(i){
 	   		$scope.activePanel = i

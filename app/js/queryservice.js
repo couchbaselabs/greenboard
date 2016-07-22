@@ -23,6 +23,13 @@ angular.module('svc.query', [])
 		        				return response.data
 		        			})				
 			},
+			getPendingJobs: function(build, target){
+				var url = ["pending", build, target].join("/")
+		        return $http({"url": url, cache: false})
+		        			.then(function(response){
+		        				return response.data
+		        			})				
+			},
 			getSidebarStats: function(build, target){
 				var url = ["sidebar", build, target].join("/")
 		        return $http({"url": url, cache: false})

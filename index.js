@@ -49,7 +49,19 @@ app.get('/builds/:bucket/:version', function(req, res){
   	})
 })
 
+app.get('/sidebar/:build/:bucket', function(req, res){
 
+
+    var bucket = req.params.bucket
+    var build = req.params.build
+    client.sidebarStatsForBuild(bucket, build)
+        .then(function(stats){
+            res.send(stats)
+        }).catch(function(err){
+            console.log(err)
+            res.send({err: err})
+        })
+})
 
 app.get('/jobs/:build/:bucket?', function(req, res){
 
@@ -66,19 +78,21 @@ app.get('/jobs/:build/:bucket?', function(req, res){
 
 })
 
-app.get('/sidebar/:build/:bucket', function(req, res){
+app.get('/pending/:build/:bucket', function(req, res){
 
 
     var bucket = req.params.bucket
     var build = req.params.build
-    client.sidebarStatsForBuild(bucket, build)
-        .then(function(stats){
-            res.send(stats)
-        }).catch(function(err){
-            console.log(err)
-            res.send({err: err})
-        })
+
+	client.jobsPendingForBuild(bucket, build)
+		.then(function(breakdown){
+
+			res.send(breakdown)
+		}).catch(function(err){
+			console.log(err)
+		})
 })
+
 
 app.get('/info/:build/:bucket', function(req, res){
 
