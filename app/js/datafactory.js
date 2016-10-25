@@ -12,6 +12,7 @@ angular.module('svc.data', [])
     _buildJobs = []
     _buildJobsActive = []
     _sideBarItems = []
+    _sideBarBreakdown = {} 
     _filterBy = DEFAULT_FILTER_BY
     _initUrlParams = null
     _buildInfo = {}
@@ -220,6 +221,9 @@ angular.module('svc.data', [])
                 enableItem(key, type)
             }
         },
+        setSideBarBreakdown: function(stats){
+          _sideBarBreakdown = stats
+        },
         setSideBarItems: function(items){
             _sideBarItems = items
             _sideBarItems['buildVersion'] = buildNameWithVersion()
@@ -261,37 +265,40 @@ angular.module('svc.data', [])
             return _sideBarItems
         },
         getItemStats: function(key, type){
-            // calculates pass fail stats for key across all
-            // enabled build jobs
-
-            // filter out just jobs with this key
-            /*
-            var subset = _buildJobsActive
-            if (type != "build"){
-                subset = _.filter(_buildJobsActive, function(job){
-                    return job[type] == key
-                    })
-            }
-            */
-
             // calculate absolute stats
             var stats = {passed: 0, failed: 0, pending: 0}
             if (type == "build" && key != ""){
-                // cumulative stats
-                _.each(_sideBarItems["platforms"], function(item){
-                    stats.passed += item.stats.passed 
-                    stats.failed += item.stats.failed
-                    stats.pending += item.stats.pending
-                })
-                _.each(_sideBarItems["features"], function(item){
-                    stats.passed += item.stats.passed 
-                    stats.failed += item.stats.failed
-                    stats.pending += item.stats.pending
-                })
+                  stats = {passed: 0, failed: 0, pending: 0}
+                  // build type is sum of all platforms
+                  _.each(_sideBarItems["platforms"], function(item){
+                      if (!item.disabled) {
+                        stats.passed += item.stats.passed 
+                        stats.failed += item.stats.failed
+                        stats.pending += item.stats.pending
+                      }
+                  })
+
             } else if (key != "") {
-                var item = _.find(_sideBarItems[type], {"key": key})
-                stats = item.stats
+
+              // get breakdown for this item
+              var breakdownType = type == "platforms" ? "OS" : "COMPONENT"
+              var itemBreakdown = _sideBarBreakdown[breakdownType][key]
+              var item = _.find(_sideBarItems[type], {"key": key})
+              if (item.disabled == false){
+                  stats = {passed: 0, failed: 0, pending: 0}
+                _.keys(itemBreakdown).forEach(function(altKey){
+                  var altType = type == "platforms" ? "features" : "platforms"
+                  var altItem = _.find(_sideBarItems[altType], {"key": altKey})
+                  var altBreakdownItem = _sideBarBreakdown[breakdownType][key][altKey]
+                  if (altItem.disabled == false) {
+                   stats.passed += altBreakdownItem.passed 
+                   stats.failed += altBreakdownItem.failed
+                   stats.pending += altBreakdownItem.pending
+                  }
+                })
+              }
             }
+
             var absStats = {
                 passed: stats.passed,
                 failed: stats.failed,

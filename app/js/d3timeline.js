@@ -202,6 +202,8 @@
                     })
 
                   // and notify consumer of click callback
+                  // we cannot just update Data service because
+                  // not currently in an angular context
                   var build = d.x
                   clickCallBack(build)
                 })

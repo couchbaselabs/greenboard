@@ -1,8 +1,8 @@
 angular.module('app.main', [])
 	.controller("NavCtrl", ['$scope', '$state', '$stateParams', 'Data', 'target', 'targetVersions', 'version',
 	  function($scope, $state, $stateParams, Data, target, targetVersions, version){
-
-	  	targetVersions = _.compact(targetVersions)
+  
+    targetVersions = _.compact(targetVersions)
 		Data.setTarget(target)
 		Data.setSelectedVersion(version)
 		Data.setTargetVersions(targetVersions)
@@ -26,6 +26,7 @@ angular.module('app.main', [])
 	.controller('TimelineCtrl', ['$scope', '$state', 'versionBuilds', 'Data',
 		function($scope, $state, versionBuilds, Data){
 			$scope.versionBuilds = versionBuilds
+      $scope.build = Data.getBuild()
 
 			// on build change reload jobs view
 			$scope.onBuildChange = function(build){
@@ -50,26 +51,35 @@ angular.module('app.main', [])
 		function($scope, QueryService, $state, $stateParams, Data, buildJobs, stats){
 
         // set sidebar items from build job data
-        var allOs = [] 
-        var allComponents = [] 
-        _.keys(stats)
-            .map(function(k){
-                if (stats[k]._type == "os") {
-                    allOs.push({
-                        key: k,
-                        stats: stats[k],
-                        disabled: false,
-                    })
-                } else {
-                    allComponents.push({
-                        key: k,
-                        stats: stats[k],
-                        disabled: false,
-                    })
-                }
-            })
-        Data.setSideBarItems({platforms: allOs, features: allComponents})
+        var sideBarStats = {platforms: [], features: []} 
 
+        Data.setSideBarBreakdown(stats)
+
+        // map reduce over OS and Component as _type
+        _.keys(stats).forEach(function(_type){
+
+            // map over all keys 
+            var breakdown = _.map(stats[_type], function(_t, k){
+              var result = {
+                 key: k,
+                 disabled: false,
+              }
+
+              // reduce stats 
+              result.stats =_.reduce(_t, function(acc_stats, value, key){
+                  acc_stats.passed += value.passed 
+                  acc_stats.failed += value.failed
+                  acc_stats.pending += value.pending
+                  return acc_stats
+              })
+              return result
+            })
+            var k_type = _type == "OS" ? "platforms" : "features";
+            sideBarStats[k_type] = breakdown
+        })
+
+    // save both breakdown and reduced stats
+    Data.setSideBarItems(sideBarStats)
 
 		// order by name initially
 		$scope.predicate = "result"

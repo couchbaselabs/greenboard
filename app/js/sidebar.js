@@ -28,27 +28,26 @@ angular.module('app.sidebar', [])
 			  // Detect when build has changed
 			  scope.$watch(function(){ return Data.getSideBarItems() }, 
 				function(items, last){
-
 					if(!items) { return }
 
 					// only update sidebar items on build change
 					if(items.buildVersion != last.buildVersion){
-						scope.buildVersion = items.buildVersion
-					    scope.sidebarItems = {
-					        platforms: _.pluck(items["platforms"], "key"),
-					        features: _.pluck(items["features"], "key")
-					    }
+					  scope.buildVersion = items.buildVersion
+					  scope.sidebarItems = {
+					      platforms: _.pluck(items["platforms"], "key"),
+					      features: _.pluck(items["features"], "key")
+					  }
 					}
-
+          
 					// if all sidebar items of a type selected
 					// enable all checkmark
 					var noPlatformsDisabled = !_.any(_.pluck(items["platforms"], "disabled"))
 					var noFeaturesDisabled = !_.any(_.pluck(items["features"], "disabled"))
 					scope.disablePlatforms = noPlatformsDisabled ? false: true
 					scope.disableFeatures = noFeaturesDisabled ? false: true
-
+          
 				}, true)
-
+        
 	  		}
 	  	}
   }])
@@ -124,7 +123,7 @@ angular.module('app.sidebar', [])
 			    }
 
 			  	// update item stats
-                scope.stats = Data.getItemStats(scope.key, scope.type)
+          scope.stats = Data.getItemStats(scope.key, scope.type)
 			}, true)
 
   		}

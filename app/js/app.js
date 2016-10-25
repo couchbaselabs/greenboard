@@ -51,7 +51,7 @@ app.config(['$stateProvider', '$urlRouterProvider',
             function($stateParams, Data, QueryService){
 
               var target = $stateParams.target
-              var versions = Data.getTargetVersions(target)
+              var versions =  Data.getTargetVersions(target)
               if(!versions){
                 // get versions for Target
                 versions = QueryService.getVersions(target)
