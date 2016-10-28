@@ -222,11 +222,12 @@ angular.module('svc.data', [])
             }
         },
         setSideBarBreakdown: function(stats){
-          _sideBarBreakdown = stats
+          _sideBarBreakdown = JSON.parse(JSON.stringify(stats))
         },
         setSideBarItems: function(items){
+
+            items['buildVersion'] = buildNameWithVersion()
             _sideBarItems = items
-            _sideBarItems['buildVersion'] = buildNameWithVersion()
 
             // default behavior is to initialize sideBarItems
             // with items param.  
@@ -259,7 +260,6 @@ angular.module('svc.data', [])
 
             // drop init params
             _initUrlParams = null
-   
         },
         getSideBarItems: function(){
             return _sideBarItems
@@ -272,9 +272,19 @@ angular.module('svc.data', [])
                   // build type is sum of all platforms
                   _.each(_sideBarItems["platforms"], function(item){
                       if (!item.disabled) {
-                        stats.passed += item.stats.passed 
-                        stats.failed += item.stats.failed
-                        stats.pending += item.stats.pending
+
+                        // get features for this platform
+                        var osBreakdown = _sideBarBreakdown["OS"][item.key]
+                        _.each(osBreakdown, function(comp, key){
+
+                          // only all enabled features
+                          var compItem = _.find(_sideBarItems["features"], {"key": key})
+                          if (compItem.disabled == false){
+                            stats.passed += comp.passed
+                            stats.failed += comp.failed
+                            stats.pending += comp.pending
+                          }
+                        })
                       }
                   })
 
@@ -348,6 +358,9 @@ angular.module('svc.data', [])
                 return builds[builds.length-1].build
             }
             return _build
+        },
+        getUrlParams: function(){
+          return _initUrlParams
         },
         setUrlParams: function(params){
 

@@ -50,12 +50,14 @@ angular.module('app.main', [])
 	.controller('JobsCtrl', ['$scope', 'QueryService', '$state', '$stateParams', 'Data', 'buildJobs', 'stats',
 		function($scope, QueryService, $state, $stateParams, Data, buildJobs, stats){
 
-        // set sidebar items from build job data
-        var sideBarStats = {platforms: [], features: []} 
-
+        // cache sidebar breakdown
         Data.setSideBarBreakdown(stats)
 
-        // map reduce over OS and Component as _type
+        // set sidebar items from build job data
+        var sideBarStats = {platforms: [], features: []} 
+        var params = Data.getUrlParams()
+
+        // derive stats via map reduce over OS and Component as _type
         _.keys(stats).forEach(function(_type){
 
             // map over all keys 
