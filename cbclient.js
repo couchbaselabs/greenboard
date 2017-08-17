@@ -7,9 +7,14 @@ var _ = require('lodash');
 module.exports = function(){
 
   var cluster = new couchbase.Cluster(config.Cluster);
-  var db = cluster.openBucket(config.DefaultBucket)
+  var db = _db(config.DefaultBucket)
   var buildsResponseCache = {}
   var versionsResponseCache = {}
+
+  function _db(bucket) {
+    cluster.authenticate(bucket, config.AuthPassword);
+    return cluster.openBucket(bucket)
+  }
 
   function strToQuery(queryStr, adhoc){
     console.log(new Date(), "QUERY:",queryStr)
@@ -18,6 +23,7 @@ module.exports = function(){
   }
 
   function _query(bucket, q){
+    var db = _db(bucket)
 	  var promise = new Promise(function(resolve, reject){
 		  db.query(q, function(err, components) {
 		  		if(!err){
@@ -31,7 +37,7 @@ module.exports = function(){
   }
 
   function doUpsert(bucket, key, doc){
-    var db = cluster.openBucket(bucket)
+    var db = _db(bucket)
 	  var promise = new Promise(function(resolve, reject){
       db.upsert(key, doc, function(err, result){
         if(err){ reject({err: err}) }
@@ -75,7 +81,7 @@ module.exports = function(){
                     build: buildSet[0].build
                   }
                 })
-            return builds     
+            return builds
         }
 
         var qp = _query(bucket, strToQuery(Q))
@@ -93,7 +99,7 @@ module.exports = function(){
         }
     },
     getBuildInfo: function(bucket, build, fun){
-      var db = cluster.openBucket(bucket)
+      var db = _db(bucket)
       db.get(build, fun)
     },
     jobsForBuild: function(bucket, build){
