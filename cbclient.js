@@ -15,7 +15,9 @@ module.exports = function(){
     if (config.AuthPassword != ""){
       cluster.authenticate(bucket, config.AuthPassword);
     }
-    return cluster.openBucket(bucket)
+    var db = cluster.openBucket(bucket)
+    db.operationTimeout = 120 * 1000
+    return db
   }
 
   function strToQuery(queryStr, adhoc){
