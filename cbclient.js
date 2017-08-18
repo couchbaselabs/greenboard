@@ -12,7 +12,9 @@ module.exports = function(){
   var versionsResponseCache = {}
 
   function _db(bucket) {
-    cluster.authenticate(bucket, config.AuthPassword);
+    if (config.AuthPassword != ""){
+      cluster.authenticate(bucket, config.AuthPassword);
+    }
     return cluster.openBucket(bucket)
   }
 
