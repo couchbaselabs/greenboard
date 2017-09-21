@@ -25,12 +25,14 @@ app.get('/versions/:bucket?', function(req, res){
   	})
 })
 
-app.get('/builds/:bucket/:version', function(req, res){
+app.get('/builds/:bucket/:version/:testsFilter/:buildsFilter', function(req, res){
 
   var bucket = req.params.bucket
   var version = req.params.version
+  var testsFilter = req.params.testsFilter
+  var buildsFilter = req.params.buildsFilter
   var builds = []
-  client.queryBuilds(bucket, version)
+  client.queryBuilds(bucket, version, testsFilter, buildsFilter)
   	.then(function(data){
   		data.sort(function(b1, b2){
   			if(b1.build > b2.build){
@@ -50,16 +52,19 @@ app.get('/builds/:bucket/:version', function(req, res){
 })
 
 
-app.get('/timeline/:version/:bucket?', function(req, res){
+app.get('/timeline/:version/:bucket/:testsFilter/:buildsFilter', function(req, res){
 	
 	var dataMap = []
 	var version = req.params.version
     var bucket = req.params.bucket
+	var testsFilter = req.params.testsFilter
+	var buildsFilter = req.params.buildsFilter
 	var Q = "select `build` AS Version,"+
 					"SUM(totalCount) AS AbsPassed,"+
 					"SUM(failCount) AS AbsFailed,"+
 					"((SUM(totalCount)-SUM(failCount))/SUM(totalCount))*100 AS RelPassed "+
-						"FROM server WHERE `build` LIKE '"+version+"%' GROUP BY `build` ;"
+						"FROM "+bucket+" WHERE `build` LIKE '"+version+"%' GROUP BY `build` " +
+					"HAVING SUM(totalCount) >= "+testsFilter+" LIMIT "+ buildsFilter
 	client.queryBucket(bucket, Q)
 	  	.then(function(data){
 	  		data.forEach(function(d){

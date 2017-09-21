@@ -9,8 +9,8 @@ angular.module('svc.query', [])
 		        				return response.data
 		        			})
 			},
-			getBuilds: function(target, version){
-				var url = ["builds", target, version].join("/")
+			getBuilds: function(target, version, testsFilter, buildsFilter){
+				var url = ["builds", target, version, testsFilter, buildsFilter].join("/")
 		        return $http({"url": url, cache: true})
 		        			.then(function(response){
 		        				return response.data
@@ -18,7 +18,7 @@ angular.module('svc.query', [])
 			},
 			getJobs: function(build, target){
 				var url = ["jobs", build, target].join("/")
-		        return $http({"url": url, cache: false})
+		        return $http({"url": url, cache: true})
 		        			.then(function(response){
 		        				return response.data
 		        			})				
