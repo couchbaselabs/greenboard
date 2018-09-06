@@ -56,7 +56,7 @@ module.exports = function(){
 
     queryVersions: function(bucket){
         var Q = "SELECT DISTINCT SPLIT(`build`,'-')[0] AS version"+
-                " FROM "+bucket+" ORDER BY version"
+                " FROM "+bucket+" where SPLIT(`build`,'-')[0] is not missing ORDER BY version"
         var qp = _query(bucket, strToQuery(Q))
           .then(function(data){
             versionsResponseCache[bucket] = data
