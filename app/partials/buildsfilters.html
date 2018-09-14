@@ -1,0 +1,7 @@
+<ul class="pagination">
+    <li ng-repeat="f in buildsFilters"
+        ng-class="{'active': f == activeBuildFilter}"
+        class="pagecell">
+        <a ng-click="changeBuildsFilter(f)" href=""> {{ f }}</a>
+    </li>
+</ul>

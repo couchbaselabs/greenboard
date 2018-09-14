@@ -10,6 +10,18 @@ module.exports = function(){
   var db = _db(config.DefaultBucket)
   var buildsResponseCache = {}
   var versionsResponseCache = {}
+  var bucketConnections = _bucketConnection()
+
+  function _bucketConnection() {
+      var buckets = {}
+      var server = _db('server')
+      var sdk = _db('sdk')
+      var mobile = _db('mobile')
+      buckets['server'] = server
+      buckets['sdk'] = sdk
+      buckets['mobile'] = mobile
+      return buckets
+  }
 
   function _db(bucket) {
     if (config.AuthPassword != ""){
@@ -27,7 +39,10 @@ module.exports = function(){
   }
 
   function _query(bucket, q){
-    var db = _db(bucket)
+    var db = bucketConnections[bucket]
+      if (!db.connected){
+        db.connect()
+      }
 	  var promise = new Promise(function(resolve, reject){
 		  db.query(q, function(err, components) {
 		  		if(!err){
@@ -41,7 +56,7 @@ module.exports = function(){
   }
 
   function doUpsert(bucket, key, doc){
-    var db = _db(bucket)
+    var db = bucketConnections[bucket]
 	  var promise = new Promise(function(resolve, reject){
       db.upsert(key, doc, function(err, result){
         if(err){ reject({err: err}) }
@@ -62,91 +77,116 @@ module.exports = function(){
             versionsResponseCache[bucket] = data
             return data
           })
-
         if(bucket in versionsResponseCache){
+            var data = versionsResponseCache[bucket]
+            if(data.length == 0){
+                return queryVersion()
+            }
           return Promise.resolve(versionsResponseCache[bucket])
         } else {
-          return qp
+          return queryVersion()
         }
     },
-    queryBuilds: function(bucket, version){
-        var Q = "SELECT * FROM "+bucket+" WHERE `build` LIKE '"+version+"%'"
+    queryBuilds: function(bucket, version, testsFilter, buildsFilter){
+        var Q = "SELECT SUM(totalCount) AS totalCount, SUM(failCount) AS failCount, `build`  FROM "
+            +bucket+" WHERE `build` LIKE '"+version+"%' GROUP BY `build` HAVING SUM(totalCount) >= " + testsFilter +
+            " ORDER BY `build` DESC limit "+buildsFilter
 
         function processBuild(data){
-            // group all jobs by build and aggregate data for timeline
-            var builds = _.chain(data).pluck(bucket).groupBy('build')
-                .map(function(buildSet){
-                  var total = _.sum(_.pluck(buildSet, "totalCount"))
-                  var failed = _.sum(_.pluck(buildSet, "failCount"))
-                  var passed = total - failed
-                  return {
+
+            var builds = _.map(data, function (buildSet) {
+                var total = buildSet.totalCount
+                var failed = buildSet.failCount
+                var passed = total - failed
+                return {
                     Failed: failed,
                     Passed: passed,
-                    build: buildSet[0].build
-                  }
-                })
+                    build: buildSet.build
+                }
+            })
             return builds
         }
-
-        var qp = _query(bucket, strToQuery(Q))
-          .then(function(data){
-            buildsResponseCache[version] = _.cloneDeep(data)
-            return processBuild(data)
-          })
+        function queryBuild() {
+            var qp = _query(bucket, strToQuery(Q))
+                .then(function(data){
+                    buildsResponseCache[version] = _.cloneDeep(data)
+                    return processBuild(data)
+                })
+            return qp
+        }
 
         if(version in buildsResponseCache){
           var data = buildsResponseCache[version]
           var response = processBuild(data)
+          if(response.length == 0){
+              return queryBuild()
+          }
           return Promise.resolve(response)
         } else {
-          return qp
+          return queryBuild()
         }
     },
     getBuildInfo: function(bucket, build, fun){
-      var db = _db(bucket)
+      var db = bucketConnections[bucket]
       db.get(build, fun)
     },
     jobsForBuild: function(bucket, build){
       var ver = build.split('-')[0]
-      var Q = "SELECT * FROM "+bucket+" WHERE `build` LIKE '"+ver+"%'"
+      var Q = "SELECT * FROM "+bucket+" WHERE `build` = '"+build+"'"
 
-      function processJobs(queryData){
+      function processJobs(queryData, pendingJobs){
 
         // jobs for this build
         var data = _.pluck(queryData, bucket)
         var jobs = _.filter(data, 'build', build)
         var jobNames = _.pluck(jobs, 'name')
 
-        var pending = _.filter(data, function(j){
+        /*var pending = _.filter(data, function(j){
           // job is pending if name is not in known job names
           return _.indexOf(jobNames, j.name) == -1
-        })
+        })*/
 
         // convert total to pending for non-executed jobs
-        pending = _.map(_.uniq(pending, 'name'), function(job){
+        var pending = _.map(_.uniq(_.pluck(pendingJobs, bucket), 'name'), function(job){
           job["pending"] = job.totalCount || job.pending
           job["totalCount"] = 0
           job["failCount"] = 0
           job["result"] = "PENDING"
           return job
         })
-        var breakdown = jobs.concat(pending)
-        return breakdown
+          return jobs.concat(pending)
       }
 
       // run query
-      var qp = _query(bucket, strToQuery(Q)).then(function(data){
-        // cache response
-        buildsResponseCache[ver] = _.cloneDeep(data)
-        return processJobs(data)
-      })
+      function queryJob() {
+          return _query(bucket, strToQuery(Q)).then(function (data) {
+              var pend = "select * from " + bucket + " where `build` like '" + ver + "%' " +
+                  "and name not in (select raw name from " + bucket + " b where b.`build` = '" + build + "') " +
+                  "order by `build` desc"
+              if (ver + "pendingJobs" in buildsResponseCache && buildsResponseCache[ver + "pendingJobs"].length != 0) {
+                  var pending = buildsResponseCache[ver + "pendingJobs"]
+                  var jobs = processJobs(data, pending)
+              } else {
+                  var jobs = _query(bucket, strToQuery(pend)).then(function (pending) {
+                      buildsResponseCache[build + "data"] = _.cloneDeep(data)
+                      buildsResponseCache[ver + "pendingJobs"] = _.cloneDeep(pending)
+                      return processJobs(data, pending)
+                  })
+              }
+              return jobs
+          })
+      }
 
-      if(ver in buildsResponseCache){
-        var data = buildsResponseCache[ver]
-        var response = processJobs(data)
+      if(build+"data" in buildsResponseCache){
+        var data = buildsResponseCache[build+"data"]
+        var pendingjobs = buildsResponseCache[ver+"pendingJobs"]
+        if(data.length == 0 || pendingjobs.length == 0){
+            return queryJob()
+          }
+        var response = processJobs(data, pendingjobs)
         return Promise.resolve(response)
       } else {
-        return qp
+        return queryJob()
       }
 
     },
