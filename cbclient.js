@@ -71,16 +71,12 @@ module.exports = function(){
 
     queryVersions: function(bucket){
         var Q = "SELECT DISTINCT SPLIT(`build`,'-')[0] AS version"+
-                " FROM "+bucket+" where SPLIT(`build`,'-')[0] is not null ORDER BY version"
-        function queryVersion() {
-            var qp = _query(bucket, strToQuery(Q))
-                .then(function(data){
-                    versionsResponseCache[bucket] = data
-                    return data
-                })
-            return qp
-        }
-
+                " FROM "+bucket+" where SPLIT(`build`,'-')[0] is not missing ORDER BY version"
+        var qp = _query(bucket, strToQuery(Q))
+          .then(function(data){
+            versionsResponseCache[bucket] = data
+            return data
+          })
         if(bucket in versionsResponseCache){
             var data = versionsResponseCache[bucket]
             if(data.length == 0){
