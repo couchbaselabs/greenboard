@@ -19,7 +19,7 @@
   "homepage": "https://github.com/couchbaselabs/greenboard#readme",
   "dependencies": {
     "body-parser": "^1.14.2",
-    "couchbase": "git+https://github.com/couchbase/couchnode.git#master",
+    "couchbase": "^2.6.0",
     "express": "^4.13.3",
     "gulp": "^3.9.0",
     "json-middleware": "^1.0.2",

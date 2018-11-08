@@ -7,6 +7,7 @@ var _ = require('lodash');
 module.exports = function(){
 
   var cluster = new couchbase.Cluster(config.Cluster);
+  cluster.authenticate(config.RBACUser, config.RBACKPassword);
   var db = _db(config.DefaultBucket)
   var buildsResponseCache = {}
   var versionsResponseCache = {}
@@ -16,7 +17,7 @@ module.exports = function(){
       cluster.authenticate(bucket, config.AuthPassword);
     }
     var db = cluster.openBucket(bucket)
-    db.operationTimeout = 120 * 1000
+    //db.operationTimeout = 120 * 1000
     return db
   }
 
