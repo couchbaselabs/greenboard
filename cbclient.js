@@ -14,7 +14,8 @@ module.exports = function(){
 
   function _db(bucket) {
     if (config.AuthPassword != ""){
-      cluster.authenticate(bucket, config.AuthPassword);
+      //cluster.authenticate(bucket, config.AuthPassword);
+      cluster.authenticate(config.RBACUser, config.AuthPassword);
     }
     var db = cluster.openBucket(bucket)
     //db.operationTimeout = 120 * 1000
@@ -108,7 +109,7 @@ module.exports = function(){
       db.get(build, fun)
     },
     jobsForBuild: function(bucket, build){
-      var ver = build.split('-')[0]
+      var ver = build //build.split('-')[0]
       var Q = "SELECT * FROM "+bucket+" WHERE `build` LIKE '"+ver+"%'"
 
       function processJobs(queryData){
