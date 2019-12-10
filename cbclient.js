@@ -109,8 +109,9 @@ module.exports = function(){
       db.get(build, fun)
     },
     jobsForBuild: function(bucket, build){
-      var ver = build //build.split('-')[0]
-      var Q = "SELECT * FROM "+bucket+" WHERE `build` LIKE '"+ver+"%'"
+      var ver = build.split('-')[0]
+      var Q = "SELECT * from "+bucket+" WHERE `build` LIKE '"+ver+"%'" 
+      var Q1 = "SELECT * from "+bucket+" WHERE `build` = '"+build+"'" 
 
       function processJobs(queryData){
 
@@ -136,20 +137,24 @@ module.exports = function(){
         return breakdown
       }
 
-      // run query
-      var qp = _query(bucket, strToQuery(Q)).then(function(data){
-        // cache response
-        buildsResponseCache[ver] = _.cloneDeep(data)
-        return processJobs(data)
-      })
-
       if(ver in buildsResponseCache){
         var data = buildsResponseCache[ver]
+        //Get the selected build data and merge with cached data
+        var qp = _query(bucket, strToQuery(Q1)).then(function(data1){
+          data = _.uniq(_.union(data, data1), false, function(item, key, a){ return item.a; });
+        })
         var response = processJobs(data)
         return Promise.resolve(response)
       } else {
-        return qp
+          // run query
+          var qp = _query(bucket, strToQuery(Q)).then(function(data){
+              // cache response
+              buildsResponseCache[ver] = _.cloneDeep(data) 
+              return processJobs(data)
+            })
+          return qp
       }
+      
 
     },
    claimJobs: function(bucket, name, build_id, claim){
