@@ -111,7 +111,7 @@ module.exports = function(){
     jobsForBuild: function(bucket, build){
       var ver = build.split('-')[0]
       var Q = "SELECT * from "+bucket+" WHERE `build` LIKE '"+ver+"%'" 
-      var Q1 = "SELECT * from "+bucket+" WHERE `build` = '"+build+"'" 
+      var Q1 = "SELECT * from "+bucket+" WHERE `build` LIKE '"+build+"'%" 
 
       function processJobs(queryData){
 
