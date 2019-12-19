@@ -118,10 +118,10 @@ angular.module('app.target', [])
   }])
 
 
-  .factory('ViewTargets', ['COUCHBASE_TARGET', 'SDK_TARGET', 'MOBILE_TARGET', 
-  	function (COUCHBASE_TARGET, SDK_TARGET, MOBILE_TARGET){
+  .factory('ViewTargets', ['COUCHBASE_TARGET', 'SDK_TARGET', 'SG_TARGET', 'CBLITE_TARGET',
+  	function (COUCHBASE_TARGET, SDK_TARGET, SG_TARGET, CBLITE_TARGET){
 
-      var viewTargets = [COUCHBASE_TARGET, SDK_TARGET, MOBILE_TARGET]
+      var viewTargets = [COUCHBASE_TARGET, SDK_TARGET, SG_TARGET, CBLITE_TARGET]
       var targetMap = {} // reverse lookup map
 
       // allow reverse lookup by bucket
@@ -156,12 +156,18 @@ angular.module('app.target', [])
         "value": 100,
         "options": [0, 50, 100, 500]
   })
- .value('MOBILE_TARGET', {
-        "title": "Mobile",
-        "bucket": "mobile",
+  .value('SG_TARGET', {
+        "title": "Sync Gateway",
+        "bucket": "sync_gateway",
         "key": "abspassed",
         "value": 0,
         "options": [0, 50, 100, 500]
   })
-
+  .value('CBLITE_TARGET', {
+        "title": "Couchbase Lite",
+        "bucket": "cblite",
+        "key": "abspassed",
+        "value": 0,
+        "options": [0, 50, 100, 500]
+  })
 
