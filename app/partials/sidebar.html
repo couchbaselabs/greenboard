@@ -13,9 +13,9 @@
 
   <div ng-if="sidebarItems.serverVersions && sidebarItems.serverVersions[0] != null" class="nav nav-sidebar">
     <div class="nav-header">
-      <h3>Couchbase Server Version</h3>
+      <h3>CB Server Versions</h3>
       <a ng-click="toggleAll('serverVersions')" href="">
-          <i class="fa" ng-class="{'fa-check-square-o': !disableServerVersions, 'fa-square-o': disableServerVersions}"></i> all
+          <i class="fa" ng-class="{'fa-check-square-o': !disabledServerVersions, 'fa-square-o': disabledServerVersions}"></i> all
       </a>
     </div>
     <div ng-repeat="key in sidebarItems.serverVersions">
