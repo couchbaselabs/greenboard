@@ -86,9 +86,6 @@ angular.module('app.main', [])
 				return k ? {key: k, disabled: false}: null
 			});
 
-		console.log("TEST");
-		console.log(buildJobs);
-		console.log(allVersions);
 	   	Data.setSideBarItems({platforms: allPlatforms, features: allFeatures, serverVersions: allVersions});
 
 
