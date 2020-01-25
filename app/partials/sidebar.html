@@ -11,6 +11,18 @@
         <sidebar-item key="{{buildVersion}}" type="build" show-perc="showPerc" />
   </div>
 
+  <div ng-if="sidebarItems.serverVersions && sidebarItems.serverVersions[0] != null" class="nav nav-sidebar">
+    <div class="nav-header">
+      <h3>Couchbase Server Version</h3>
+      <a ng-click="toggleAll('serverVersions')" href="">
+          <i class="fa" ng-class="{'fa-check-square-o': !disableServerVersions, 'fa-square-o': disableServerVersions}"></i> all
+      </a>
+    </div>
+    <div ng-repeat="key in sidebarItems.serverVersions">
+      <sidebar-item key="{{key}}" type="serverVersions" show-perc="showPerc"/>
+    </div>
+  </div>
+
   <!-- platforms -->
   <div class="nav nav-sidebar">
     <div class="nav-header">

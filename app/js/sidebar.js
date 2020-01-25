@@ -7,21 +7,25 @@ angular.module('app.sidebar', [])
 	  		templateUrl: 'partials/sidebar.html',
 	  		link: function(scope, elem, attrs){
 
-	  		  scope.showPerc = false
-	  		  scope.disablePlatforms = false
-	  		  scope.disableFeatures = false
-              scope.buildVersion = Data.getBuild()
+	  		  scope.showPerc = false;
+	  		  scope.disablePlatforms = false;
+	  		  scope.disableFeatures = false;
+	  		  scope.disabledServerVersions = false;
+              scope.buildVersion = Data.getBuild();
 
 	  		  scope.toggleAll = function(type){
 	  		  	var isDisabled;
 	  		  	
 	  		  	if(type=="platforms"){
-	  		  		isDisabled = !scope.disablePlatforms
-		  		  	scope.disablePlatforms = isDisabled
-		  		 } else {
-		  		 	isDisabled = !scope.disableFeatures
-		  		 	scope.disableFeatures = isDisabled
-		  		 }
+	  		  		isDisabled = !scope.disablePlatforms;
+		  		  	scope.disablePlatforms = isDisabled;
+		  		 } else if(type=="features"){
+		  		 	isDisabled = !scope.disableFeatures;
+		  		 	scope.disableFeatures = isDisabled;
+		  		 } else if(type=="serverVersions"){
+	  		  		isDisabled = !scope.disabledServerVersions;
+	  		  		scope.disabledServerVersions = isDisabled;
+				}
 	  		  	Data.toggleAllSidebarItems(type, isDisabled)
 	  		  }
 
@@ -33,20 +37,22 @@ angular.module('app.sidebar', [])
 
 					// only update sidebar items on build change
 					if(items.buildVersion != last.buildVersion){
-						scope.buildVersion = items.buildVersion
+						scope.buildVersion = items.buildVersion;
 					    scope.sidebarItems = {
 					        platforms: _.pluck(items["platforms"], "key"),
-					        features: _.pluck(items["features"], "key")
+					        features: _.pluck(items["features"], "key"),
+							serverVersions: _.pluck(items["serverVersions"], "key")
 					    }
 					}
 
 					// if all sidebar items of a type selected
 					// enable all checkmark
-					var noPlatformsDisabled = !_.any(_.pluck(items["platforms"], "disabled"))
-					var noFeaturesDisabled = !_.any(_.pluck(items["features"], "disabled"))
-					scope.disablePlatforms = noPlatformsDisabled ? false: true
-					scope.disableFeatures = noFeaturesDisabled ? false: true
-
+					var noPlatformsDisabled = !_.any(_.pluck(items["platforms"], "disabled"));
+					var noFeaturesDisabled = !_.any(_.pluck(items["features"], "disabled"));
+					var noServerVersionsDisabled = !_.any(_.pluck(items["serverVersions"], "disabled"));
+					scope.disablePlatforms = !noPlatformsDisabled;
+					scope.disableFeatures = !noFeaturesDisabled;
+					scope.disabledServerVersions = !noServerVersionsDisabled;
 				}, true)
 
 	  		}

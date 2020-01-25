@@ -58,7 +58,8 @@ angular.module('svc.data', [])
 
     function disableItem(key, type){
 
-        var jobtype = type == "platforms" ? "os" : "component"
+        var jobtype = type == "platforms" ? "os" : "component";
+        jobtype = type == "serverVersions" ? "server_version" : jobtype;
 
         // diabling item: remove from active list of build jobs
         _buildJobsActive = _.reject(_buildJobsActive, function(job){
@@ -70,7 +71,8 @@ angular.module('svc.data', [])
 
     function enableItem(key, type){
 
-        var jobtype = type == "platforms" ? "os" : "component"
+        var jobtype = type == "platforms" ? "os" : "component";
+        jobtype = type == "serverVersions" ? "server_version" : jobtype;
 
         // enabling item so include in active list of build jobs
         var includeJobs = _.filter(_buildJobs, function(job){
@@ -81,7 +83,7 @@ angular.module('svc.data', [])
                 // get alternate of current type..
                 // ie... so if we are adding back an os key
                 // then get the component listed for this job
-                var altTypes = jobtype == "os" ? ["features", "component"] : ["platforms", "os"]
+                var altTypes = jobtype == "os" ? ["features", "component", "serverVersions"] : ["platforms", "os", "server_version"]
                 var sideBarItem = _.find(_sideBarItems[altTypes[0]],"key", job[altTypes[1]])
 
                 // only include this job if it's alternate type isn't disabled 
@@ -244,7 +246,7 @@ angular.module('svc.data', [])
                 // only enable urlParams
                 _.mapKeys(_initUrlParams, function(values, type){
 
-                    if(["platforms", "features"].indexOf(type) != -1){
+                    if(["platforms", "features", "serverVersions"].indexOf(type) != -1){
                         var keys = values.split(",")
                         keys.forEach(function(k){
                             enableItem(k, type)
@@ -266,6 +268,7 @@ angular.module('svc.data', [])
 
             // filter out just jobs with this key
             var jobtype = type == "platforms" ? "os" : "component"
+            jobtype = type == "serverVersions" ? "server_version" : jobtype;
             var subset = _buildJobsActive
             if (type != "build"){
                 subset = _.filter(_buildJobsActive, function(job){

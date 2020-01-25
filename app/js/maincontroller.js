@@ -69,27 +69,35 @@ angular.module('app.main', [])
 		}
 
 
-		updateScopeWithJobs(buildJobs)
-		Data.setBuildJobs(buildJobs)
+		updateScopeWithJobs(buildJobs);
+		Data.setBuildJobs(buildJobs);
 
 		// set sidebar items from build job data
 	    var allPlatforms = _.uniq(_.pluck(buildJobs, "os"))
 	    	.map(function(k){
 	    		return {key: k, disabled: false}
-	    	})
+	    	});
  	    var allFeatures = _.uniq(_.pluck(buildJobs, "component"))
  	    	.map(function(k){
  	    		return {key: k, disabled: false}
- 	    	})
-	   	Data.setSideBarItems({platforms: allPlatforms, features: allFeatures})
+ 	    	});
+ 	    var allVersions = _.uniq(_.pluck(buildJobs, "server_version"))
+			.map(function (k) {
+				return k ? {key: k, disabled: false}: null
+			});
+
+		console.log("TEST");
+		console.log(buildJobs);
+		console.log(allVersions);
+	   	Data.setSideBarItems({platforms: allPlatforms, features: allFeatures, serverVersions: allVersions});
 
 
 
 	   	$scope.changePanelJobs = function(i){
 	   		$scope.activePanel = i
-	   	}
+	   	};
 
-        $scope.msToTime = msToTime
+        $scope.msToTime = msToTime;
 
 	   	$scope.$watch(function(){ return Data.getActiveJobs() }, 
 				function(activeJobs){
