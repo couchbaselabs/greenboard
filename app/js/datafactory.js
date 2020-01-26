@@ -58,8 +58,8 @@ angular.module('svc.data', [])
 
     function disableItem(key, type){
 
-        var jobtype = type == "platforms" ? "os" : "component";
-        jobtype = type == "serverVersions" ? "server_version" : jobtype;
+        var jobtype = type == "platforms" ? "os" : "component"
+        jobtype = type == "serverVersions" ? "server_version" : jobtype
 
         // diabling item: remove from active list of build jobs
         _buildJobsActive = _.reject(_buildJobsActive, function(job){
@@ -71,8 +71,8 @@ angular.module('svc.data', [])
 
     function enableItem(key, type){
 
-        var jobtype = type == "platforms" ? "os" : "component";
-        jobtype = type == "serverVersions" ? "server_version" : jobtype;
+        var jobtype = type == "platforms" ? "os" : "component"
+        jobtype = type == "serverVersions" ? "server_version" : jobtype
 
         // enabling item so include in active list of build jobs
         var includeJobs = _.filter(_buildJobs, function(job){
@@ -268,7 +268,7 @@ angular.module('svc.data', [])
 
             // filter out just jobs with this key
             var jobtype = type == "platforms" ? "os" : "component"
-            jobtype = type == "serverVersions" ? "server_version" : jobtype;
+            jobtype = type == "serverVersions" ? "server_version" : jobtype
             var subset = _buildJobsActive
             if (type != "build"){
                 subset = _.filter(_buildJobsActive, function(job){
