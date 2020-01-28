@@ -10,6 +10,7 @@ angular.module('app.sidebar', [])
 	  		  scope.showPerc = false
 	  		  scope.disablePlatforms = false
 	  		  scope.disableFeatures = false
+	  		  scope.disabledServerVersions = false
               scope.buildVersion = Data.getBuild()
 
 	  		  scope.toggleAll = function(type){
@@ -18,10 +19,13 @@ angular.module('app.sidebar', [])
 	  		  	if(type=="platforms"){
 	  		  		isDisabled = !scope.disablePlatforms
 		  		  	scope.disablePlatforms = isDisabled
-		  		 } else {
+		  		 } else if(type=="features"){
 		  		 	isDisabled = !scope.disableFeatures
 		  		 	scope.disableFeatures = isDisabled
-		  		 }
+		  		 } else if(type=="serverVersions"){
+	  		  		isDisabled = !scope.disabledServerVersions
+	  		  		scope.disabledServerVersions = isDisabled
+				}
 	  		  	Data.toggleAllSidebarItems(type, isDisabled)
 	  		  }
 
@@ -36,7 +40,8 @@ angular.module('app.sidebar', [])
 						scope.buildVersion = items.buildVersion
 					    scope.sidebarItems = {
 					        platforms: _.pluck(items["platforms"], "key"),
-					        features: _.pluck(items["features"], "key")
+					        features: _.pluck(items["features"], "key"),
+							serverVersions: _.pluck(items["serverVersions"], "key")
 					    }
 					}
 
@@ -44,9 +49,10 @@ angular.module('app.sidebar', [])
 					// enable all checkmark
 					var noPlatformsDisabled = !_.any(_.pluck(items["platforms"], "disabled"))
 					var noFeaturesDisabled = !_.any(_.pluck(items["features"], "disabled"))
-					scope.disablePlatforms = noPlatformsDisabled ? false: true
-					scope.disableFeatures = noFeaturesDisabled ? false: true
-
+					var noServerVersionsDisabled = !_.any(_.pluck(items["serverVersions"], "disabled"))
+					scope.disablePlatforms = !noPlatformsDisabled
+					scope.disableFeatures = !noFeaturesDisabled
+					scope.disabledServerVersions = !noServerVersionsDisabled
 				}, true)
 
 	  		}

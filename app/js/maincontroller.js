@@ -81,7 +81,12 @@ angular.module('app.main', [])
  	    	.map(function(k){
  	    		return {key: k, disabled: false}
  	    	})
-	   	Data.setSideBarItems({platforms: allPlatforms, features: allFeatures})
+ 	    var allVersions = _.uniq(_.pluck(buildJobs, "server_version"))
+			.map(function (k) {
+				return k ? {key: k, disabled: false}: null
+			})
+
+	   	Data.setSideBarItems({platforms: allPlatforms, features: allFeatures, serverVersions: allVersions});
 
 
 
