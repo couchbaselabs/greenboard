@@ -1,47 +1,173 @@
-  <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
-    <div class="container-fluid">
-      <div class="navbar-header">
-        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">
-          <span class="sr-only">Toggle navigation</span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-        </button>
-        <a class="navbar-brand" href="#/greenboard">Greenboard</a>
-      </div>
-      <div class="navbar-collapse collapse">
-        <ul class="nav navbar-nav navbar-right">
-        </ul>
+<div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="#/greenboard">Greenboard</a>
+      <a class="navbar-brand" href="http://greenboard.hq.couchbase.com:8201" target="_blank">Greenboard(Old)</a>
+      <a class="navbar-brand text-right" data-toggle="modal" data-target="#greenboardHelp" >
+        <div style="cursor:pointer;">Help</div> </a>
+    </div>
+    <div class="navbar-collapse collapse">
+      <ul class="nav navbar-nav navbar-right">
+      </ul>
 
-      </div>
     </div>
   </div>
-  <div class="container-fluid">
+</div>
+<div class="container-fluid">
 
   <div class="col-sm-2 sidebar">
     <view-sidebar></view-sidebar>
   </div>
 
-    <div class="col-sm-8 col-sm-offset-2 main">
+  <div class="col-sm-8 col-sm-offset-2 main">
 
-      <div>
-        <!-- target and version selector -->
-        <div class="row nav-buttons">
-          <div class="col-sm-3">
-             <target-selector change-target="changeTarget" />
-          </div>
-          <div class="col-sm-6">
-             <version-selector change-version="changeVersion" />
-          </div>
-          <div class="col-sm-3">
-             <filter-selector change-filter="changeFilter" />
-          </div>
+    <div>
+      <!-- target and version selector -->
+      <div class="row nav-buttons">
+        <div class="col-sm-1">
+          <target-selector change-target="changeTarget" />
+        </div>
+        <div class="col-sm-4 col-sm-push-1">
+          <version-selector change-version="changeVersion" />
+        </div>
+        <div class="col-sm-2 col-sm-push-1">
+          <builds-filter-selector change-buildsFilter="changeBuildsFilter" />
+        </div>
+        <div class="col-sm-2 col-sm-push-1">
+          <filter-selector change-filter="changeFilter" />
+        </div>
       </div>
 
       <!-- build view -->
       <div ui-view></div>
     </div>
   </div>
-  <div class="col-sm-2 infobar">
-       <view-infobar></view-infobar>
+  <!--  <div class="col-sm-2 infobar">
+    <view-infobar></view-infobar>
+  </div> -->
+
+</div>
+<div class="modal fade bd-example-modal-lg" id="greenboardHelp" tabindex="-1" role="dialog" aria-labelledby="greenboardHelpTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <h2 class="modal-title text-center">Greenboard general help</h2>
+      </div>
+      <div class="modal-body">
+        <div class="text-center">
+          <div style="width:80%; margin:0 10%;">
+            <h3 class="modal-title" >Delete Jobs from greenboard</h3>
+            <br />
+            <p style="text-align:justify">Deleting jobs in jenkins will no longer delete the entry from greenboard going forward.
+              This is because rerunning a job has to improve the results in general and the data should not be fudged
+              in the dashboard in principle. However having said that,  if you absolutely must delete a job entry from greenboard, run
+              <a href="http://qa.sc.couchbase.com/job/delete_jobs_from_greenboard" target="_blank">
+                http://qa.sc.couchbase.com/job/delete_jobs_from_greenboard </a> job.
+              The job takes following parameters.
+            </p>
+            <ol class="text-left">
+              <li>version : Build version from where the job has to be deleted ex: 7.0.0-1234</li>
+              <li>jobs_url : Full job url with the build_id which has to be deleted from greenboard.
+                ex: http://qa.sc.couchbase.com/job/test_suite_executor/196463/</li>
+              <li>target : Which product to delete the job from. (server, cblite, sync_gateway)</li>
+            </ol>
+            <p style="text-align:justify">
+              Run the above job to delete any particular line from the job. A capability to delete from the greenboard
+              will be added in the future based on the need.
+            </p>
+            <br>
+            <h4 class="modal-title">Deleting from pending jobs list</h4>
+            <p style="text-align:justify">
+              To delete a job from the pending jobs list, run
+              <a href="http://qa.sc.couchbase.com/job/delete_jobs_from_existing_jobs_greeenboard/" target="_blank">
+                http://qa.sc.couchbase.com/job/delete_jobs_from_existing_jobs_greeenboard/ </a> job. This will make the
+              greenboard ignore showing the job from a particular version until it's run at some later point in time.
+              The job takes following parameters.
+            </p>
+            <ol class="text-left">
+              <li>job_to_delete : Job name to be deleted from existing jobs list on Greenboard
+                (to delete from pending jobs)</li>
+              <li>version : Version number from where to remove the build (example 6.5.0) /</li>
+              <li>type : Product from where the job has to be deleted</li>
+            </ol>
+            <br>
+            <h4 class="modal-title">Deleting all job links for a particular job for a particular build</h4>
+            <p style="text-align:justify">
+              To delete all the job links (all reruns) for a particular job for a particular build, run
+              <a href="http://qa.sc.couchbase.com/job/delete_job_details_greenboard/" target="_blank">
+              http://qa.sc.couchbase.com/job/delete_job_details_greenboard/ </a> job.
+              This will delete the job from run details and will show up on pending jobs. Also rerun data will be
+              deleted and rerunning the job will make it a fresh run.
+              The job takes following parameters.
+            </p>
+            <ol class="text-left">
+              <li>job_to_delete : Job name to be deleted from Greenboard. Example: centos-backup_recovery_merge</li>
+              <li>build_num : Build number from where to remove the job (example 6.5.0-3123) /</li>
+              <li>type : Product from where the job has to be deleted</li>
+            </ol>
+            <br>
+            <h4 class="modal-title">Updating job details for a particular job for a particular build</h4>
+            <p style="text-align:justify">
+              Due to a bug in eventing, sometimes few job details like the result and count could be collectd
+              erroneously. To update the job with correct details, run
+              <a href="http://qa.sc.couchbase.com/job/update_greenboard_job_details/" target="_blank">
+              http://qa.sc.couchbase.com/job/update_greenboard_job_details/ </a> job.
+              This will update the job to show the correct data. Refresh greenboard twice to get the updated data
+              The job takes following parameters.
+            </p>
+            <ol class="text-left">
+              <li>job_link : 	URl of the job whose details have to be updated
+                example: http://qa.sc.couchbase.com/job/test_suite_executor/223555</li>
+              <li>build_num : Build number from where to remove the job (example 6.5.0-3123) /</li>
+              <li>type : Product from where the job has to be deleted</li>
+            </ol>
+            <br>
+            <h4 class="modal-title">Known issues</h4>
+            <p style="text-align:justify">
+              Since the new greenboard relies on eventing to gather data, it sometimes happens that the deleted data might
+              get re-written back in the database. This is due to data race condition that is currently hard to solve since
+              eventing does not support cas based inserts. Please re-run the above job if the data re-appears on the
+              greenboard.
+            </p>
+            <br />
+            <p style="text-align:justify">
+              You might see some differences in numbers in the failed jobs. This is due to the fact that there is a bug
+              in the old collector that assigns incorrect number to the total number of tests in the job based on the last
+              job it processed. So while the fix for this bug is made available, please note that both the numbers shown
+              on both greenboard (new and old) are wrong. This issue is seen on jobs where
+              the job had not generated any test results, usually the case with install failures.
+            </p>
+            <br /><br />
+            <h3 class="modal-title" >Old greenboard</h3>
+            <br />
+            <p style="text-align:justify">
+              Old greenboard is still functional for a while incase you want to use the old, but slower greenboard.
+              Know that new features will not be enabled on greenboard going forward. The old greenboard can be accessed
+              by clicking on the Greenboard(Old) icon on top of the page. Note that you might need VPN to access this link
+              as of now. 
+            </p>
+            <br /><br />
+            <p style="text-align:justify">
+              Contact Bharath G P (bharath.gp@couchbase.com) in case you face any issues. Also please report any bugs
+              you see in the greenboard. While this has been tested quite extensively, it's still a software like our
+              product. Hence there will be issues and bugs in the code
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+        <!-- <button type="button" class="btn btn-secondary">Close</button> -->
+      </div>
+    </div>
   </div>
+</div>

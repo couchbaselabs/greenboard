@@ -1,8 +1,9 @@
-exports.Cluster = '127.0.0.1'
+exports.Cluster = '172.23.121.84'
 exports.RBACUser = "Administrator";
 exports.RBACKPassword = "password";
-exports.DefaultBucket = 'server'
-exports.AuthPassword = 'password'
-exports.Buckets = ['server', 'sdk', 'mobile']
+exports.DefaultBucket = 'test_eventing'
+exports.AuthPassword = ''
+// exports.Buckets = ['server', 'sdk', 'mobile']
+exports.Buckets = []
 exports.httpListen = '127.0.0.1'
-exports.httpPort = 8200
+exports.httpPort = 8205

@@ -1,0 +1,125 @@
+<div class="col-sm-2"></div>
+<div class="col-sm-12 main">
+    <div class="row">
+        <div class="col-sm-2">
+            <div class="center">
+                Target
+            </div>
+            <div class="btn-group">
+                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                    {{compareTarget}} <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu dropdown-menu" role="menu">
+                    <li ng-click="changeCompareTarget(target)" ng-repeat="target in compareTargets">
+                        <a href="">{{target}}</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="col-sm-2 graph-padding">
+            <div class="center">
+                Build 1
+            </div>
+            <div class="btn-group">
+                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                    {{compareVersion1}} <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu dropdown-menu" role="menu">
+                    <li ng-click="version1Change(version)" ng-repeat="version in versions">
+                        <a href="">{{version}}</a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="btn-group">
+                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                    {{compareBuildId1}} <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu dropdown-menu" role="menu">
+                    <li ng-click="build1Change(build)" ng-repeat="build in compareBuilds1">
+                        <a href="">{{build}}</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="col-sm-2 graph-padding">
+            <div class="center">
+                Build 2
+            </div>
+            <div class="btn-group">
+                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                    {{compareVersion2}} <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu dropdown-menu" role="menu">
+                    <li ng-click="version2Change(version)" ng-repeat="version in versions">
+                        <a href="">{{version}}</a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="btn-group">
+                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                    {{compareBuildId2}} <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu dropdown-menu" role="menu">
+                    <li ng-click="build2Change(build)" ng-repeat="build in compareBuilds2">
+                        <a href="">{{build}}</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="col-sm-1 graph-padding">
+            <div class="center">
+                Graph Type
+            </div>
+            <div class="btn-group">
+                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                    {{graphType}} <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu dropdown-menu" role="menu">
+                    <li ng-click="changeGraphType(graphType)" ng-repeat="graphType in graphTypes">
+                        <a href="">{{graphType}}</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="col-sm-1 graph-padding">
+            <div class="center">
+                OS
+            </div>
+            <div class="btn-group">
+                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                    {{compareOS}} <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu dropdown-menu" role="menu">
+                    <li ng-click="changeOs(os)" ng-repeat="os in compareOSs">
+                        <a href="">{{os}}</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <br/>
+    <div class="row graph-padding">
+        <div class="col-sm-8">
+            <div google-chart chart="osRunPercChart" style="height: 100%; width: 100%" ></div>
+        </div>
+    </div>
+    <br/>
+    <div class="row graph-padding">
+        <div class="col-sm-8">
+            <div google-chart chart="osPassPercChart" style="height: 100%; width: 100%"></div>
+        </div>
+    </div>
+    <div class="row graph-padding">
+        <div class="col-sm-8">
+            <div google-chart chart="runPercChart" style="height: 100%; width: 100%"></div>
+        </div>
+    </div>
+    <div class="row graph-padding">
+        <div class="col-sm-8">
+            <div google-chart chart="passPercChart" style="height: 100%; width: 100%"></div>
+        </div>
+    </div>
+</div>

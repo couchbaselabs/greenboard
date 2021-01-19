@@ -9,16 +9,16 @@ angular.module('svc.query', [])
 		        				return response.data
 		        			})
 			},
-			getBuilds: function(target, version){
-				var url = ["builds", target, version].join("/")
+			getBuilds: function(target, version, testsFilter, buildsFilter){
+				var url = ["builds", target, version, testsFilter, buildsFilter].join("/")
 		        return $http({"url": url, cache: true})
-		        			.then(function(response){
+		        			.then(function(response){		
 		        				return response.data
 		        			})				
 			},
 			getJobs: function(build, target){
 				var url = ["jobs", build, target].join("/")
-		        return $http({"url": url, cache: false})
+		        return $http({"url": url, cache: true})
 		        			.then(function(response){
 		        				return response.data
 		        			})				
@@ -30,9 +30,16 @@ angular.module('svc.query', [])
                                return response.data
                         })
 			},
-			claimJob: function(target, name, build_id, claim){
+			claimJob: function(target, name, build_id, claim,os,comp,build){
 				var url = ["claim", target, name, build_id].join("/")
-				return $http.post(url, {claim: claim})
+				return $http.post(url, {claim: claim,os:os,comp:comp,build:build})
+			},
+			getBuildSummary: function (buildId) {
+				var url = ["getBuildSummary", buildId].join("/")
+				return $http({"url": url, cache: true})
+					.then(function (response) {
+						return response.data
+                    })
 			}
 		  }
 		}])

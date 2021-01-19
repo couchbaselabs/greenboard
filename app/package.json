@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "bower": "^1.4.1",
-    "grunt-contrib-watch": "^0.6.1"
+    "grunt-contrib-watch": "^0.6.1",
+    "graceful-fs": "^4.1.11"
   }
 }

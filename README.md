@@ -70,11 +70,3 @@ This will run the collector once.  In production you may want to wrap it in some
 Greenboard must run against a single instance of couchbase - preferably localhost.  This is because all data is loaded into vbucket 0 due to a legacy workaround to avoid dependencies on sdks ie golang/nodejs/python.
 
 
-## Known issues
-CBQE-5359, CBQE-5305
-At a high level, it has few important issues. Some of them are:
-- Really slow response times
-- Showing incorrect data on number of jobs run and to be run.
-- Older data being deleted from the database
-
-

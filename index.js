@@ -1,3 +1,7 @@
+var realFs = require('fs')
+var gracefulFs = require('graceful-fs')
+gracefulFs.gracefulify(realFs)
+
 var _ = require('lodash');
 var express = require('express');
 var client = require('./cbclient.js')
@@ -9,7 +13,6 @@ app.use(express.static('app'));
 app.use(bodyParser.json());
 
 app.get('/versions/:bucket?', function(req, res){
-
   var bucket = req.params.bucket
   var versions = []
   client.queryVersions(bucket)
@@ -25,12 +28,14 @@ app.get('/versions/:bucket?', function(req, res){
   	})
 })
 
-app.get('/builds/:bucket/:version', function(req, res){
+app.get('/builds/:bucket/:version/:testsFilter/:buildsFilter', function(req, res){
 
   var bucket = req.params.bucket
   var version = req.params.version
+  var testsFilter = req.params.testsFilter
+  var buildsFilter = req.params.buildsFilter
   var builds = []
-  client.queryBuilds(bucket, version)
+  client.queryBuilds(bucket, version, testsFilter, buildsFilter)
   	.then(function(data){
   		data.sort(function(b1, b2){
   			if(b1.build > b2.build){
@@ -40,26 +45,29 @@ app.get('/builds/:bucket/:version', function(req, res){
   				return -1
   			}
   			return 0
-  		})
-	 	res.send(data);
+		})
+		res.send(data)
   	}).catch(function(err){
   		// err
 		console.log(err)
 		res.send(builds)
-  	})
+	})
 })
 
 
-app.get('/timeline/:version/:bucket?', function(req, res){
+app.get('/timeline/:version/:bucket/:testsFilter/:buildsFilter', function(req, res){
 	
 	var dataMap = []
 	var version = req.params.version
     var bucket = req.params.bucket
+	var testsFilter = req.params.testsFilter
+	var buildsFilter = req.params.buildsFilter
 	var Q = "select `build` AS Version,"+
 					"SUM(totalCount) AS AbsPassed,"+
 					"SUM(failCount) AS AbsFailed,"+
 					"((SUM(totalCount)-SUM(failCount))/SUM(totalCount))*100 AS RelPassed "+
-						"FROM server WHERE `build` LIKE '"+version+"%' GROUP BY `build` ;"
+						"FROM "+bucket+" WHERE `build` LIKE '"+version+"%' GROUP BY `build` " +
+					"HAVING SUM(totalCount) >= "+testsFilter+" LIMIT "+ buildsFilter
 	client.queryBucket(bucket, Q)
 	  	.then(function(data){
 	  		data.forEach(function(d){
@@ -111,14 +119,25 @@ app.post('/claim/:bucket/:name/:build_id', function (req, res) {
   var name = req.params.name
   var build_id = req.params.build_id
   var claim = req.body.claim
-
-  client.claimJobs(bucket, name, build_id, claim)
+  var os = req.body.os
+  var comp = req.body.comp
+  var version = req.body.build
+  client.claimJobs(bucket, name, build_id, claim,os,comp,version)
     .then(function(jobs){
       res.send('POST request to the homepage');
     }).catch(function(err){
       res.send({err: err})
     })
 
+});
+
+app.get('/getBuildSummary/:buildId', function (req, res) {
+	var buildId = req.params.buildId;
+	client.getBuildSummary(buildId).then(function (buildDetails) {
+		res.send(buildDetails)
+    }).catch(function(err){
+    	console.log(err)
+	})
 });
 
 

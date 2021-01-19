@@ -10,25 +10,25 @@ angular.module('app.sidebar', [])
 	  		  scope.showPerc = false
 	  		  scope.disablePlatforms = false
 	  		  scope.disableFeatures = false
-	  		  scope.disabledServerVersions = false
+			  scope.disabledServerVersions = false
               scope.buildVersion = Data.getBuild()
-
+			  
 	  		  scope.toggleAll = function(type){
 	  		  	var isDisabled;
 	  		  	
 	  		  	if(type=="platforms"){
 	  		  		isDisabled = !scope.disablePlatforms
 		  		  	scope.disablePlatforms = isDisabled
-		  		 } else if(type=="features"){
-		  		 	isDisabled = !scope.disableFeatures
-		  		 	scope.disableFeatures = isDisabled
+				 } else if(type=="features"){
+					isDisabled = !scope.disableFeatures
+					scope.disableFeatures = isDisabled
 		  		 } else if(type=="serverVersions"){
-	  		  		isDisabled = !scope.disabledServerVersions
-	  		  		scope.disabledServerVersions = isDisabled
+					isDisabled = !scope.disabledServerVersions
+					scope.disabledServerVersions = isDisabled
 				}
 	  		  	Data.toggleAllSidebarItems(type, isDisabled)
 	  		  }
-
+			  
 			  // Detect when build has changed
 			  scope.$watch(function(){ return Data.getSideBarItems() }, 
 				function(items, last){
@@ -36,23 +36,25 @@ angular.module('app.sidebar', [])
 					if(!items) { return }
 
 					// only update sidebar items on build change
-					if(items.buildVersion != last.buildVersion){
+					// if(items.buildVersion != last.buildVersion){
 						scope.buildVersion = items.buildVersion
 					    scope.sidebarItems = {
-					        platforms: _.pluck(items["platforms"], "key"),
-					        features: _.pluck(items["features"], "key"),
-							serverVersions: _.pluck(items["serverVersions"], "key")
-					    }
-					}
+					        platforms: _.map(items["platforms"], "key"),
+							features: _.map(items["features"], "key"),
+							serverVersions: _.map(items["serverVersions"], "key")
+						}
+						
+					// }
 
 					// if all sidebar items of a type selected
 					// enable all checkmark
-					var noPlatformsDisabled = !_.any(_.pluck(items["platforms"], "disabled"))
-					var noFeaturesDisabled = !_.any(_.pluck(items["features"], "disabled"))
-					var noServerVersionsDisabled = !_.any(_.pluck(items["serverVersions"], "disabled"))
+					var noPlatformsDisabled = !_.some(_.map(items["platforms"], "disabled"))
+					var noFeaturesDisabled = !_.some(_.map(items["features"], "disabled"))
+					var noServerVersionsDisabled = !_.some(_.map(items["serverVersions"], "disabled"))
 					scope.disablePlatforms = !noPlatformsDisabled
 					scope.disableFeatures = !noFeaturesDisabled
 					scope.disabledServerVersions = !noServerVersionsDisabled
+
 				}, true)
 
 	  		}
@@ -126,7 +128,7 @@ angular.module('app.sidebar', [])
 			  function(newSideBarItem){
 
 			  	// we'll get notified here if this item was disabled
-			  	var thisItem = _.find(newSideBarItem[scope.type], "key", scope.key)
+			  	var thisItem = _.find(newSideBarItem[scope.type], {"key": scope.key})
 			  	if(thisItem){
 			  		scope.disabled = thisItem.disabled
 			    }

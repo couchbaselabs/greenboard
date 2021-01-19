@@ -19,17 +19,40 @@
                   //       build-controller so that view can be
                   //       notified when a build is selected
                   Timeline.init(builds, id, scope.onChange)
-
+                  
                   // re-render if filterBy has changed
                   scope.$watch(function(){ return Data.getBuildFilter() },
                     function(filterBy, lastFilterBy){
-
+                      
                       if((lastFilterBy != undefined) && (filterBy != lastFilterBy)){
                         builds = Data.getVersionBuilds()
 
                         // update timeline
                         Timeline.update(builds, id)
                       }
+                    })
+		   
+		                scope.$watch(function () {
+                        return Data.getBuildFilter();
+                    }, function (newVal, oldVal) {
+                        if (newVal == oldVal){
+                            return
+                        }
+                        builds = Data.getVersionBuilds()
+                        Timeline.update(builds, id)
+
+                    });
+
+                    scope.$watch(function () {
+                        return Data.getBuildsFilter();
+                    }, function (newVal, oldVal) {
+                        if (newVal == oldVal){
+                            return
+                        }
+                        scope.spin = true
+                        builds = Data.getVersionBuilds()
+                        Timeline.update(builds, id)
+                        scope.spin = false
                     })
 
                 }
@@ -239,7 +262,7 @@
               function _render(builds){
 
                     var stack = d3.layout.stack()
-                    var xLabels = _.pluck(builds, 'build')
+                    var xLabels = _.map(builds, 'build')
                     var passFailLayers = ['Passed', 'Failed'].map(function(k){
                       return builds.map(function(b, i){ return {x: xLabels[i], y: b[k] }})
                     })

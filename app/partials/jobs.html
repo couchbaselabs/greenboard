@@ -27,7 +27,10 @@
             </thead>
             <tbody>
               <tr ng-repeat="job in panelTabs[activePanel].jobs | orderBy:predicate:reverse">
-                <td><a href={{job.url}}{{job.build_id}}>{{job.name}}</a></td>
+                <!-- <td><a href={{job.url}}{{job.build_id}}>{{job.name}}</a></td> -->
+                <td>  <a style="cursor:pointer;" ng-click="onselect(job.name,job.os,job.component)"
+                         data-toggle="modal" data-target="#exampleModalCenter">{{job.name}}</a></td>
+                <!-- <td>  <a  href="#!/jobdetails/{{job.name}}">{{job.name}}</a></td> -->
                 <td><span class={{job.result}}>{{job.result}}</span></td>
                 <td>{{job.totalCount - job.failCount}}</td>
                 <td>{{job.totalCount || job.pending}}</td>
@@ -41,5 +44,55 @@
         </div>
       </div>
 
+  </div>
+</div>
+
+<div class="modal fade bd-example-modal-lg" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <h2 class="modal-title text-center" id="exampleModalCenterTitle">All Test Runs</h2>
+        <h3 class="modal-title text-center" id="exampleModalCenter"> Job Name : <b>{{selectedjobname}} </b> Build : <b> {{selectedbuild}} </b> </h3>
+      </div>
+      <div class="modal-body">
+        <!-- <div class="container text-center"> -->
+          <div class="table-responsive">
+          <table class="table-striped table-bordered table-condensed table-hover text-center" style="width:80%; margin:0 10%;">
+              <thead class="thead-dark">
+                <tr>
+                  <th scope="col" class="text-center">#</th>
+                  <th scope="col" class="text-center">Job Url</th>
+                  <th scope="col" class="text-center">Result</th>
+                  <th scope="col" class="text-center">Passed Count</th>
+                  <th scope="col" class="text-center">Total Count</th>
+                  <th scope="col" class="text-center">Duration</th>
+      
+                </tr>
+              </thead>
+              <tbody ng-repeat="selectedjob in selectedjobdetails">
+                <tr>
+                  <th scope="row text-center">Run {{len - $index}}</th>
+                  <td>
+                      <a href="{{selectedjob.url}}{{selectedjob.build_id}}" target="_blank" >
+                          Link
+                      </a></td>
+                  <td><span class={{selectedjob.result}}>{{selectedjob.result}}</span></td>
+                  <td>{{selectedjob.totalCount - selectedjob.failCount}}</td>
+                  <td>{{selectedjob.totalCount}}</td>
+                  <td>{{msToTime(selectedjob.duration)}}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <!-- </div> -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+        <!-- <button type="button" class="btn btn-secondary">Close</button> -->
+      </div>
+    </div>
   </div>
 </div>
