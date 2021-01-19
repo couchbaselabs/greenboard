@@ -18,8 +18,8 @@
               <tr>
                 <th><a href="" ng-click="predicate = 'name'; reverse=!reverse">Name  <i class="fa fa-sort"></i></a></th>
                 <th><a href="" ng-click="predicate = 'result'; reverse=!reverse">Result</a></th>
-                <th><a href="" ng-click="predicate = 'passed'; reverse=!reverse">Passed</a></th>
-                <th><a href="" ng-click="predicate = 'total'; reverse=!reverse">Total</a></th>
+                <th><a href="" ng-click="predicate = 'totalCount - failCount'; reverse=!reverse">Passed</a></th>
+                <th><a href="" ng-click="predicate = 'pending || totalCount'; reverse=!reverse">Total</a></th>
                 <th><a href="" ng-click="predicate = 'duration'; reverse=!reverse">Duration</a></th>
                 <th class="claim-col"><a href="" ng-click="predicate = 'claim'; reverse=!reverse">Claim </a></th>
                 <th><a href="" ng-click="predicate = 'priority'; reverse=!reverse">Priority</a></th>
@@ -33,7 +33,7 @@
                 <!-- <td>  <a  href="#!/jobdetails/{{job.name}}">{{job.name}}</a></td> -->
                 <td><span class={{job.result}}>{{job.result}}</span></td>
                 <td>{{job.totalCount - job.failCount}}</td>
-                <td>{{job.totalCount || job.pending}}</td>
+                <td>{{job.pending || job.totalCount}}</td>
                 <td>{{msToTime(job.duration)}}</td>
                 <td><claim-cell job="job"></claim-cell>
                 </td>

@@ -291,6 +291,18 @@ module.exports = function () {
                                 countt = countt+1
                                 
                                 }
+                            // move jobs that we know failed due to infra issue to pending state
+                            if (jobs['os'][os][component][job] && jobs['os'][os][component][job].length > 0) {
+                                const failedJob = jobs['os'][os][component][job][0]
+                                if (failedJob["totalCount"] === 0 && failedJob["result"] === "FAILURE") {
+                                    for (const claim of Object.keys(config.CLAIM_MAP)) {
+                                        if (failedJob["claim"].startsWith(claim)) {
+                                            failedJob["pending"] = name.totalCount
+                                            failedJob["result"] = "PENDING"
+                                        }
+                                    }
+                                }
+                            }
                         })
                     })
                 })
@@ -395,7 +407,8 @@ module.exports = function () {
         claimJobs: function(bucket,name,build_id,claim,os,comp,version){
 
             function doUpdate(bucket,claim,os,comp,name,build_id,version){
-                var Q = "SELECT * FROM `greenboard` USE KEYS '"+version+"_"+bucket+"'"
+                const key = `${version}_${bucket}`;
+                var Q = "SELECT * FROM greenboard USE KEYS '"+key+"'";
                 var _ps = []
                 var promise = new Promise(function (resolve, reject) {
                             _query(bucket, strToQuery(Q)).catch(reject)
@@ -410,8 +423,15 @@ module.exports = function () {
                                     })
                                     jobs[0]["greenboard"]["os"][os][comp][name] = newbuildjobs
                                     console.log(jobs[0]["greenboard"]["os"][os][comp][name])
-                                    var p = _upsert("greenboard",version,jobs[0]["greenboard"]).then(function(res){
+                                    var p = _upsert("greenboard",key,jobs[0]["greenboard"]).then(function(res){
                                         console.log(res)
+                                        // update cache
+                                        if (version in buildsResponseCache) {
+                                            const jobToUpdate = buildsResponseCache[version].find(job => job.build_id === parseInt(build_id) && job.os === os && job.component === comp);
+                                            if (jobToUpdate) {
+                                                jobToUpdate.claim = claim;
+                                            }
+                                        }
                                     })
                                     _ps.push(p)
                                 })
