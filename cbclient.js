@@ -294,13 +294,9 @@ module.exports = function () {
                             // move jobs that we know failed due to infra issue to pending state
                             if (jobs['os'][os][component][job] && jobs['os'][os][component][job].length > 0) {
                                 const failedJob = jobs['os'][os][component][job][0]
-                                if (failedJob["totalCount"] === 0 && failedJob["result"] === "FAILURE") {
-                                    for (const claim of Object.keys(config.CLAIM_MAP)) {
-                                        if (failedJob["claim"].startsWith(claim)) {
-                                            failedJob["pending"] = name.totalCount
-                                            failedJob["result"] = "PENDING"
-                                        }
-                                    }
+                                if (failedJob["totalCount"] === 0 && failedJob["claim"] !== "") {
+                                    failedJob["pending"] = name.totalCount
+                                    failedJob["result"] = "PENDING"
                                 }
                             }
                         })
