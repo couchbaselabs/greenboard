@@ -22,7 +22,6 @@
                 <th><a href="" ng-click="predicate = 'pending || totalCount'; reverse=!reverse">Total</a></th>
                 <th><a href="" ng-click="predicate = 'duration'; reverse=!reverse">Duration</a></th>
                 <th class="claim-col"><a href="" ng-click="predicate = 'claim'; reverse=!reverse">Claim </a></th>
-                <th><a href="" ng-click="predicate = 'priority'; reverse=!reverse">Priority</a></th>
               </tr>
             </thead>
             <tbody>
@@ -37,7 +36,6 @@
                 <td>{{msToTime(job.duration)}}</td>
                 <td><claim-cell job="job"></claim-cell>
                 </td>
-                <td>{{job.priority}}</td>
               </tr>
             </tbody>
           </table>
