@@ -154,7 +154,7 @@ module.exports = function () {
         },
         queryVersions: function (bucket) {
             var Q = "SELECT DISTINCT SPLIT(`build`,'-')[0] AS version " +
-                "FROM `greenboard` WHERE SPLIT(`build`,'-')[0] is not null AND type = '" + bucket + "' ORDER BY version"
+                "FROM `greenboard` WHERE REGEXP_LIKE(`build`, '\\\\d+.\\\\d+.\\\\d+-.*') AND SPLIT(`build`,'-')[0] is not null AND type = '" + bucket + "' ORDER BY version"
             // var Q = "SELECT DISTINCT SPLIT(`build`,'-')[0] AS version"+
             //         " FROM "+bucket+" where SPLIT(`build`,'-')[0] is not null ORDER BY version"
             function queryVersion() {
