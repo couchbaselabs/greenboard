@@ -55,8 +55,17 @@ angular.module('app.main', [])
         }])
 
 
-    .controller('JobsCtrl', ['$scope', '$state', '$stateParams', 'Data', 'buildJobs',
-        function($scope, $state, $stateParams, Data, buildJobs){
+    .controller('JobsCtrl', ['$scope', '$state', '$stateParams', 'Data', 'buildJobs', 'claimSummary',
+       function($scope, $state, $stateParams, Data, buildJobs, claimSummary){
+
+            $scope.claimSummary = claimSummary.filter(function(cl) { return cl["claim"] !== "Other" })
+            $scope.totalClaims = $scope.claimSummary.reduce(function(a, b) { return a + b["count"] }, 0)
+            $scope.needToAnalyseCount = buildJobs.filter(function(job) { return !["PENDING", "SUCCESS"].includes(job["result"]) || (job["result"] === "PENDING" && job["claim"] !== "") }).length
+            $scope.analysedPercent = $scope.needToAnalyseCount == 0 ? 0 :  (($scope.totalClaims/$scope.needToAnalyseCount)*100).toFixed(0)
+            $scope.showAnalysis = true
+            $scope.changeShowAnalysis = function() {
+                $scope.showAnalysis = !$scope.showAnalysis
+            }
 
             // order by name initially
             $scope.predicate = "result"
@@ -297,6 +306,15 @@ angular.module('app.main', [])
                     scope.editClaim = false
 
                 }
+                scope.showFullClaim = false
+                scope.changeShowFullClaim = function() {
+                    scope.showFullClaim = !scope.showFullClaim
+                    scope.updateClaim()
+                }
+                scope.updateClaim = function() {
+                    scope.claim = (scope.showFullClaim || scope.job.claim.length < 100) ? scope.job.claim : scope.job.claim.split('<br><br>')[0].slice(0, 100) + '...'
+                }
+                scope.updateClaim()
             }
         }
     }])

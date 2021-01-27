@@ -421,3 +421,8 @@ body {
 .graph-padding {
   padding: 10px;
 }
+
+.claim-summary {
+  max-height: 200px;
+  overflow-y: scroll;
+}

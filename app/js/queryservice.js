@@ -40,6 +40,14 @@ angular.module('svc.query', [])
 					.then(function (response) {
 						return response.data
                     })
+			},
+			getClaimSummary: function(bucket, build) {
+				const url = ["claimSummary", bucket, build].join("/")
+				console.log(url)
+				return $http({"url": url, cache: true})
+					.then(function (response) {
+						return response.data
+                    })
 			}
 		  }
 		}])

@@ -1,5 +1,26 @@
 <div class="row">
   <div class="col-sm-12">
+    <h2>Analysis <button class="btn btn-default" ng-click="changeShowAnalysis()">{{ showAnalysis ? "-": "+"}}</button></h2>
+    <div ng-if="showAnalysis">
+      <p>Analyzed jobs: {{totalClaims}} / {{needToAnalyseCount}} ({{analysedPercent}}%)</p>
+      <div class="claim-summary">
+        <table class="table table-striped">
+          <thead>
+              <tr>
+                <th>Failure</th>
+                <th>Count</th>
+              </tr>
+          </thead>
+          <tbody>
+              <tr ng-repeat="claim in claimSummary | orderBy:'count':true">
+              <td>{{claim.claim}}</td>
+              <td>{{claim.count}}</td>
+              </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <h2>Jobs</h2>
     <!-- Nav tabs -->
     <ul class="nav nav-tabs" role="tablist" id="jobTabs">
         <li ng-click="changePanelJobs($index)"
