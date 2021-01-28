@@ -100,6 +100,8 @@ angular.module('app.main', [])
                 jobs = _.reject(jobs, "olderBuild", true)
                 jobs = _.reject(jobs, "deleted", true)
                 var jobsCompleted = _.uniq(_.reject(jobs, ["result", "PENDING"]))
+                var jobsSuccess = _.uniq(_.filter(jobs, ["result", "SUCCESS"]))
+                var jobsAborted = _.uniq(_.filter(jobs, ["result", "ABORTED"]))
                 var jobsUnstable = _.uniq(_.filter(jobs, ["result", "UNSTABLE"]))
                 var jobsFailed = _.uniq(_.filter(jobs, ["result", "FAILURE"]))
                 var jobsPending = _.uniq(_.filter(jobs, ["result", "PENDING"]))
@@ -107,6 +109,8 @@ angular.module('app.main', [])
 
                 $scope.panelTabs = [
                     {title: "Jobs Completed", jobs: jobsCompleted, active: true},
+                    {title: "Jobs Success", jobs: jobsSuccess},
+                    {title: "Jobs Aborted", jobs: jobsAborted},
                     {title: "Jobs Unstable", jobs: jobsUnstable},
                     {title: "Jobs Failed", jobs: jobsFailed},
                     {title: "Jobs Pending", jobs: jobsPending}
