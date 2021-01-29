@@ -60,7 +60,7 @@ angular.module('app.main', [])
 
             $scope.claimSummary = claimSummary.filter(function(cl) { return cl["claim"] !== "Other" })
             $scope.totalClaims = $scope.claimSummary.reduce(function(a, b) { return a + b["count"] }, 0)
-            $scope.needToAnalyseCount = buildJobs.filter(function(job) { return !["PENDING", "SUCCESS"].includes(job["result"]) || (job["result"] === "PENDING" && job["claim"] !== "") }).length
+            $scope.needToAnalyseCount = buildJobs.filter(function(job) { return !job["olderBuild"] && !job["deleted"] && (!["PENDING", "SUCCESS"].includes(job["result"]) || (job["result"] === "PENDING" && job["claim"] !== "")) }).length
             $scope.analysedPercent = $scope.needToAnalyseCount == 0 ? 0 :  (($scope.totalClaims/$scope.needToAnalyseCount)*100).toFixed(0)
             $scope.showAnalysis = true
             $scope.changeShowAnalysis = function() {
