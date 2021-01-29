@@ -303,8 +303,8 @@ angular.module('app.main', [])
                         .catch(function(err){
                             scope.job.claim = "error saving claim: "+err.err
                         })
+                    scope.updateClaim()
                     scope.editClaim = false
-
                 }
                 scope.showFullClaim = false
                 scope.changeShowFullClaim = function() {

@@ -592,10 +592,13 @@ module.exports = function () {
             if (!jobs) {
                 jobs = await API.jobsForBuild(bucket, build);
             }
-            const claimCounts = {}
+            const claimCounts = {
+                "Analyzed": 0
+            }
             for (const claim of Object.keys(config.CLAIM_MAP)) {
                  claimCounts[claim] = 0;
             }
+            const jiraPrefixes = ["MB", "CBQE", "CBIT", "CBD"]
             for (const job of jobs) {
                 if (job["claim"] !== "" && !job["olderBuild"]) {
                     let found = false
@@ -604,6 +607,19 @@ module.exports = function () {
                             claimCounts[claim] += 1;
                             found = true
                             break
+                        }
+                    }
+                    if (!found) {
+                        for (const prefix of jiraPrefixes) {
+                            if (job["claim"].startsWith(prefix + "-")) {
+                                if (claimCounts[job["claim"]]) {
+                                    claimCounts[job["claim"]] += 1;
+                                } else {
+                                    claimCounts[job["claim"]] = 1;
+                                }
+                                found = true
+                                break
+                            }
                         }
                     }
                     if (!found) {
