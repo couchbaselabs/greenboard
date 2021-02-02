@@ -12,7 +12,8 @@ angular.module('app.sidebar', [])
 	  		  scope.disableFeatures = false
 			  scope.disabledServerVersions = false
               scope.buildVersion = Data.getBuild()
-			  
+			  scope.targetBy = Data.getCurrentTarget()
+
 	  		  scope.toggleAll = function(type){
 	  		  	var isDisabled;
 	  		  	

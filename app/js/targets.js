@@ -170,10 +170,10 @@ angular.module('app.target', [])
         }])
 
 
-    .factory('ViewTargets', ['COUCHBASE_TARGET', 'SDK_TARGET', 'SG_TARGET', 'CBLITE_TARGET',
-  	function (COUCHBASE_TARGET, SDK_TARGET, SG_TARGET, CBLITE_TARGET){
+    .factory('ViewTargets', ['COUCHBASE_TARGET', 'SDK_TARGET', 'SG_TARGET', 'CBLITE_TARGET', 'CBO_TARGET',
+  	function (COUCHBASE_TARGET, SDK_TARGET, SG_TARGET, CBLITE_TARGET, CBO_TARGET){
 
-      var viewTargets = [COUCHBASE_TARGET, SDK_TARGET, SG_TARGET, CBLITE_TARGET]
+      var viewTargets = [COUCHBASE_TARGET, SDK_TARGET, SG_TARGET, CBLITE_TARGET, CBO_TARGET]
       var targetMap = {} // reverse lookup map
 
       // allow reverse lookup by bucket
@@ -222,5 +222,12 @@ angular.module('app.target', [])
         "value": 0,
         "options": [0, 50, 100, 500]
   })
+  .value('CBO_TARGET', {
+         "title": "Couchbase Operator",
+         "bucket": "operator",
+         "key": "abspassed",
+         "value": 0,
+         "options": [0, 50, 100, 500]
+  });
 
 

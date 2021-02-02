@@ -1516,7 +1516,102 @@ angular.module('app.main', [])
 
 
     .controller('JobsCtrl', ['$scope', '$state', '$stateParams', 'Data', 'buildJobs',
-        function($scope, $state, $stateParams, Data, buildJobs){
+       function($scope, $state, $stateParams, Data, buildJobs){
+
+            var CLAIM_MAP = {
+                "git error": ["hudson.plugins.git.GitException", "python3: can't open file 'testrunner.py': [Errno 2] No such file or directory"],
+                "SSH error": ["paramiko.ssh_exception.SSHException", "Exception SSH session not active occurred on"],
+                "IPv6 test on IPv4 host": ["Cannot enable IPv6 on an IPv4 machine"],
+                "Python SDK error (CBQE-6230)": ["ImportError: cannot import name 'N1QLQuery' from 'couchbase.n1ql'"],
+                "Syntax error": ["KeyError:", "TypeError:"],
+                "json.decoder.JSONDecodeError:": ["json.decoder.JSONDecodeError:"],
+                "ServerUnavailableException: unable to reach the host": ["ServerUnavailableException: unable to reach the host"],
+                "Node already added to cluster": ["ServerAlreadyJoinedException:"],
+                "CBQ Error": ["membase.api.exception.CBQError:", "CBQError: CBQError:"],
+                "RBAC error": ["Exception: {\"errors\":{\"roles\":\"Cannot assign roles to user because the following roles are unknown, malformed or role parameters are undefined: [security_admin]\"}}"],
+                "Rebalance error": ["membase.api.exception.RebalanceFailedException"],
+                "Build download failed": ["Unable to copy build to", "Unable to download build in"],
+                "install not started": ["INSTALL NOT STARTED ON"],
+                "install failed": ["INSTALL FAILED ON"],
+                "No test report xml": ["No test report files were found. Configuration error?"]
+            }
+
+            function getClaimSummary(jobs) {
+                var claimCounts = {
+                    "Analyzed": 0
+                }
+                var totalClaims = 0
+                _.forEach(Object.keys(CLAIM_MAP), function(claim) {
+                    claimCounts[claim] = 0;
+                })
+                var jiraCounts = {}
+                var jiraPrefixes = ["MB", "CBQE", "CBIT", "CBD"]
+                _.forEach(jiraPrefixes, function(prefix) {
+                    jiraCounts[prefix] = 0;
+                })
+                _.forEach(jobs, function(job) {
+                    if (job["claim"] !== "" && !job["olderBuild"]) {
+                        var found = false
+                        _.forEach(Object.keys(claimCounts), function(claim) {
+                            if (job["claim"].startsWith(claim)) {
+                                claimCounts[claim] += 1;
+                                found = true
+                                return false;
+                            }
+                        })
+                        if (!found) {
+                            _.forEach(jiraPrefixes, function(prefix) {
+                                if (job["claim"].startsWith(prefix + "-")) {
+                                    if (claimCounts[job["claim"]]) {
+                                        claimCounts[job["claim"]] += 1;
+                                    } else {
+                                        claimCounts[job["claim"]] = 1;
+                                    }
+                                    jiraCounts[prefix] += 1
+                                    found = true
+                                    return false;
+                                }
+                            })
+                        }
+                    }
+                })
+                var claims = []
+                _.forEach(Object.entries(claimCounts), function(entry) {
+                    if (entry[1] > 0) {
+                        totalClaims += entry[1]
+                        claims.push({ claim: entry[0], count: entry[1] })
+                    }
+                })
+                jiraCounts["IT"] = jiraCounts["CBD"] + jiraCounts["CBIT"]
+                delete jiraCounts["CBD"]
+                delete jiraCounts["CBIT"]
+                $scope.jiraCounts = Object.entries(jiraCounts).map(function(jiraCount) {
+                    var prefix = jiraCount[0]
+                    var name
+                    if (prefix === "MB") {
+                        name = "Product bugs (MB)"
+                    } else if (prefix === "CBQE") {
+                        name = "Test bugs (CBQE)"
+                    } else if (prefix === "IT") {
+                        name = "IT bugs (CBIT/CBD)"
+                    }
+                    return { 
+                        name: name,
+                        count: jiraCount[1],
+                        percent: totalClaims == 0 ? 0 : ((jiraCount[1]/totalClaims)*100).toFixed(0)
+                    }
+                })
+                $scope.claimSummary = claims;
+                $scope.totalClaims = totalClaims
+                $scope.needToAnalyseCount = jobs.filter(function(job) { return !job["olderBuild"] && !job["deleted"] && (!["PENDING", "SUCCESS"].includes(job["result"]) || (job["result"] === "PENDING" && job["claim"] !== "")) }).length
+                $scope.analysedPercent = $scope.needToAnalyseCount == 0 ? 0 :  (($scope.totalClaims/$scope.needToAnalyseCount)*100).toFixed(0)
+            }
+
+            $scope.jiraCounts = []
+            $scope.showAnalysis = true
+            $scope.changeShowAnalysis = function() {
+                $scope.showAnalysis = !$scope.showAnalysis
+            }
 
             // order by name initially
             $scope.predicate = "result"
@@ -1551,6 +1646,8 @@ angular.module('app.main', [])
                 jobs = _.reject(jobs, "olderBuild", true)
                 jobs = _.reject(jobs, "deleted", true)
                 var jobsCompleted = _.uniq(_.reject(jobs, ["result", "PENDING"]))
+                var jobsSuccess = _.uniq(_.filter(jobs, ["result", "SUCCESS"]))
+                var jobsAborted = _.uniq(_.filter(jobs, ["result", "ABORTED"]))
                 var jobsUnstable = _.uniq(_.filter(jobs, ["result", "UNSTABLE"]))
                 var jobsFailed = _.uniq(_.filter(jobs, ["result", "FAILURE"]))
                 var jobsPending = _.uniq(_.filter(jobs, ["result", "PENDING"]))
@@ -1558,10 +1655,14 @@ angular.module('app.main', [])
 
                 $scope.panelTabs = [
                     {title: "Jobs Completed", jobs: jobsCompleted, active: true},
+                    {title: "Jobs Success", jobs: jobsSuccess},
+                    {title: "Jobs Aborted", jobs: jobsAborted},
                     {title: "Jobs Unstable", jobs: jobsUnstable},
                     {title: "Jobs Failed", jobs: jobsFailed},
                     {title: "Jobs Pending", jobs: jobsPending}
                 ]                
+
+                getClaimSummary(jobs)
             }
 
             function getJobs() {
@@ -1754,9 +1855,18 @@ angular.module('app.main', [])
                         .catch(function(err){
                             scope.job.claim = "error saving claim: "+err.err
                         })
+                    scope.updateClaim()
                     scope.editClaim = false
-
                 }
+                scope.showFullClaim = false
+                scope.changeShowFullClaim = function() {
+                    scope.showFullClaim = !scope.showFullClaim
+                    scope.updateClaim()
+                }
+                scope.updateClaim = function() {
+                    scope.claim = (scope.showFullClaim || scope.job.claim.length < 100) ? scope.job.claim : scope.job.claim.split('<br><br>')[0].slice(0, 100) + '...'
+                }
+                scope.updateClaim()
             }
         }
     }])
@@ -1839,7 +1949,8 @@ angular.module('app.sidebar', [])
 	  		  scope.disableFeatures = false
 			  scope.disabledServerVersions = false
               scope.buildVersion = Data.getBuild()
-			  
+			  scope.targetBy = Data.getCurrentTarget()
+
 	  		  scope.toggleAll = function(type){
 	  		  	var isDisabled;
 	  		  	
@@ -1908,7 +2019,56 @@ angular.module('app.sidebar', [])
   				if(!scope.disabled){
 	  				return scope.stats.percStats.run
 	  			}
-  			}
+			  }
+			  
+			scope.getDashboardUrl = function() {
+				var dashboardMap = {
+					'2I_MOI': 'ovawbLBGk',
+					'2I_REBALANCE': 'Yr2QbLBMz',
+					ANALYTICS: 'Qb8QbYfGz',
+					AUTO_FAILOVER: 'mO6lbYBGz',
+					BACKUP_RECOVERY: 'Dv_QxLfGz',
+					BUILD_SANITY: 'IPm-bSLMk',
+					CE_ONLY: '80ZuxLBGk',
+					CLI: 'U6gubLfMz',
+					COLLECTIONS: 'BGtwbLfMk',
+					COMPRESSION: 'RQX_bYfMz',
+					DURABILITY: 'qH5QbYBMz',
+					EP: 'aTj_xYBGk',
+					EPHEMERAL: 'feYwbLBMk',
+					EVENTING: 'k2QQbLfMk',
+					FTS: 'pBAwxLfGk',
+					GEO: 'Dn4ubYfGz',
+					GOXDCR: 'h1JQbLfGz',
+					IMPORT_EXPORT: 'kf9lbLBGk',
+					IPV6: 'K_rQxLBGz',
+					LOG_REDACTION: 'Cv7XxYfMz',
+					MAGMA: '09PQxLBMz',
+					MOBILE: 'QMRuxYBGz',
+					MOBILE_CONVERGENCE: 'LyywbLfGk',
+					NSERV: 'iUowxYfGz',
+					OS_CERTIFY: 'Od2-6tfMk',
+					PLASMA: 'qiLwbLfGk',
+					QUERY: 'C2dQxYBMk',
+					RBAC: 'KGXQbYBMz',
+					RQG: 'tnfwbYBMk',
+					RZA: 'iRIubYBMz',
+					SANITY: 'tGRa6tBMk',
+					SDK: 'Bdq_bLBGz',
+					SECURITY: 'SpxQxYfGk',
+					SUBDOC: 'feuQbYBGz',
+					TUNABLE: '_LmXxYBMk',
+					UNIT: 'fKMuxYBMk',
+					UPGRADE: 'ftKwxYfGz',
+					VIEW: '-_zubYBMk'
+				}
+				var dashboardId = dashboardMap[scope.key]
+				if (dashboardId) {
+					return "http://qe.service.couchbase.com:3000/d/" + dashboardId
+				} else {
+					return null;
+				}
+			}
 
 	  		scope.getNumOrPerc = function(key){
 	  			// return value by number or percentage
@@ -2140,10 +2300,10 @@ angular.module('app.target', [])
         }])
 
 
-    .factory('ViewTargets', ['COUCHBASE_TARGET', 'SDK_TARGET', 'SG_TARGET', 'CBLITE_TARGET',
-  	function (COUCHBASE_TARGET, SDK_TARGET, SG_TARGET, CBLITE_TARGET){
+    .factory('ViewTargets', ['COUCHBASE_TARGET', 'SDK_TARGET', 'SG_TARGET', 'CBLITE_TARGET', 'CBO_TARGET',
+  	function (COUCHBASE_TARGET, SDK_TARGET, SG_TARGET, CBLITE_TARGET, CBO_TARGET){
 
-      var viewTargets = [COUCHBASE_TARGET, SDK_TARGET, SG_TARGET, CBLITE_TARGET]
+      var viewTargets = [COUCHBASE_TARGET, SDK_TARGET, SG_TARGET, CBLITE_TARGET, CBO_TARGET]
       var targetMap = {} // reverse lookup map
 
       // allow reverse lookup by bucket
@@ -2157,7 +2317,7 @@ angular.module('app.target', [])
             allTargets: function(){
             	return viewTargets
             },
-            getTarget: function(target){
+            getTarget: function(target){3
             	return targetMap[target]
             }
         }
@@ -2192,5 +2352,12 @@ angular.module('app.target', [])
         "value": 0,
         "options": [0, 50, 100, 500]
   })
+  .value('CBO_TARGET', {
+         "title": "Couchbase Operator",
+         "bucket": "operator",
+         "key": "abspassed",
+         "value": 0,
+         "options": [0, 50, 100, 500]
+  });
 
 
