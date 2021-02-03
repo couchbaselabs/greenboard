@@ -138,10 +138,6 @@ app.config(['$stateProvider', '$urlRouterProvider',
                         function($stateParams, QueryService, Data, target){
                             var build = Data.getBuild()
                             return QueryService.getJobs(build, target)
-                        }],
-                    claimSummary: ['$stateParams', 'QueryService',
-                        function($stateParams, QueryService){
-                            return QueryService.getClaimSummary($stateParams.target, $stateParams.version + "-" + $stateParams.build);
                         }]
                 }
             })

@@ -81,7 +81,56 @@ angular.module('app.sidebar', [])
   				if(!scope.disabled){
 	  				return scope.stats.percStats.run
 	  			}
-  			}
+			  }
+			  
+			scope.getDashboardUrl = function() {
+				var dashboardMap = {
+					'2I_MOI': 'ovawbLBGk',
+					'2I_REBALANCE': 'Yr2QbLBMz',
+					ANALYTICS: 'Qb8QbYfGz',
+					AUTO_FAILOVER: 'mO6lbYBGz',
+					BACKUP_RECOVERY: 'Dv_QxLfGz',
+					BUILD_SANITY: 'IPm-bSLMk',
+					CE_ONLY: '80ZuxLBGk',
+					CLI: 'U6gubLfMz',
+					COLLECTIONS: 'BGtwbLfMk',
+					COMPRESSION: 'RQX_bYfMz',
+					DURABILITY: 'qH5QbYBMz',
+					EP: 'aTj_xYBGk',
+					EPHEMERAL: 'feYwbLBMk',
+					EVENTING: 'k2QQbLfMk',
+					FTS: 'pBAwxLfGk',
+					GEO: 'Dn4ubYfGz',
+					GOXDCR: 'h1JQbLfGz',
+					IMPORT_EXPORT: 'kf9lbLBGk',
+					IPV6: 'K_rQxLBGz',
+					LOG_REDACTION: 'Cv7XxYfMz',
+					MAGMA: '09PQxLBMz',
+					MOBILE: 'QMRuxYBGz',
+					MOBILE_CONVERGENCE: 'LyywbLfGk',
+					NSERV: 'iUowxYfGz',
+					OS_CERTIFY: 'Od2-6tfMk',
+					PLASMA: 'qiLwbLfGk',
+					QUERY: 'C2dQxYBMk',
+					RBAC: 'KGXQbYBMz',
+					RQG: 'tnfwbYBMk',
+					RZA: 'iRIubYBMz',
+					SANITY: 'tGRa6tBMk',
+					SDK: 'Bdq_bLBGz',
+					SECURITY: 'SpxQxYfGk',
+					SUBDOC: 'feuQbYBGz',
+					TUNABLE: '_LmXxYBMk',
+					UNIT: 'fKMuxYBMk',
+					UPGRADE: 'ftKwxYfGz',
+					VIEW: '-_zubYBMk'
+				}
+				var dashboardId = dashboardMap[scope.key]
+				if (dashboardId) {
+					return "http://qe.service.couchbase.com:3000/d/" + dashboardId
+				} else {
+					return null;
+				}
+			}
 
 	  		scope.getNumOrPerc = function(key){
 	  			// return value by number or percentage

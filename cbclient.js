@@ -585,58 +585,6 @@ module.exports = function () {
             }
             return getBuildDetails();
 
-        },
-        claimSummary: async (bucket, build) => {
-            let jobs = buildsResponseCache[build]
-            if (!jobs) {
-                jobs = await API.jobsForBuild(bucket, build);
-            }
-            const claimCounts = {
-                "Analyzed": 0
-            }
-            for (const claim of Object.keys(config.CLAIM_MAP)) {
-                 claimCounts[claim] = 0;
-            }
-            const jiraPrefixes = ["MB", "CBQE", "CBIT", "CBD"]
-            for (const job of jobs) {
-                if (job["claim"] !== "" && !job["olderBuild"]) {
-                    let found = false
-                    for (const claim of Object.keys(claimCounts)) {
-                        if (job["claim"].startsWith(claim)) {
-                            claimCounts[claim] += 1;
-                            found = true
-                            break
-                        }
-                    }
-                    if (!found) {
-                        for (const prefix of jiraPrefixes) {
-                            if (job["claim"].startsWith(prefix + "-")) {
-                                if (claimCounts[job["claim"]]) {
-                                    claimCounts[job["claim"]] += 1;
-                                } else {
-                                    claimCounts[job["claim"]] = 1;
-                                }
-                                found = true
-                                break
-                            }
-                        }
-                    }
-                    if (!found) {
-                        if (claimCounts["Other"]) {
-                            claimCounts["Other"] += 1;
-                        } else {
-                            claimCounts["Other"] = 1;
-                        }
-                    }
-                }
-            }
-            const claims = []
-            for (const [claim, count] of Object.entries(claimCounts)) {
-                if (count > 0) {
-                    claims.push({ claim, count })
-                }
-            }
-            return claims;
         }
     };
 

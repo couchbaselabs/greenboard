@@ -426,3 +426,14 @@ body {
   max-height: 200px;
   overflow-y: scroll;
 }
+
+.claim-count {
+  display: inline;
+  margin-right: 10px;
+  font-weight: bold;
+}
+
+.component-analytics {
+  margin-left: 10px;
+  color: #c88317;
+}

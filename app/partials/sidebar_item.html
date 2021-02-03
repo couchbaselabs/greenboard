@@ -5,6 +5,7 @@
             <i class="glyphicon" ng-class="glyphiconClass">
             </i>
              {{key}}
+            <a class="component-analytics" ng-click="$event.stopPropagation()" ng-if="type=='features' && getDashboardUrl()" target="_blank" href="{{getDashboardUrl()}}"><i class="glyphicon glyphicon-stats"></i></a>
           	<span  class="testscore">{{getRunPercent()}}</span>
           </a>
 		<div class="scoredesc">pass: {{getNumOrPerc("passed")}}, fail: {{getNumOrPerc("failed")}}

@@ -55,13 +55,99 @@ angular.module('app.main', [])
         }])
 
 
-    .controller('JobsCtrl', ['$scope', '$state', '$stateParams', 'Data', 'buildJobs', 'claimSummary',
-       function($scope, $state, $stateParams, Data, buildJobs, claimSummary){
+    .controller('JobsCtrl', ['$scope', '$state', '$stateParams', 'Data', 'buildJobs',
+       function($scope, $state, $stateParams, Data, buildJobs){
 
-            $scope.claimSummary = claimSummary.filter(function(cl) { return cl["claim"] !== "Other" })
-            $scope.totalClaims = $scope.claimSummary.reduce(function(a, b) { return a + b["count"] }, 0)
-            $scope.needToAnalyseCount = buildJobs.filter(function(job) { return !job["olderBuild"] && !job["deleted"] && (!["PENDING", "SUCCESS"].includes(job["result"]) || (job["result"] === "PENDING" && job["claim"] !== "")) }).length
-            $scope.analysedPercent = $scope.needToAnalyseCount == 0 ? 0 :  (($scope.totalClaims/$scope.needToAnalyseCount)*100).toFixed(0)
+            var CLAIM_MAP = {
+                "git error": ["hudson.plugins.git.GitException", "python3: can't open file 'testrunner.py': [Errno 2] No such file or directory"],
+                "SSH error": ["paramiko.ssh_exception.SSHException", "Exception SSH session not active occurred on"],
+                "IPv6 test on IPv4 host": ["Cannot enable IPv6 on an IPv4 machine"],
+                "Python SDK error (CBQE-6230)": ["ImportError: cannot import name 'N1QLQuery' from 'couchbase.n1ql'"],
+                "Syntax error": ["KeyError:", "TypeError:"],
+                "json.decoder.JSONDecodeError:": ["json.decoder.JSONDecodeError:"],
+                "ServerUnavailableException: unable to reach the host": ["ServerUnavailableException: unable to reach the host"],
+                "Node already added to cluster": ["ServerAlreadyJoinedException:"],
+                "CBQ Error": ["membase.api.exception.CBQError:", "CBQError: CBQError:"],
+                "RBAC error": ["Exception: {\"errors\":{\"roles\":\"Cannot assign roles to user because the following roles are unknown, malformed or role parameters are undefined: [security_admin]\"}}"],
+                "Rebalance error": ["membase.api.exception.RebalanceFailedException"],
+                "Build download failed": ["Unable to copy build to", "Unable to download build in"],
+                "install not started": ["INSTALL NOT STARTED ON"],
+                "install failed": ["INSTALL FAILED ON"],
+                "No test report xml": ["No test report files were found. Configuration error?"]
+            }
+
+            function getClaimSummary(jobs) {
+                var claimCounts = {
+                    "Analyzed": 0
+                }
+                var totalClaims = 0
+                _.forEach(Object.keys(CLAIM_MAP), function(claim) {
+                    claimCounts[claim] = 0;
+                })
+                var jiraCounts = {}
+                var jiraPrefixes = ["MB", "CBQE", "CBIT", "CBD"]
+                _.forEach(jiraPrefixes, function(prefix) {
+                    jiraCounts[prefix] = 0;
+                })
+                _.forEach(jobs, function(job) {
+                    if (job["claim"] !== "" && !job["olderBuild"]) {
+                        var found = false
+                        _.forEach(Object.keys(claimCounts), function(claim) {
+                            if (job["claim"].startsWith(claim)) {
+                                claimCounts[claim] += 1;
+                                found = true
+                                return false;
+                            }
+                        })
+                        if (!found) {
+                            _.forEach(jiraPrefixes, function(prefix) {
+                                if (job["claim"].startsWith(prefix + "-")) {
+                                    if (claimCounts[job["claim"]]) {
+                                        claimCounts[job["claim"]] += 1;
+                                    } else {
+                                        claimCounts[job["claim"]] = 1;
+                                    }
+                                    jiraCounts[prefix] += 1
+                                    found = true
+                                    return false;
+                                }
+                            })
+                        }
+                    }
+                })
+                var claims = []
+                _.forEach(Object.entries(claimCounts), function(entry) {
+                    if (entry[1] > 0) {
+                        totalClaims += entry[1]
+                        claims.push({ claim: entry[0], count: entry[1] })
+                    }
+                })
+                jiraCounts["IT"] = jiraCounts["CBD"] + jiraCounts["CBIT"]
+                delete jiraCounts["CBD"]
+                delete jiraCounts["CBIT"]
+                $scope.jiraCounts = Object.entries(jiraCounts).map(function(jiraCount) {
+                    var prefix = jiraCount[0]
+                    var name
+                    if (prefix === "MB") {
+                        name = "Product bugs (MB)"
+                    } else if (prefix === "CBQE") {
+                        name = "Test bugs (CBQE)"
+                    } else if (prefix === "IT") {
+                        name = "IT bugs (CBIT/CBD)"
+                    }
+                    return { 
+                        name: name,
+                        count: jiraCount[1],
+                        percent: totalClaims == 0 ? 0 : ((jiraCount[1]/totalClaims)*100).toFixed(0)
+                    }
+                })
+                $scope.claimSummary = claims;
+                $scope.totalClaims = totalClaims
+                $scope.needToAnalyseCount = jobs.filter(function(job) { return !job["olderBuild"] && !job["deleted"] && (!["PENDING", "SUCCESS"].includes(job["result"]) || (job["result"] === "PENDING" && job["claim"] !== "")) }).length
+                $scope.analysedPercent = $scope.needToAnalyseCount == 0 ? 0 :  (($scope.totalClaims/$scope.needToAnalyseCount)*100).toFixed(0)
+            }
+
+            $scope.jiraCounts = []
             $scope.showAnalysis = true
             $scope.changeShowAnalysis = function() {
                 $scope.showAnalysis = !$scope.showAnalysis
@@ -115,6 +201,8 @@ angular.module('app.main', [])
                     {title: "Jobs Failed", jobs: jobsFailed},
                     {title: "Jobs Pending", jobs: jobsPending}
                 ]                
+
+                getClaimSummary(jobs)
             }
 
             function getJobs() {

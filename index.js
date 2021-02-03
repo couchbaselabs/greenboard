@@ -140,19 +140,6 @@ app.get('/getBuildSummary/:buildId', function (req, res) {
 	})
 });
 
-app.get('/claimSummary/:bucket/:build', async (req, res) => {
-	const bucket = req.params.bucket;
-	const build = req.params.build;
-	try {
-		const summary = await client.claimSummary(bucket, build);
-		res.send(summary);
-	} catch (e) {
-		console.log(e);
-		res.send([]);
-	}
-})
-
-
 var server = app.listen(config.httpPort, config.httpListen, function () {
   var host = server.address().address;
   var port = server.address().port;
