@@ -291,12 +291,11 @@ module.exports = function () {
                                 countt = countt+1
                                 
                                 }
-                            // move jobs that we know failed due to infra issue to pending state
+                            // set totalCount to correct value for any jobs with totalCount = 0
                             if (jobs['os'][os][component][job] && jobs['os'][os][component][job].length > 0) {
-                                const failedJob = jobs['os'][os][component][job][0]
-                                if (failedJob["totalCount"] === 0 && failedJob["claim"] !== "") {
-                                    failedJob["pending"] = name.totalCount
-                                    failedJob["result"] = "PENDING"
+                                for (const noTestJob of jobs['os'][os][component][job].filter(job => job.totalCount === 0 && ["FAILURE", "ABORTED"].includes(job.result))) {
+                                    noTestJob["totalCount"] = name.totalCount
+                                    noTestJob["failCount"] = name.totalCount
                                 }
                             }
                         })
