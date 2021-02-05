@@ -1,7 +1,8 @@
 <div class="row">
   <div class="col-sm-12">
-    <h2>Analysis <button class="btn btn-default" ng-click="changeShowAnalysis()">{{ showAnalysis ? "-": "+"}}</button></h2>
-    <div ng-if="showAnalysis">
+    <h2>Analysis <button ng-if="totalClaims" class="btn btn-default" ng-click="changeShowAnalysis()">{{ showAnalysis ? "-": "+"}}</button></h2>
+    <p ng-if="!totalClaims">No analysis found</p>
+    <div ng-if="showAnalysis && totalClaims">
       <p class="claim-count">Analyzed jobs: {{totalClaims}} / {{needToAnalyseCount}} ({{analysedPercent}}%)</p>
       <p class="claim-count" ng-repeat="prefix in jiraCounts">{{prefix.name}}: {{prefix.count}} / {{totalClaims}} ({{prefix.percent}}%)</p>
       <div class="claim-summary">

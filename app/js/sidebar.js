@@ -76,7 +76,8 @@ angular.module('app.sidebar', [])
   			//TODO: allow modify by location url
 
   			scope.disabled = false
-  			scope.stats = Data.getItemStats(scope.key, scope.type)
+			scope.stats = Data.getItemStats(scope.key, scope.type)
+			scope.showDashboardUrls = Data.getCurrentTarget() === "server" && Data.getSelectedVersion() === "7.0.0"
 
   			scope.getRunPercent = function(){
   				if(!scope.disabled){
@@ -85,6 +86,9 @@ angular.module('app.sidebar', [])
 			  }
 			  
 			scope.getDashboardUrl = function() {
+				if (!scope.showDashboardUrls) {
+					return null;
+				}
 				var dashboardMap = {
 					'2I_MOI': 'ovawbLBGk',
 					'2I_REBALANCE': 'Yr2QbLBMz',
