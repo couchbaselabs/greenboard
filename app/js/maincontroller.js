@@ -1,3 +1,16 @@
+var jiraPrefixes = ["MB", "CBQE", "CBIT", "CBD"]
+
+formatClaim = function(claim) {
+    var claimHtml = claim
+    _.forEach(jiraPrefixes, function(prefix) {
+        if (claim.startsWith(prefix + "-")) {
+            claimHtml = '<a target="_blank" href="https://issues.couchbase.com/browse/' + claim + '">' + claim + '</a>'
+            return false;
+        }
+    })
+    return claimHtml
+}
+
 angular.module('app.main', [])
     .controller("NavCtrl", ['$scope', '$state', '$stateParams', 'Data', 'target', 'targetVersions', 'version',
         function($scope, $state, $stateParams, Data, target, targetVersions, version){
@@ -76,6 +89,8 @@ angular.module('app.main', [])
                 "No test report xml": ["No test report files were found. Configuration error?"]
             }
 
+            $scope.formatClaim = formatClaim
+
             function getClaimSummary(jobs) {
                 var claimCounts = {
                     "Analyzed": 0
@@ -85,13 +100,24 @@ angular.module('app.main', [])
                     claimCounts[claim] = 0;
                 })
                 var jiraCounts = {}
-                var jiraPrefixes = ["MB", "CBQE", "CBIT", "CBD"]
                 _.forEach(jiraPrefixes, function(prefix) {
                     jiraCounts[prefix] = 0;
                 })
                 _.forEach(jobs, function(job) {
-                    if (job["claim"] !== "" && !job["olderBuild"]) {
-                        var found = false
+                    var found = false
+                    _.forEach(jiraPrefixes, function(prefix) {
+                        if (job["claim"].startsWith(prefix + "-")) {
+                            if (claimCounts[job["claim"]]) {
+                                claimCounts[job["claim"]] += 1;
+                            } else {
+                                claimCounts[job["claim"]] = 1;
+                            }
+                            jiraCounts[prefix] += 1
+                            found = true
+                            return false;
+                        }
+                    })
+                    if (!found && job["claim"] !== "" && !job["olderBuild"]) {
                         _.forEach(Object.keys(claimCounts), function(claim) {
                             if (job["claim"].startsWith(claim)) {
                                 claimCounts[claim] += 1;
@@ -99,20 +125,6 @@ angular.module('app.main', [])
                                 return false;
                             }
                         })
-                        if (!found) {
-                            _.forEach(jiraPrefixes, function(prefix) {
-                                if (job["claim"].startsWith(prefix + "-")) {
-                                    if (claimCounts[job["claim"]]) {
-                                        claimCounts[job["claim"]] += 1;
-                                    } else {
-                                        claimCounts[job["claim"]] = 1;
-                                    }
-                                    jiraCounts[prefix] += 1
-                                    found = true
-                                    return false;
-                                }
-                            })
-                        }
                     }
                 })
                 var claims = []
@@ -399,6 +411,7 @@ angular.module('app.main', [])
                     scope.editClaim = false
                 }
                 scope.showFullClaim = false
+                scope.formatClaim = formatClaim
                 scope.changeShowFullClaim = function() {
                     scope.showFullClaim = !scope.showFullClaim
                     scope.updateClaim()

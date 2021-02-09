@@ -2,7 +2,7 @@
    ng-class="{'fa-pencil-square-o': !editClaim}">
 </i>
 <div class="light-text float-right">
-	<span ng-if="!editClaim" ng-bind-html="claim"></span>
+	<span ng-if="!editClaim" ng-bind-html="formatClaim(claim)"></span>
 	<button class="btn btn-default" ng-click="changeShowFullClaim()" ng-if="job.claim.length > 100">{{ showFullClaim ? "-": "+"}}</button>
 	<label ng-if="editClaim">
 		<textarea rows="5" ng-blur="saveClaim()" type="text" name="claim" ng-model="job.claim">

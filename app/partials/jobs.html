@@ -15,7 +15,7 @@
           </thead>
           <tbody>
               <tr ng-repeat="claim in claimSummary | orderBy:'count':true">
-              <td>{{claim.claim}}</td>
+              <td ng-bind-html="formatClaim(claim.claim)"></td>
               <td>{{claim.count}}</td>
               </tr>
           </tbody>
