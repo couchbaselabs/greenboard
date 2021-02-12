@@ -10,12 +10,12 @@
           <thead>
               <tr>
                 <th>Failure</th>
-                <th>Count</th>
+                <th>Jobs</th>
               </tr>
           </thead>
           <tbody>
               <tr ng-repeat="claim in claimSummary | orderBy:'count':true">
-              <td ng-bind-html="formatClaim(claim.claim)"></td>
+              <td><span ng-bind-html="formatClaim(claim.claim)"></span> <a ng-click="searchClaim(claim.claim)" href=""><i class="glyphicon" ng-class="{'glyphicon-unchecked': claim.claim !== search, 'glyphicon-check': claim.claim===search}"></i></a></td>
               <td>{{claim.count}}</td>
               </tr>
           </tbody>
@@ -23,6 +23,9 @@
       </div>
     </div>
     <h2>Jobs</h2>
+    <div class="form-group">
+      <input type="text" class="form-control" id="search" placeholder="Search name and claim..." ng-model-options='{ debounce: 500 }' ng-model="search" ng-change="onSearchChange()">
+    </div>
     <!-- Nav tabs -->
     <ul class="nav nav-tabs" role="tablist" id="jobTabs">
         <li ng-click="changePanelJobs($index)"

@@ -437,3 +437,7 @@ body {
   margin-left: 10px;
   color: #c88317;
 }
+
+input#search {
+  width: 30%;
+}

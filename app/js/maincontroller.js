@@ -202,12 +202,27 @@ angular.module('app.main', [])
                             $scope.selectedbuild = requiredJobs[0].build
                     }
                 
-            
+            $scope.search = ""
+            $scope.onSearchChange = function() {
+                jobs = Data.getActiveJobs()
+                updateScopeWithJobs(jobs)
+            }
+            $scope.searchClaim = function(claim) {
+                if ($scope.search === claim) {
+                    $scope.search = ""
+                } else {
+                    $scope.search = claim
+                }
+                $scope.onSearchChange()
+            }
 
             function updateScopeWithJobs(jobs){
 
                 jobs = _.reject(jobs, "olderBuild", true)
                 jobs = _.reject(jobs, "deleted", true)
+                if ($scope.search !== "") {
+                    jobs = _.reject(jobs, function(job) { return !(job.claim.includes($scope.search) || job.name.includes($scope.search)) })
+                }
                 var jobsCompleted = _.uniq(_.reject(jobs, ["result", "PENDING"]))
                 var jobsSuccess = _.uniq(_.filter(jobs, ["result", "SUCCESS"]))
                 var jobsAborted = _.uniq(_.filter(jobs, ["result", "ABORTED"]))
