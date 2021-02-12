@@ -39,40 +39,35 @@
     <div class="tab-content">
       <div class="tab-pane active" id="executed">
         <div class="table-responsive">
-          <table class="table table-striped">
-            <thead>
-              <tr>
-                <th><a href="" ng-click="predicate = 'name'; reverse=!reverse">Name  <i class="fa fa-sort"></i></a></th>
-                <th><a href="" ng-click="predicate = 'result'; reverse=!reverse">Result</a></th>
-                <th><a href="" ng-click="predicate = 'totalCount - failCount'; reverse=!reverse">Passed</a></th>
-                <th><a href="" ng-click="predicate = 'skipCount || 0'; reverse=!reverse">Skipped</a></th>
-                <th><a href="" ng-click="predicate = 'pending || totalCount'; reverse=!reverse">Total</a></th>
-                <th><a href="" ng-click="predicate = 'duration'; reverse=!reverse">Duration</a></th>
-                <th><a href="" ng-click="predicate = 'runCount'; reverse=!reverse">Runs</a></th>
-                <th class="claim-col"><a href="" ng-click="predicate = 'claim'; reverse=!reverse">Claim </a></th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr ng-repeat="job in panelTabs[activePanel].jobs | orderBy:predicate:reverse">
-                <!-- <td><a href={{job.url}}{{job.build_id}}>{{job.name}}</a></td> -->
-                <td>  <a style="cursor:pointer;" ng-click="onselect(job.name,job.os,job.component)"
-                         data-toggle="modal" data-target="#exampleModalCenter">{{job.name}}</a></td>
-                <!-- <td>  <a  href="#!/jobdetails/{{job.name}}">{{job.name}}</a></td> -->
-                <td><span class={{job.result}}>{{job.result}}</span></td>
-                <td>{{job.totalCount - job.failCount - job.skipCount}}</td>
-                <td>{{job.skipCount}}</td>
-                <td>{{job.pending || job.totalCount}}</td>
-                <td>{{msToTime(job.duration)}}</td>
-                <td>{{job.runCount}}</td>
-                <td><claim-cell job="job"></claim-cell>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+          <div class="repeater-container">
+            <table class="jobs-table table table-striped">
+              <thead>
+                <tr>
+                  <th><a href="" ng-click="predicate = 'name'; reverse=!reverse">Name  <i class="fa fa-sort"></i></a></th>
+                  <th><a href="" ng-click="predicate = 'result'; reverse=!reverse">Result</a></th>
+                  <th><a href="" ng-click="predicate = 'totalCount - failCount'; reverse=!reverse">Passed</a></th>
+                  <th><a href="" ng-click="predicate = 'skipCount || 0'; reverse=!reverse">Skipped</a></th>
+                  <th><a href="" ng-click="predicate = 'pending || totalCount'; reverse=!reverse">Total</a></th>
+                  <th><a href="" ng-click="predicate = 'duration'; reverse=!reverse">Duration</a></th>
+                  <th class="claim-col"><a href="" ng-click="predicate = 'claim'; reverse=!reverse">Claim </a></th>
+                </tr>
+              </thead>
+              <tbody vs-repeat="{scrollParent: '.repeater-container'}">
+                <tr ng-repeat="job in panelTabs[activePanel].jobs | orderBy:predicate:reverse">
+                  <td id="name"><a style="cursor:pointer;" ng-click="onselect(job.name,job.os,job.component)" data-toggle="modal" data-target="#exampleModalCenter">{{job.name}}</a></td>
+                  <td id="result"><span class={{job.result}}>{{job.result}}</span></td>
+                  <td id="pass-count">{{job.totalCount - job.failCount - job.skipCount}}</td>
+                  <td id="skip-count">{{job.skipCount}}</td>
+                  <td id="total-count">{{job.pending || job.totalCount}}</td>
+                  <td id="duration">{{msToTime(job.duration)}}</td>
+                  <td id="claim"><claim-cell job="job"></claim-cell></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
-
-  </div>
+    </div>
 </div>
 
 <div class="modal fade bd-example-modal-lg" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">

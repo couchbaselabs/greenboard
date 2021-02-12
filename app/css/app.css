@@ -441,3 +441,37 @@ body {
 input#search {
   width: 30%;
 }
+
+.repeater-container{
+  height: 1000px;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+td#name {
+  width: 25%;
+}
+
+td#result {
+  width: 10%;
+}
+
+td#pass-count {
+  width: 5%;
+}
+
+td#total-count {
+  width: 5%;
+}
+
+td#skip-count {
+  width: 5%;
+}
+
+td#duration {
+  width: 5%;
+}
+
+td#claim {
+  width: 45%;
+}

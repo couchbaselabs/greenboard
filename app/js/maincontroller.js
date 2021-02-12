@@ -11,7 +11,7 @@ formatClaim = function(claim) {
     return claimHtml
 }
 
-angular.module('app.main', [])
+angular.module('app.main', ['vs-repeat'])
     .controller("NavCtrl", ['$scope', '$state', '$stateParams', 'Data', 'target', 'targetVersions', 'version',
         function($scope, $state, $stateParams, Data, target, targetVersions, version){
 
