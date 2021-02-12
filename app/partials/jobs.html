@@ -4,7 +4,7 @@
     <p ng-if="!totalClaims">No analysis found</p>
     <div ng-if="showAnalysis && totalClaims">
       <p class="claim-count">Analyzed jobs: {{totalClaims}} / {{needToAnalyseCount}} ({{analysedPercent}}%)</p>
-      <p class="claim-count" ng-repeat="prefix in jiraCounts">{{prefix.name}}: {{prefix.count}} / {{totalClaims}} ({{prefix.percent}}%)</p>
+      <p class="claim-count" ng-repeat="prefix in jiraCounts">{{prefix.name}}: {{prefix.unique}}, {{prefix.count}}/{{totalClaims}} ({{prefix.percent}}%)</p>
       <div class="claim-summary">
         <table class="table table-striped">
           <thead>

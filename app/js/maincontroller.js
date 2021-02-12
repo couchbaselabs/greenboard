@@ -103,6 +103,10 @@ angular.module('app.main', [])
                 _.forEach(jiraPrefixes, function(prefix) {
                     jiraCounts[prefix] = 0;
                 })
+                var uniqueBugs = {}
+                _.forEach(jiraPrefixes, function(prefix) {
+                    uniqueBugs[prefix] = [];
+                })
                 _.forEach(jobs, function(job) {
                     var found = false
                     _.forEach(jiraPrefixes, function(prefix) {
@@ -114,6 +118,9 @@ angular.module('app.main', [])
                             }
                             jiraCounts[prefix] += 1
                             found = true
+                            if (!uniqueBugs[prefix].includes(job["claim"])) {
+                                uniqueBugs[prefix].push(job["claim"])
+                            }
                             return false;
                         }
                     })
@@ -134,6 +141,9 @@ angular.module('app.main', [])
                         claims.push({ claim: entry[0], count: entry[1] })
                     }
                 })
+                uniqueBugs["IT"] = uniqueBugs["CBD"].concat(uniqueBugs["CBIT"])
+                delete uniqueBugs["CBD"]
+                delete uniqueBugs["CBIT"]
                 jiraCounts["IT"] = jiraCounts["CBD"] + jiraCounts["CBIT"]
                 delete jiraCounts["CBD"]
                 delete jiraCounts["CBIT"]
@@ -150,7 +160,8 @@ angular.module('app.main', [])
                     return { 
                         name: name,
                         count: jiraCount[1],
-                        percent: totalClaims == 0 ? 0 : ((jiraCount[1]/totalClaims)*100).toFixed(0)
+                        percent: totalClaims == 0 ? 0 : ((jiraCount[1]/totalClaims)*100).toFixed(0),
+                        unique: uniqueBugs[prefix].length
                     }
                 })
                 $scope.claimSummary = claims;
