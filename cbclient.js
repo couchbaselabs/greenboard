@@ -316,6 +316,9 @@ module.exports = function () {
                                     }
                                 })
                                 sorted[0]["olderBuild"] = false
+                                for (const run of runs) {
+                                    run["runCount"] = runs.length;
+                                }
                             }
                         })
                     })
