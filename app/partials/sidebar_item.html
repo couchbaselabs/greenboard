@@ -8,7 +8,7 @@
             <a class="component-analytics" ng-click="$event.stopPropagation()" ng-if="type=='features' && getDashboardUrl()" target="_blank" href="{{getDashboardUrl()}}"><i class="glyphicon glyphicon-stats"></i></a>
           	<span  class="testscore">{{getRunPercent()}}</span>
           </a>
-		<div class="scoredesc">pass: {{getNumOrPerc("passed")}}, fail: {{getNumOrPerc("failed")}}
-      <span ng-if="asNum()">pend: {{getNumOrPerc("pending")}}</span></div>
+		<div class="scoredesc">pass: {{getNumOrPerc("passed")}}, fail: {{getNumOrPerc("failed")}} skip: {{getNumOrPerc("skipped")}}
+      <span ng-if="asNum()">pend: {{getNumOrPerc("pending")}}  total: {{getNumOrPerc("total")}}</span></div>
 	</span>
 </div>

@@ -42,6 +42,7 @@
                 <th><a href="" ng-click="predicate = 'name'; reverse=!reverse">Name  <i class="fa fa-sort"></i></a></th>
                 <th><a href="" ng-click="predicate = 'result'; reverse=!reverse">Result</a></th>
                 <th><a href="" ng-click="predicate = 'totalCount - failCount'; reverse=!reverse">Passed</a></th>
+                <th><a href="" ng-click="predicate = 'skipCount || 0'; reverse=!reverse">Skipped</a></th>
                 <th><a href="" ng-click="predicate = 'pending || totalCount'; reverse=!reverse">Total</a></th>
                 <th><a href="" ng-click="predicate = 'duration'; reverse=!reverse">Duration</a></th>
                 <th class="claim-col"><a href="" ng-click="predicate = 'claim'; reverse=!reverse">Claim </a></th>
@@ -54,7 +55,8 @@
                          data-toggle="modal" data-target="#exampleModalCenter">{{job.name}}</a></td>
                 <!-- <td>  <a  href="#!/jobdetails/{{job.name}}">{{job.name}}</a></td> -->
                 <td><span class={{job.result}}>{{job.result}}</span></td>
-                <td>{{job.totalCount - job.failCount}}</td>
+                <td>{{job.totalCount - job.failCount - job.skipCount}}</td>
+                <td>{{job.skipCount}}</td>
                 <td>{{job.pending || job.totalCount}}</td>
                 <td>{{msToTime(job.duration)}}</td>
                 <td><claim-cell job="job"></claim-cell>
@@ -88,6 +90,7 @@
                   <th scope="col" class="text-center">Job Url</th>
                   <th scope="col" class="text-center">Result</th>
                   <th scope="col" class="text-center">Passed Count</th>
+                  <th scope="col" class="text-center">Skipped</th>
                   <th scope="col" class="text-center">Total Count</th>
                   <th scope="col" class="text-center">Duration</th>
       
@@ -101,7 +104,8 @@
                           Link
                       </a></td>
                   <td><span class={{selectedjob.result}}>{{selectedjob.result}}</span></td>
-                  <td>{{selectedjob.totalCount - selectedjob.failCount}}</td>
+                  <td>{{selectedjob.totalCount - selectedjob.failCount - selectedjob.skipCount}}</td>
+                  <td>{{selectedjob.skipCount}}</td>
                   <td>{{selectedjob.totalCount}}</td>
                   <td>{{msToTime(selectedjob.duration)}}</td>
                 </tr>

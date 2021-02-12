@@ -203,6 +203,7 @@ angular.module('app.main', [])
                 var jobsUnstable = _.uniq(_.filter(jobs, ["result", "UNSTABLE"]))
                 var jobsFailed = _.uniq(_.filter(jobs, ["result", "FAILURE"]))
                 var jobsPending = _.uniq(_.filter(jobs, ["result", "PENDING"]))
+                var jobsSkip = _.uniq(_.filter(jobs, function(job) { return job["skipCount"] > 0 }))
                 
 
                 $scope.panelTabs = [
@@ -211,7 +212,8 @@ angular.module('app.main', [])
                     {title: "Jobs Aborted", jobs: jobsAborted},
                     {title: "Jobs Unstable", jobs: jobsUnstable},
                     {title: "Jobs Failed", jobs: jobsFailed},
-                    {title: "Jobs Pending", jobs: jobsPending}
+                    {title: "Jobs Skipped", jobs: jobsSkip},
+                    {title: "Jobs Pending", jobs: jobsPending},
                 ]                
 
                 getClaimSummary(jobs)

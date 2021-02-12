@@ -295,10 +295,20 @@ module.exports = function () {
                                 // find the best run: higher totalCount is better, lower failCount is better, higher build_id is better
                                 // set all but best run as olderBuild
                                 const runs = jobs['os'][os][component][job]
+
+                                // add skipCount if missing
+                                for (const run of runs) {
+                                    if (run["skipCount"] === undefined) {
+                                        run["skipCount"] = 0
+                                    }
+                                }
+
                                 runs[0]["olderBuild"] = true
                                 const sorted = [...runs].sort((a, b) => {
                                     if (a.totalCount !== b.totalCount) {
                                         return b.totalCount - a.totalCount;
+                                    } else if (a.skipCount !== b.skipCount) {
+                                        return a.skipCount - b.skipCount;
                                     } else if (a.failCount !== b.failCount) {
                                         return a.failCount - b.failCount;
                                     } else {
@@ -306,11 +316,6 @@ module.exports = function () {
                                     }
                                 })
                                 sorted[0]["olderBuild"] = false
-                                // set totalCount to correct value for any jobs with totalCount = 0
-                                for (const noTestJob of runs.filter(job => job.totalCount === 0 && ["FAILURE", "ABORTED"].includes(job.result))) {
-                                    noTestJob["totalCount"] = name.totalCount
-                                    noTestJob["failCount"] = name.totalCount
-                                }
                             }
                         })
                     })

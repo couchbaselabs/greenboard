@@ -286,6 +286,7 @@ angular.module('svc.data', [])
                     var absTotal = _.sum(_.map(_.uniq(subset), "totalCount"))
                     var absFail = _.sum(_.map(_.uniq(subset), "failCount"))
                     var absPending = _.sum(_.map(_.uniq(subset), "pending"))
+                    var absSkip = _.sum(_.map(_.uniq(subset), "skipCount"))
                     if (!absTotal){
                         absTotal = 0;
                     }
@@ -295,19 +296,25 @@ angular.module('svc.data', [])
                     if (!absPending){
                         absPending = 0;
                     }
+                    if (!absSkip){
+                        absSkip = 0;
+                    }
                     var absStats = {
-                        passed: absTotal-absFail,
+                        passed: absTotal-absFail-absSkip,
                         failed: absFail,
-                        pending: absPending
+                        pending: absPending,
+                        skipped: absSkip,
+                        total: absTotal+absPending
                     }
 
                     // calculate percentage based stats
-                    var passedPerc = getPercOfVal(absStats, absStats.passed)
+                    var passedPerc = getPercOfVal(absStats, absStats.passed, false)
                     var percStats = {
                         run: getItemPercStr(absStats),
                         passed: wrapPercStr(passedPerc),
-                        failed: getPercOfValStr(absStats, absStats.failed),
-                        pending: getPercOfValStr(absStats, absStats.pending),
+                        failed: getPercOfValStr(absStats, absStats.failed, false),
+                        pending: getPercOfValStr(absStats, absStats.pending, true),
+                        skipped: getPercOfValStr(absStats, absStats.skipped, true),
                         passedRaw: passedPerc
                     }
 
@@ -368,18 +375,21 @@ angular.module('svc.data', [])
 
 
 // data helper methods
-function getPercOfVal(stats, val){
+function getPercOfVal(stats, val, includeSkipped){
     if (!stats){
         return 0;
     }
 
     var denom = stats.passed + stats.failed;
+    if (includeSkipped) {
+        denom += stats.skipped
+    }
     if(denom == 0){ return 0; }
     return Math.floor(100*((val/denom).toFixed(2)));
 }
 
-function getPercOfValStr(stats, val){
-    return wrapPercStr(getPercOfVal(stats, val))
+function getPercOfValStr(stats, val, includeSkipped){
+    return wrapPercStr(getPercOfVal(stats, val, includeSkipped))
 }
 
 function getItemPerc(stats){
@@ -387,7 +397,7 @@ function getItemPerc(stats){
         return 0;
     }
 
-    var total = stats.passed + stats.failed;
+    var total = stats.passed + stats.failed + stats.skipped;
     var denom = total + stats.pending;
     if(denom == 0){ return 0; }
 
