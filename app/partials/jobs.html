@@ -49,6 +49,7 @@
                   <th><a href="" ng-click="predicate = 'skipCount || 0'; reverse=!reverse">Skipped</a></th>
                   <th><a href="" ng-click="predicate = 'pending || totalCount'; reverse=!reverse">Total</a></th>
                   <th><a href="" ng-click="predicate = 'duration'; reverse=!reverse">Duration</a></th>
+                  <th><a href="" ng-click="predicate = 'runCount'; reverse=!reverse">Runs</a></th>
                   <th class="claim-col"><a href="" ng-click="predicate = 'claim'; reverse=!reverse">Claim </a></th>
                 </tr>
               </thead>
@@ -60,6 +61,7 @@
                   <td id="skip-count">{{job.skipCount}}</td>
                   <td id="total-count">{{job.pending || job.totalCount}}</td>
                   <td id="duration">{{msToTime(job.duration)}}</td>
+                  <td id="run-count">{{job.runCount}}</td>
                   <td id="claim"><claim-cell job="job"></claim-cell></td>
                 </tr>
               </tbody>

@@ -473,5 +473,9 @@ td#duration {
 }
 
 td#claim {
-  width: 45%;
+  width: 40%;
+}
+
+td#run-count {
+  width: 5%;
 }
