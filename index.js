@@ -122,7 +122,8 @@ app.post('/claim/:bucket/:name/:build_id', function (req, res) {
   var os = req.body.os
   var comp = req.body.comp
   var version = req.body.build
-  client.claimJobs(bucket, name, build_id, claim,os,comp,version)
+  var type = req.body.type;
+  client.claimJobs(type, bucket, name, build_id, claim, os, comp, version)
     .then(function(jobs){
       res.send('POST request to the homepage');
     }).catch(function(err){

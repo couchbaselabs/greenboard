@@ -30,9 +30,9 @@ angular.module('svc.query', [])
                                return response.data
                         })
 			},
-			claimJob: function(target, name, build_id, claim,os,comp,build){
+			claimJob: function(type, target, name, build_id, claim, os, comp, build){
 				var url = ["claim", target, name, build_id].join("/")
-				return $http.post(url, {claim: claim,os:os,comp:comp,build:build})
+				return $http.post(url, {type: type, claim: claim, os: os, comp: comp, build: build})
 			},
 			getBuildSummary: function (buildId) {
 				var url = ["getBuildSummary", buildId].join("/")

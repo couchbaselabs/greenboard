@@ -301,21 +301,27 @@ module.exports = function () {
                                     if (run["skipCount"] === undefined) {
                                         run["skipCount"] = 0
                                     }
+                                    if (run["bugs"] === undefined) {
+                                        run["bugs"] = []
+                                    }
+                                    if (run["triage"] === undefined) {
+                                        run["triage"] = ""
+                                    }
                                 }
 
-                                runs[0]["olderBuild"] = true
-                                const sorted = [...runs].sort((a, b) => {
-                                    if (a.totalCount !== b.totalCount) {
-                                        return b.totalCount - a.totalCount;
-                                    } else if (a.skipCount !== b.skipCount) {
-                                        return a.skipCount - b.skipCount;
-                                    } else if (a.failCount !== b.failCount) {
-                                        return a.failCount - b.failCount;
-                                    } else {
-                                        return b.build_id - a.build_id;
-                                    }
-                                })
-                                sorted[0]["olderBuild"] = false
+                                // runs[0]["olderBuild"] = true
+                                // const sorted = [...runs].sort((a, b) => {
+                                //     if (a.totalCount !== b.totalCount) {
+                                //         return b.totalCount - a.totalCount;
+                                //     } else if (a.skipCount !== b.skipCount) {
+                                //         return a.skipCount - b.skipCount;
+                                //     } else if (a.failCount !== b.failCount) {
+                                //         return a.failCount - b.failCount;
+                                //     } else {
+                                //         return b.build_id - a.build_id;
+                                //     }
+                                // })
+                                // sorted[0]["olderBuild"] = false
                                 for (const run of runs) {
                                     run["runCount"] = runs.length;
                                 }
@@ -421,9 +427,11 @@ module.exports = function () {
         //     })
         //     return promise
         // },
-        claimJobs: function(bucket,name,build_id,claim,os,comp,version){
+        claimJobs: function(type,bucket,name,build_id,claim,os,comp,version){
 
-            function doUpdate(bucket,claim,os,comp,name,build_id,version){
+            console.log(type,bucket,name)
+
+            function doUpdate(type,bucket,claim,os,comp,name,build_id,version){
                 const key = `${version}_${bucket}`;
                 var Q = "SELECT * FROM greenboard USE KEYS '"+key+"'";
                 var _ps = []
@@ -434,7 +442,11 @@ module.exports = function () {
                                     var buildjobs = jobs[0]["greenboard"]["os"][os][comp][name]
                                     buildjobs.forEach(function (d) {
                                         if(d["build_id"]==build_id){
-                                            d["claim"] = claim
+                                            if (type === "bugs") {
+                                                d.bugs = claim
+                                            } else if (type === "triage") {
+                                                d.triage = claim
+                                            }
                                         }
                                         newbuildjobs.push(d)    
                                     })
@@ -446,7 +458,12 @@ module.exports = function () {
                                         if (version in buildsResponseCache) {
                                             const jobToUpdate = buildsResponseCache[version].find(job => job.build_id === parseInt(build_id) && job.os === os && job.component === comp);
                                             if (jobToUpdate) {
-                                                jobToUpdate.claim = claim;
+                                                if (type === "bugs") {
+                                                    jobToUpdate.bugs = claim;
+                                                } else if (type === "triage") {
+                                                    jobToUpdate.triage = claim;
+                                                }
+                                                
                                             }
                                         }
                                     })
@@ -469,7 +486,7 @@ module.exports = function () {
                 //     })})
                 // return promise   
             }
-            return doUpdate(bucket,claim,os,comp,name,build_id,version)
+            return doUpdate(type, bucket,claim,os,comp,name,build_id,version)
         },
         getBuildSummary: function (buildId) {
             function getBuildDetails() {

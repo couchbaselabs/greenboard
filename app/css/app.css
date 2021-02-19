@@ -443,13 +443,13 @@ input#search {
 }
 
 .repeater-container{
-  height: 1000px;
+  max-height: 1000px;
   overflow: auto;
   -webkit-overflow-scrolling: touch;
 }
 
 td#name {
-  width: 25%;
+  width: 20%;
 }
 
 td#result {
@@ -460,11 +460,11 @@ td#pass-count {
   width: 5%;
 }
 
-td#total-count {
+td#skip-count {
   width: 5%;
 }
 
-td#skip-count {
+td#total-count {
   width: 5%;
 }
 
@@ -472,10 +472,19 @@ td#duration {
   width: 5%;
 }
 
+#td.bugs {
+  width: 10%;
+}
+
 td#claim {
-  width: 40%;
+  width: 25%;
 }
 
 td#run-count {
   width: 5%;
+  word-wrap: anywhere;
+}
+
+.show-full-claim {
+  margin-right: 10px;
 }

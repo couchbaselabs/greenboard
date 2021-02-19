@@ -91,13 +91,25 @@ angular.module('app.main', ['vs-repeat'])
 
             $scope.formatClaim = formatClaim
 
+            $scope.openClaims = new Set()
+            $scope.openClaim = function(jobName) {
+                $scope.openClaims.add(jobName);
+            }
+            $scope.closeClaim = function(jobName) {
+                $scope.openClaims.remove(jobName);
+            }
+
             function getClaimSummary(jobs) {
                 var claimCounts = {
                     "Analyzed": 0
                 }
                 var totalClaims = 0
                 _.forEach(Object.keys(CLAIM_MAP), function(claim) {
-                    claimCounts[claim] = 0;
+                    claimCounts[claim] = {
+                        jobCount: 0,
+                        skippedTestCount: 0,
+                        failedTestCount: 0
+                    };
                 })
                 var jiraCounts = {}
                 _.forEach(jiraPrefixes, function(prefix) {
@@ -108,37 +120,60 @@ angular.module('app.main', ['vs-repeat'])
                     uniqueBugs[prefix] = [];
                 })
                 _.forEach(jobs, function(job) {
-                    var found = false
-                    _.forEach(jiraPrefixes, function(prefix) {
-                        if (job["claim"].startsWith(prefix + "-")) {
-                            if (claimCounts[job["claim"]]) {
-                                claimCounts[job["claim"]] += 1;
-                            } else {
-                                claimCounts[job["claim"]] = 1;
+                    var foundInJob = [];
+                    _.forEach(job["bugs"], function(bug) {
+                        try {
+                            var prefix = bug.split("-")[0]
+                            if (jiraPrefixes.includes(prefix)) {
+                                if (!foundInJob.includes(bug)) {
+                                    if (claimCounts[bug]) {
+                                        claimCounts[bug].jobCount += 1;
+                                        claimCounts[bug].failedTestCount += job["failCount"]
+                                        claimCounts[bug].skippedTestCount += job["skipCount"]
+                                    } else {
+                                        claimCounts[bug] = {
+                                            jobCount: 1,
+                                            failedTestCount: job["failCount"],
+                                            skippedTestCount: job["skipCount"]
+                                        }
+                                    }
+                                    jiraCounts[prefix] += 1;
+                                    foundInJob.push(bug);
+                                }
+                                if (!uniqueBugs[prefix].includes(bug)) {
+                                    uniqueBugs[prefix].push(bug)
+                                }
                             }
-                            jiraCounts[prefix] += 1
-                            found = true
-                            if (!uniqueBugs[prefix].includes(job["claim"])) {
-                                uniqueBugs[prefix].push(job["claim"])
-                            }
-                            return false;
+                            
+                        } catch (e) {
+                            console.error(e)
                         }
                     })
-                    if (!found && job["claim"] !== "" && !job["olderBuild"]) {
-                        _.forEach(Object.keys(claimCounts), function(claim) {
-                            if (job["claim"].startsWith(claim)) {
-                                claimCounts[claim] += 1;
-                                found = true
-                                return false;
-                            }
-                        })
-                    }
+                    _.forEach(job["claim"].split("<br><br>"), function(jobClaim) {
+                        if (jobClaim !== "" && !job["olderBuild"]) {
+                            _.forEach(Object.keys(claimCounts), function(claim) {
+                                if (jobClaim.startsWith(claim)) {
+                                    if (!foundInJob.includes(claim)) {
+                                        foundInJob.push(claim);
+                                        claimCounts[claim].jobCount += 1;
+                                        claimCounts[claim].failedTestCount += job["failCount"]
+                                        claimCounts[claim].skippedTestCount += job["skipCount"]
+                                    }
+                                    return false;
+                                }
+                            })
+                        }
+                    })
+                   
                 })
                 var claims = []
                 _.forEach(Object.entries(claimCounts), function(entry) {
-                    if (entry[1] > 0) {
-                        totalClaims += entry[1]
-                        claims.push({ claim: entry[0], count: entry[1] })
+                    var jobCount = entry[1].jobCount
+                    var failedTestCount = entry[1].failedTestCount
+                    var skippedTestCount = entry[1].skippedTestCount
+                    if (jobCount > 0) {
+                        totalClaims += jobCount
+                        claims.push({ claim: entry[0], skippedTestCount: skippedTestCount, failedTestCount: failedTestCount, jobCount: jobCount })
                     }
                 })
                 uniqueBugs["IT"] = uniqueBugs["CBD"].concat(uniqueBugs["CBIT"])
@@ -221,7 +256,12 @@ angular.module('app.main', ['vs-repeat'])
                 jobs = _.reject(jobs, "olderBuild", true)
                 jobs = _.reject(jobs, "deleted", true)
                 if ($scope.search !== "") {
-                    jobs = _.reject(jobs, function(job) { return !(job.claim.includes($scope.search) || job.name.includes($scope.search)) })
+                    jobs = _.reject(jobs, function(job) { 
+                        return !(job.bugs.includes($scope.search) ||
+                                job.claim.includes($scope.search) ||
+                                job.name.includes($scope.search) || 
+                                job.triage.includes($scope.search)) 
+                    })
                 }
                 var jobsCompleted = _.uniq(_.reject(jobs, ["result", "PENDING"]))
                 var jobsSuccess = _.uniq(_.filter(jobs, ["result", "SUCCESS"]))
@@ -372,6 +412,7 @@ angular.module('app.main', ['vs-repeat'])
     .controller('JobDetailsCtrl',['$scope','$state','$stateParams','Data','target',
                 function($scope,$state,$stateParams,Data,target){
                     
+                    $scope.openClaims = []
                     
                     $scope.msToTime = msToTime
                     var jobname = $stateParams.jobName
@@ -392,6 +433,28 @@ angular.module('app.main', ['vs-repeat'])
                     )
 
     }])
+    .directive("claimTest", [function() {
+        return {
+            scope: {claim: "="},
+            templateUrl: "partials/claim.html",
+            link: function(scope) {
+                var jobName = scope.$parent.job.name;
+                scope.formatClaim = formatClaim
+                scope.shortClaim = (scope.claim.length < 100) ? scope.claim : scope.claim.split('<br><br>')[0].slice(0, 100) + '...'
+                scope.scope = {
+                    showFullClaim: scope.$parent.$parent.openClaims.has(jobName),
+                    changeShowFullClaim: function() {
+                        if (this.showFullClaim) {
+                            scope.$parent.$parent.openClaims.delete(jobName)
+                        } else {
+                            scope.$parent.$parent.openClaims.add(jobName)
+                        }
+                        this.showFullClaim = !this.showFullClaim
+                    }
+                }
+            }
+        }
+    }])
 
     .directive('claimCell', ['Data', 'QueryService', function(Data, QueryService){
         return {
@@ -399,55 +462,82 @@ angular.module('app.main', ['vs-repeat'])
             scope: {job: "="},
             templateUrl: 'partials/claimcell.html',
             link: function(scope, elem, attrs){
-
-                if(scope.job.customClaim){  // override claim
-                    scope.job.claim = scope.job.customClaim
+                scope.editClaim = false;
+                scope.scope = {
+                    bugsText: scope.job.bugs.join(", "),
+                    saveClaim: function() {
+                        var bugs = this.bugsText.trim()
+                        var validBugs = true;
+                        if (bugs === "") {
+                            bugs = []
+                        } else {
+                           bugs = bugs.split(",")
+                           _.forEach(bugs, function(bug) {
+                                console.log(bug)
+                                var validBug = false;
+                                _.forEach(jiraPrefixes, function(prefix) {
+                                    if (bug.startsWith(prefix + "-") && !isNaN(bug.split("-")[1])) {
+                                        validBug = true;
+                                    }
+                                })
+                                if (!validBug) {
+                                    validBugs = false;
+                                    return false;
+                                }
+                            })
+                        }
+                        if (validBugs) {
+                            scope.job.bugs = bugs
+                            var target = Data.getCurrentTarget()
+                            var name = scope.job.name
+                            var build_id = scope.job.build_id
+                            var bugs = scope.job.bugs
+                            var os = scope.job.os
+                            var comp = scope.job.component
+                            var version = scope.job.build
+                            QueryService.claimJob("bugs", target, name, build_id, bugs, os, comp, version)
+                                .catch(function(err){
+                                    alert("error saving claim: "+err.err)
+                                }).then(function() {
+                                    scope.editClaim = false;
+                                })
+                        } else {
+                            alert("Invalid bugs list, must be " + jiraPrefixes.join(", "))
+                        }
+                    }
                 }
+                scope.formatBugs = function() {
+                    return scope.job.bugs.map(function(bug) {
+                        return '<a target="_blank" href="https://issues.couchbase.com/browse/' + bug + '">' + bug + '</a>'
+                    }).join(", ")
+                }
+            }
+        }
+    }])
 
-                var oldClaim = ""
-                
-                $(elem).mouseover(function(){
-                    if(scope.job.claim != ""){
-                        oldClaim = scope.job.claim
-                    }
-                    else{
-                        oldClaim = "No Claim for this build"
-                    }
-                    $('[data-toggle="popover"]').popover({
-                        placement : 'top',
-                        trigger : 'hover',
-                        content : scope.job.claim
-                    });
-                
-                });
-                // publish on blur
-                scope.editClaim = false
-                scope.saveClaim = function(){
-                    // publish
+    .directive('triageCell', ['Data', 'QueryService', function(Data, QueryService){
+        return {
+            restrict: 'E',
+            scope: {job: "="},
+            templateUrl: 'partials/triagecell.html',
+            link: function(scope, elem, attrs){
+                scope.editClaim = false;
+                scope.saveClaim = function() {
                     var target = Data.getCurrentTarget()
                     var name = scope.job.name
                     var build_id = scope.job.build_id
-                    var claim = scope.job.claim
+                    var triage = scope.job.triage
                     var os = scope.job.os
                     var comp = scope.job.component
                     var version = scope.job.build
-                    QueryService.claimJob(target, name, build_id, claim,os,comp,version)
+                    QueryService.claimJob("triage", target, name, build_id, triage, os, comp, version)
                         .catch(function(err){
-                            scope.job.claim = "error saving claim: "+err.err
+                            alert("error saving claim: "+err.err)
+                        }).then(function() {
+                            scope.editClaim = false;
                         })
-                    scope.updateClaim()
-                    scope.editClaim = false
                 }
-                scope.showFullClaim = false
-                scope.formatClaim = formatClaim
-                scope.changeShowFullClaim = function() {
-                    scope.showFullClaim = !scope.showFullClaim
-                    scope.updateClaim()
-                }
-                scope.updateClaim = function() {
-                    scope.claim = (scope.showFullClaim || scope.job.claim.length < 100) ? scope.job.claim : scope.job.claim.split('<br><br>')[0].slice(0, 100) + '...'
-                }
-                scope.updateClaim()
+
             }
         }
     }])

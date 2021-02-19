@@ -11,12 +11,18 @@
               <tr>
                 <th>Failure</th>
                 <th>Jobs</th>
+                <th>Failed Tests</th>
+                <th>Skipped Tests</th>
+                <th>Total Tests</th>
               </tr>
           </thead>
           <tbody>
-              <tr ng-repeat="claim in claimSummary | orderBy:'count':true">
+              <tr ng-repeat="claim in claimSummary | orderBy:'skippedTestCount + failedTestCount':true">
               <td><span ng-bind-html="formatClaim(claim.claim)"></span> <a ng-click="searchClaim(claim.claim)" href=""><i class="glyphicon" ng-class="{'glyphicon-unchecked': claim.claim !== search, 'glyphicon-check': claim.claim===search}"></i></a></td>
-              <td>{{claim.count}}</td>
+              <td>{{claim.jobCount}}</td>
+              <td>{{claim.failedTestCount}}</td>
+              <td>{{claim.skippedTestCount}}</td>
+              <td>{{claim.skippedTestCount + claim.failedTestCount}}</td>
               </tr>
           </tbody>
         </table>
@@ -50,10 +56,12 @@
                   <th><a href="" ng-click="predicate = 'pending || totalCount'; reverse=!reverse">Total</a></th>
                   <th><a href="" ng-click="predicate = 'duration'; reverse=!reverse">Duration</a></th>
                   <th><a href="" ng-click="predicate = 'runCount'; reverse=!reverse">Runs</a></th>
-                  <th class="claim-col"><a href="" ng-click="predicate = 'claim'; reverse=!reverse">Claim </a></th>
+                  <th><a href="" ng-click="predicate = 'bugs'; reverse=!reverse">Bugs</a></th>
+                  <th><a href="" ng-click="predicate = 'bugs'; reverse=!reverse">Manual Triage</a></th>
+                  <th class="claim-col"><a href="" ng-click="predicate = 'claim'; reverse=!reverse">Auto Triage</a></th>
                 </tr>
               </thead>
-              <tbody vs-repeat="{scrollParent: '.repeater-container'}">
+              <tbody vs-repeat="{scrollParent: '.repeater-container', autoresize: true}">
                 <tr ng-repeat="job in panelTabs[activePanel].jobs | orderBy:predicate:reverse">
                   <td id="name"><a style="cursor:pointer;" ng-click="onselect(job.name,job.os,job.component)" data-toggle="modal" data-target="#exampleModalCenter">{{job.name}}</a></td>
                   <td id="result"><span class={{job.result}}>{{job.result}}</span></td>
@@ -62,7 +70,9 @@
                   <td id="total-count">{{job.pending || job.totalCount}}</td>
                   <td id="duration">{{msToTime(job.duration)}}</td>
                   <td id="run-count">{{job.runCount}}</td>
-                  <td id="claim"><claim-cell job="job"></claim-cell></td>
+                  <td id="bugs"><claim-cell job="job"></claim-cell></td>
+                  <td id="bugs"><triage-cell job="job"></claim-cell></td>
+                  <td id="claim"><claim-test jobName="job.name" claim="job.claim"></claim></td>
                 </tr>
               </tbody>
             </table>
