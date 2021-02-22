@@ -442,49 +442,32 @@ input#search {
   width: 30%;
 }
 
-.repeater-container{
-  max-height: 1000px;
-  overflow: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-td#name {
-  width: 20%;
-}
-
-td#result {
-  width: 10%;
-}
-
-td#pass-count {
-  width: 5%;
-}
-
-td#skip-count {
-  width: 5%;
-}
-
-td#total-count {
-  width: 5%;
-}
-
-td#duration {
-  width: 5%;
-}
-
-#td.bugs {
-  width: 10%;
-}
-
-td#claim {
-  width: 25%;
-}
-
-td#run-count {
-  width: 5%;
-  word-wrap: anywhere;
-}
-
 .show-full-claim {
   margin-right: 10px;
+}
+
+#pagination, #jobs-per-page {
+  margin: 0;
+  display: inline-block;
+  vertical-align: top;
+}
+
+#jobs-per-page {
+  width: 200px;
+  margin-left: 15px;
+}
+
+#pagination-wrapper {
+  margin-bottom: 15px;
+  display: flex;
+  flex-direction: row-reverse;
+}
+
+.claim {
+  display: inline;
+}
+
+#job-name {
+  max-width: 500px; 
+  overflow-wrap: anywhere;
 }

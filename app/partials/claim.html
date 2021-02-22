@@ -1,1 +1,1 @@
-<button class="btn btn-default show-full-claim" ng-click="scope.changeShowFullClaim()" ng-if="claim.length > 100">{{ scope.showFullClaim ? "-": "+"}}</button><span ng-bind-html="formatClaim(scope.showFullClaim ? claim : shortClaim)"></span>
+<button class="btn btn-default show-full-claim" ng-click="scope.changeShowFullClaim()" ng-if="claim.length > 100">{{ scope.showFullClaim ? "-": "+"}}</button><span class="light-text" ng-bind-html="formatClaim(scope.showFullClaim ? claim : shortClaim)"></span>

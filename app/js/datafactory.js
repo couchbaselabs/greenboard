@@ -18,6 +18,8 @@ angular.module('svc.data', [])
             _buildsFilterBy = DEFAULT_BUILDS_FILTER_BY
             _initUrlParams = null
             _buildInfo = {}
+            _jobsPage = 0;
+            _jobsPerPage = 20;
 
             function updateLocationUrl(type, key, disabled){
                 var typeArgs = $location.search()[type]
@@ -367,6 +369,18 @@ angular.module('svc.data', [])
                         params["target"] = _target
                         _initUrlParams = params
                     }
+                },
+                setJobsPerPage: function(jobsPerPage) {
+                    _jobsPerPage = jobsPerPage;
+                },
+                setJobsPage: function(jobsPage) {
+                    _jobsPage = jobsPage;
+                },
+                getJobsPerPage: function() {
+                    return _jobsPerPage;
+                },
+                getJobsPage: function() {
+                    return _jobsPage;
                 }
             }
 

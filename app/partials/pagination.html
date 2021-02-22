@@ -1,0 +1,10 @@
+<div id="pagination-wrapper">
+    <select class="form-control" id="jobs-per-page" ng-change="onJobsPerPageChange()" ng-model="jobsPerPage" ng-options="i+' jobs per page' for i in jobsPerPageChoices"></select>
+    <ul class="pagination" id="pagination">
+        <li class="page-item" ng-class="{'disabled': jobsPage === 0}"><a class="page-link" ng-click="prevPage()">Previous</a></li>
+        <li ng-repeat="n in pageNumbers()" ng-class="{active: n == jobsPage}" ng-click="setPage()">
+            <a href ng-bind="n + 1">1</a>
+        </li>
+        <li class="page-item" ng-class="{'disabled': !nextPageExists()}"><a class="page-link" ng-click="nextPage()" disabled="">Next</a></li>
+    </ul>
+</div>

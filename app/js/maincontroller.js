@@ -216,6 +216,67 @@ angular.module('app.main', ['vs-repeat'])
             $scope.reverse = true
             $scope.activePanel = 0
 
+            function setJobsPerPage(jobsPerPage) {
+                if (jobsPerPage === "All") {
+                    jobsPerPage = $scope.panelTabs[$scope.activePanel].jobs.length;
+                }
+                $scope.jobsPerPage = jobsPerPage;
+                if ($scope.jobsPage > Math.max(0, $scope.numPages() - 1)) {
+                    Data.setJobsPage($scope.numPages() - 1);
+                }
+            }
+
+            $scope.jobsPerPage = Data.getJobsPerPage();
+            $scope.jobsPage = Data.getJobsPage();
+            $scope.$watch(function() { return Data.getJobsPage() }, function(jobsPage) {
+                $scope.jobsPage = jobsPage;
+            })
+            $scope.$watch(function() { return Data.getJobsPerPage() }, function(jobsPerPage) {
+                setJobsPerPage(jobsPerPage);
+            })
+
+            $scope.nextPage = function() {
+                if ($scope.nextPageExists()) {
+                    Data.setJobsPage($scope.jobsPage + 1);
+                }
+            }
+            $scope.prevPage = function() {
+                if ($scope.jobsPage > 0) {
+                    Data.setJobsPage($scope.jobsPage - 1);
+                }
+            }
+            $scope.nextPageExists = function() {
+                jobsLength = $scope.panelTabs[$scope.activePanel].jobs.length;
+                return ($scope.jobsPage + 1) * $scope.jobsPerPage < jobsLength - 1;
+            }
+            $scope.setPage = function () {
+                Data.setJobsPage(this.n);
+            };
+            $scope.numPages = function() {
+                jobsLength = $scope.panelTabs[$scope.activePanel].jobs.length;
+                if ($scope.jobsPerPage === 0) {
+                    return 0;
+                }
+                return Math.ceil(jobsLength / $scope.jobsPerPage);
+            }
+            $scope.pageNumbers = function() {
+                var start = $scope.jobsPage - 5;
+                if (start < 0) {
+                    start = 0;
+                }
+                var end = $scope.jobsPage + 5;
+                var numPages = $scope.numPages();
+                if (end > numPages) {
+                    end = numPages;
+                }
+                return _.range(start, end);
+            }
+            function resetPage() {
+                Data.setJobsPage(0);
+                if (Data.getJobsPerPage() === "All") {
+                    $scope.jobsPerPage = $scope.panelTabs[$scope.activePanel].jobs.length;
+                }
+            }
             
 
                 $scope.onselect = 
@@ -283,6 +344,7 @@ angular.module('app.main', ['vs-repeat'])
                 ]                
 
                 getClaimSummary(jobs)
+                resetPage();
             }
 
             function getJobs() {
@@ -397,6 +459,7 @@ angular.module('app.main', ['vs-repeat'])
 
             $scope.changePanelJobs = function(i){
                 $scope.activePanel = i
+                resetPage();
             }
 
             $scope.msToTime = msToTime
@@ -540,6 +603,38 @@ angular.module('app.main', ['vs-repeat'])
 
             }
         }
+    }])
+    .directive('pagination', ['Data', function(Data) {
+        return {
+            restrict: 'E',
+            scope: {},
+            templateUrl: 'partials/pagination.html',
+            link: function(scope, element, attrs) {
+                scope.jobsPage = Data.getJobsPage();
+                scope.nextPageExists = scope.$parent.nextPageExists;
+                scope.pageNumbers = scope.$parent.pageNumbers;
+                scope.nextPage = scope.$parent.nextPage;
+                scope.prevPage = scope.$parent.prevPage;
+                scope.setPage = scope.$parent.setPage;
+                scope.jobsPerPageChoices = [20, 50, 100, 500, 1000, 'All'];
+                scope.jobsPerPage = Data.getJobsPerPage();
+
+                scope.$watch(function() { return Data.getJobsPage() }, function(jobsPage) {
+                    scope.jobsPage = jobsPage;
+                    console.log(jobsPage);
+                })
+
+                scope.$watch(function() { return Data.getJobsPerPage() }, function(jobsPerPage) {
+                    scope.jobsPerPage = jobsPerPage;
+                })
+
+                scope.onJobsPerPageChange = function() {
+                    Data.setJobsPerPage(scope.jobsPerPage);
+                }
+
+            }
+        }
+
     }])
 
 
