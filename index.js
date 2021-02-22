@@ -141,6 +141,23 @@ app.get('/getBuildSummary/:buildId', function (req, res) {
 	})
 });
 
+app.post("/setBestRun/:bucket/:name/:build_id", function(req, res) {
+	const bucket = req.params.bucket
+	const name = req.params.name
+	const build_id = req.params.build_id
+	const os = req.body.os
+	const comp = req.body.comp
+	const version = req.body.build
+	client.setBestRun(bucket, name, build_id, os, comp, version)
+		.then(() => {
+			res.sendStatus(200);
+		})
+		.catch(err => {
+			console.error(err);
+			res.send({ err });
+		})
+})
+
 var server = app.listen(config.httpPort, config.httpListen, function () {
   var host = server.address().address;
   var port = server.address().port;

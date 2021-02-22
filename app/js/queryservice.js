@@ -40,6 +40,10 @@ angular.module('svc.query', [])
 					.then(function (response) {
 						return response.data
                     })
+			},
+			setBestRun: function(target, name, build_id, os, comp, build) {
+				var url = ["setBestRun", target, name, build_id].join("/")
+				return $http.post(url, {os:os,comp:comp,build:build})
 			}
 		  }
 		}])

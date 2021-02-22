@@ -82,14 +82,18 @@ module.exports = function () {
         })
     }
 
-    function _upsert(bucket, key, doc){
+    function _upsert(bucket, key, doc, cas){
         var db = bucketConnections["greenboard"];
         if (!db.connected){
             db = _db(bucket);
             bucketConnections[bucket] = db
         }
+        var options = {}
+        if (cas) {
+            options.cas = cas
+        }
         return new Promise(function (resolve, reject) {
-            db.upsert(key,doc, function (error, result) {
+            db.upsert(key,doc,options, function (error, result) {
                 if (error) {
                     console.log(error)
                     reject(error);
@@ -624,6 +628,42 @@ module.exports = function () {
             }
             return getBuildDetails();
 
+        },
+        setBestRun: async function(bucket, name, build_id, os, comp, version) {
+            const key = `${version}_${bucket}`
+            build_id = parseInt(build_id);
+            while (true) {
+                try {
+                    const res = await _getmulti("greenboard", [key]);
+                    const cas = res[key].cas
+                    const doc = res[key].value
+                    for (const run of doc.os[os][comp][name]) {
+                        if (run.olderBuild === false) {
+                            doc.totalCount -= run.totalCount;
+                            doc.failCount -= run.failCount;
+                            run.olderBuild = true;
+                        }
+                        if (run.build_id === build_id) {
+                            doc.totalCount += run.totalCount;
+                            doc.failCount += run.failCount;
+                            run.olderBuild = false;
+                        }
+                    }
+                    await _upsert("greenboard", key, doc, cas);
+                    if (version in buildsResponseCache) {
+                        for (const run of buildsResponseCache[version].filter(job => job.os === os && job.component === comp && job.name === name)) {
+                            run.olderBuild = true;
+                        }
+                        const bestRun = buildsResponseCache[version].find(job => job.build_id === build_id && job.os === os && job.component === comp);
+                        if (bestRun) {
+                            bestRun.olderBuild = false;
+                        }
+                    }
+                    break;
+                } catch (e) {
+                    console.error(e)
+                }
+            }
         }
     };
 

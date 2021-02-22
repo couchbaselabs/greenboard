@@ -68,8 +68,8 @@ angular.module('app.main', ['vs-repeat'])
         }])
 
 
-    .controller('JobsCtrl', ['$scope', '$state', '$stateParams', 'Data', 'buildJobs',
-       function($scope, $state, $stateParams, Data, buildJobs){
+    .controller('JobsCtrl', ['$scope', '$state', '$stateParams', 'Data', 'buildJobs', 'QueryService',
+       function($scope, $state, $stateParams, Data, buildJobs, QueryService){
 
             var CLAIM_MAP = {
                 "git error": ["hudson.plugins.git.GitException", "python3: can't open file 'testrunner.py': [Errno 2] No such file or directory"],
@@ -282,6 +282,7 @@ angular.module('app.main', ['vs-repeat'])
                 $scope.onselect = 
                     function(jobname,os,comp){
                         var activeJobs = Data.getActiveJobs()
+                        var target = Data.getCurrentTarget()
                         // activeJobs = _.reject(activeJobs, "olderBuild", true)
                         activeJobs = _.reject(activeJobs, "deleted", true)
                         
@@ -290,6 +291,14 @@ angular.module('app.main', ['vs-repeat'])
                         _.forEach(filters, function(value, key) {
                             requiredJobs = _.filter(requiredJobs, [key,value]);
                         });
+
+                        $scope.model = {};
+                        $scope.model.bestRun = undefined;
+                        $scope.model.changeBestRun = function() {
+                            if ($scope.model.bestRun !== undefined) {
+                                QueryService.setBestRun(target, jobname, $scope.model.bestRun, os, comp, $scope.selectedbuild)
+                            }
+                        }
 
                             // requiredJobs = _.filter(activeJobs,["name",jobname,"os"])
                             $scope.len = requiredJobs.length

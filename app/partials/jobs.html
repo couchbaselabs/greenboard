@@ -98,6 +98,7 @@
           <table class="table-striped table-bordered table-condensed table-hover text-center" style="width:80%; margin:0 10%;">
               <thead class="thead-dark">
                 <tr>
+                  <th scope="col" class="text-center">Best Run</th>
                   <th scope="col" class="text-center">#</th>
                   <th scope="col" class="text-center">Job Url</th>
                   <th scope="col" class="text-center">Result</th>
@@ -110,6 +111,7 @@
               </thead>
               <tbody ng-repeat="selectedjob in selectedjobdetails">
                 <tr>
+                  <td><input type="radio" name="select" id="{{selectedjob.build_id}}" value="{{selectedjob.build_id}}" ng-checked="{{!selectedjob.olderBuild}}" ng-model="model.bestRun" ng-change="model.changeBestRun()" /></td>
                   <th scope="row text-center">Run {{len - $index}}</th>
                   <td>
                       <a href="{{selectedjob.url}}{{selectedjob.build_id}}" target="_blank" >
