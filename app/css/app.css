@@ -469,3 +469,17 @@ input#search {
   max-width: 500px; 
   overflow-wrap: anywhere;
 }
+
+.rerun-button {
+  font-size: 20px;
+}
+
+.rerun-button:hover {
+  cursor: pointer;
+}
+
+.rerun-button.disabled {
+  pointer-events: none;
+  opacity: 0.65;
+  cursor: not-allowed;
+}

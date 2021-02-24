@@ -25,6 +25,7 @@
     "express": "^4.13.3",
     "graceful-fs": "^4.1.11",
     "gulp": "^3.9.0",
+    "jenkins": "^0.28.1",
     "json-middleware": "^1.0.2",
     "lodash": "^4.17.4",
     "promise": "^7.0.4"

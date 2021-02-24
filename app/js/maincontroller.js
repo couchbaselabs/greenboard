@@ -659,7 +659,50 @@ angular.module('app.main', ['vs-repeat'])
         }
 
     }])
-
+    .directive('rerunButton', ['QueryService', function(QueryService){
+        return {
+            restrict: 'E',
+            scope: {job: "="},
+            templateUrl: 'partials/rerun_button.html',
+            link: function(scope, elem, attrs){
+                scope.submitting = false;
+                scope.error = false;
+                scope.dispatched = false;
+                scope.rerunJob = function() {
+                    if (!confirm("Rerun " + scope.job.name + "?")) {
+                        return;
+                    }
+                    scope.error = false;
+                    scope.submitting = true;
+                    scope.dispatched = false;
+                    QueryService.rerunJob(scope.job.url + scope.job.build_id, null)
+                        .then(function() {
+                            scope.submitting = false;
+                            scope.dispatched = true;
+                        })
+                        .catch(function(e) {
+                            scope.submitting = false;
+                            scope.error = true;
+                            if (e.data.err) {
+                                alert(e.data.err);
+                            }
+                        })
+                }
+                scope.btnText = function() {
+                    if (scope.error) {
+                        return "Error dispatching";
+                    }
+                    if (scope.submitting) {
+                        return "Dispatching...";
+                    }
+                    if (scope.dispatched) {
+                        return "Dispatched";
+                    }
+                    return "Rerun";
+                }
+            }
+        }
+    }])
 
 
 

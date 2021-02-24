@@ -3,6 +3,31 @@ var config = require('./config.js')
     , Promise = require('promise');
 var _ = require('lodash');
 
+const createJenkins = require('jenkins')
+
+let jenkinsCredentials;
+try {
+    jenkinsCredentials = require("./jenkinsCredentials.json");
+} catch (e) {
+    jenkinsCredentials = []
+}
+
+const jenkinsConnnections = {}
+for (const [givenUrl, { username, password}] of Object.entries(jenkinsCredentials)) {
+    const url = new URL(givenUrl);
+    url.username = username;
+    url.password = password;
+    jenkinsConnnections[givenUrl] = createJenkins(({ baseUrl: url.toString(), promisify: true }));
+}
+
+function getJenkins(jobUrl) {
+    for (const [url, connection] of Object.entries(jenkinsConnnections)) {
+        if (jobUrl.startsWith(url)) {
+            return connection;
+        }
+    }
+    return null;
+}
 
 module.exports = function () {
 
@@ -657,12 +682,71 @@ module.exports = function () {
                     console.error(e)
                 }
             }
+        },
+        rerunJob: async function(jobUrl, cherryPick) {
+            const jenkins = getJenkins(jobUrl);
+            const [,, name, numberStr] = new URL(jobUrl).pathname.split("/");
+
+            if (!jenkins) {
+                throw Error("Unsupported Jenkins server: " + new URL(jobUrl).origin)
+            }
+
+            const number = parseInt(numberStr);
+
+            if (isNaN(number)) {
+                throw Error("Invalid build id: " + numberStr);
+            }
+
+            const info = await jenkins.build.get(name, number);
+            const parameters = getParameters(info);
+
+            if (!parameters.dispatcher_params) {
+                throw Error("Non dispatcher jobs not supported")
+            }
+
+            const dispatcherParams = JSON.parse(parameters.dispatcher_params.slice(11));
+            
+            // TODO: Remove when CBQE-6336 fixed
+            if (!dispatcherParams.component) {
+                throw Error("Invalid dispatcher params")
+            }
+
+            if (["ABORTED", "FAILURE"].includes(info.result)) {
+                dispatcherParams.fresh_run = true;
+            } else {
+                dispatcherParams.fresh_run = false;
+            }
+
+            dispatcherParams.component = parameters.component;
+            dispatcherParams.subcomponent = parameters.subcomponent;
+
+            const [,, dispatcherName] = new URL(dispatcherParams.dispatcher_url).pathname.split("/")
+
+            delete dispatcherParams.dispatcher_url;
+
+            await jenkins.job.build({ name: dispatcherName, parameters: dispatcherParams });
+            
         }
+        
     };
 
     return API
 
 }()
+
+function getParameters(info) {
+    const parameters = {}
+    for (const a of info["actions"]) {
+        if (a["_class"] === "hudson.model.ParametersAction") {
+            for (const param of a["parameters"]) {
+                if ("name" in param && "value" in param) {
+                    parameters[param['name']] = param['value']
+                }
+            }
+        }
+    }
+    return parameters
+}
 
 
 // number of jobs per os

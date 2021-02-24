@@ -44,6 +44,9 @@ angular.module('svc.query', [])
 			setBestRun: function(target, name, build_id, os, comp, build) {
 				var url = ["setBestRun", target, name, build_id].join("/")
 				return $http.post(url, {os:os,comp:comp,build:build})
+			},
+			rerunJob: function(jobUrl, cherryPick) {
+				return $http.post("rerunJob", { cherryPick: cherryPick, jobUrl: jobUrl })
 			}
 		  }
 		}])

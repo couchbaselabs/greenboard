@@ -154,8 +154,21 @@ app.post("/setBestRun/:bucket/:name/:build_id", function(req, res) {
 			res.sendStatus(200);
 		})
 		.catch(err => {
-			console.error(err);
-			res.send({ err });
+			console.error(err.message);
+			res.send({ err: err.message });
+		})
+})
+
+app.post("/rerunJob", function (req, res) {
+	var jobUrl = req.body.jobUrl;
+	var cherryPick = req.body.cherryPick;
+	client.rerunJob(jobUrl, cherryPick)
+		.then(() => {
+			res.sendStatus(200);
+		})
+		.catch(err => {
+			console.error(err.message);
+			res.status(400).send({ err: err.message })
 		})
 })
 
