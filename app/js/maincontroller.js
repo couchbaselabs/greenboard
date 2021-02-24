@@ -68,8 +68,8 @@ angular.module('app.main', ['vs-repeat'])
         }])
 
 
-    .controller('JobsCtrl', ['$scope', '$state', '$stateParams', 'Data', 'buildJobs', 'QueryService',
-       function($scope, $state, $stateParams, Data, buildJobs, QueryService){
+    .controller('JobsCtrl', ['$rootScope', '$scope', '$state', '$stateParams', 'Data', 'buildJobs', 'QueryService',
+       function($rootScope, $scope, $state, $stateParams, Data, buildJobs, QueryService){
 
             var CLAIM_MAP = {
                 "git error": ["hudson.plugins.git.GitException", "python3: can't open file 'testrunner.py': [Errno 2] No such file or directory"],
@@ -293,9 +293,19 @@ angular.module('app.main', ['vs-repeat'])
                         });
 
                         $scope.model = {};
-                        $scope.model.bestRun = undefined;
+                        $scope.model.bestRun = requiredJobs.find(function(job) { return job.olderBuild === false; }).build_id.toString();
                         $scope.model.changeBestRun = function() {
                             if ($scope.model.bestRun !== undefined) {
+                                _.forEach($scope.selectedjobdetails, function(job) {
+                                    if (job.build_id === parseInt($scope.model.bestRun)) {
+                                        job.olderBuild = false;
+                                    } else {
+                                        job.olderBuild = true;
+                                    }
+                                })
+                                var updatedJobs = Data.getActiveJobs();
+                                updateScopeWithJobs(updatedJobs, false);
+                                $rootScope.$broadcast("recalculateStats");
                                 QueryService.setBestRun(target, jobname, $scope.model.bestRun, os, comp, $scope.selectedbuild)
                             }
                         }
@@ -321,7 +331,10 @@ angular.module('app.main', ['vs-repeat'])
                 $scope.onSearchChange()
             }
 
-            function updateScopeWithJobs(jobs){
+            function updateScopeWithJobs(jobs, reset){
+                if (reset === undefined) {
+                    reset = true;
+                }
 
                 jobs = _.reject(jobs, "olderBuild", true)
                 jobs = _.reject(jobs, "deleted", true)
@@ -353,7 +366,9 @@ angular.module('app.main', ['vs-repeat'])
                 ]                
 
                 getClaimSummary(jobs)
-                resetPage();
+                if (reset) {
+                    resetPage();
+                }
             }
 
             function getJobs() {
@@ -630,7 +645,6 @@ angular.module('app.main', ['vs-repeat'])
 
                 scope.$watch(function() { return Data.getJobsPage() }, function(jobsPage) {
                     scope.jobsPage = jobsPage;
-                    console.log(jobsPage);
                 })
 
                 scope.$watch(function() { return Data.getJobsPerPage() }, function(jobsPerPage) {

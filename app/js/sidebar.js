@@ -191,6 +191,11 @@ angular.module('app.sidebar', [])
                 scope.stats = Data.getItemStats(scope.key, scope.type)
 			}, true)
 
+			scope.$on('recalculateStats', function() {
+				// update item stats e.g. when updating best run
+                scope.stats = Data.getItemStats(scope.key, scope.type);
+			})
+
   		}
   	}
   }])
