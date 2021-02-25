@@ -21,12 +21,14 @@ module.exports = function () {
         // var mobile = _db('mobile')
         // var builds = _db('builds')
 	var greenboard = _db('greenboard')
+	var triage_history = _db('triage_history')
         // buckets['server'] = server
         // buckets['sdk'] = sdk
         // buckets['mobile'] = mobile
         // buckets['builds'] = builds
     buckets['greenboard'] = greenboard
     buckets['rerun'] = rerun
+    buckets['triage_history'] = triage_history
         return buckets
     }
 
@@ -410,87 +412,78 @@ module.exports = function () {
             }
 
         },
-        // claimJobs: function (bucket, name, build_id, claim) {
+        claimJobs: async function(type,bucket,name,build_id,claim,os,comp,version){
+            const jobs_key = `${version}_${bucket}`;
+            const majorVersion = version.split("-")[0]
+            const triage_history_key = `${name}_${majorVersion}_${bucket}`;
 
-        //     // claim this build an all newer builds
-        //     var Q = "SELECT meta(" + bucket + ").id,* FROM " + bucket + " WHERE name='" + name + "' AND build_id >= " + build_id
-        //     var _ps = []
-        //     var promise = new Promise(function (resolve, reject) {
-        //         _query(bucket, strToQuery(Q)).catch(reject)
-        //             .then(function (jobs) {
-        //                 jobs.forEach(function (d) {
-        //                     var key = d.id
-        //                     var doc = d.server
-        //                     doc.customClaim = claim  // save new claim tag
-        //                     var p = doUpsert(bucket, key, doc)
-        //                     _ps.push(p)
-        //                 })
-        //                 Promise.all(_ps) // resolve upsert promises
-        //                     .then(resolve).catch(reject)
-        //             })
-        //     })
-        //     return promise
-        // },
-        claimJobs: function(type,bucket,name,build_id,claim,os,comp,version){
-
-            console.log(type,bucket,name)
-
-            function doUpdate(type,bucket,claim,os,comp,name,build_id,version){
-                const key = `${version}_${bucket}`;
-                var Q = "SELECT * FROM greenboard USE KEYS '"+key+"'";
-                var _ps = []
-                var promise = new Promise(function (resolve, reject) {
-                            _query(bucket, strToQuery(Q)).catch(reject)
-                                .then(function (jobs) {
-                                    var newbuildjobs = []
-                                    var buildjobs = jobs[0]["greenboard"]["os"][os][comp][name]
-                                    buildjobs.forEach(function (d) {
-                                        if(d["build_id"]==build_id){
-                                            if (type === "bugs") {
-                                                d.bugs = claim
-                                            } else if (type === "triage") {
-                                                d.triage = claim
-                                            }
-                                        }
-                                        newbuildjobs.push(d)    
-                                    })
-                                    jobs[0]["greenboard"]["os"][os][comp][name] = newbuildjobs
-                                    console.log(jobs[0]["greenboard"]["os"][os][comp][name])
-                                    var p = _upsert("greenboard",key,jobs[0]["greenboard"]).then(function(res){
-                                        console.log(res)
-                                        // update cache
-                                        if (version in buildsResponseCache) {
-                                            const jobToUpdate = buildsResponseCache[version].find(job => job.build_id === parseInt(build_id) && job.os === os && job.component === comp);
-                                            if (jobToUpdate) {
-                                                if (type === "bugs") {
-                                                    jobToUpdate.bugs = claim;
-                                                } else if (type === "triage") {
-                                                    jobToUpdate.triage = claim;
-                                                }
-                                                
-                                            }
-                                        }
-                                    })
-                                    _ps.push(p)
-                                })
-                                Promise.all(_ps) 
-                                .then(resolve).catch(reject)
-                        })
-                return promise
-                // var Q = "UPDATE `" + bucket + "` t USE KEYS '" + version + 
-                //         "' SET JOB.`claim`  =  '" + claim +
-                //         "' FOR JOB IN t.`os`.`" + os + "`.`" + comp + "`.`" + name +
-                //         "` WHEN JOB.`build_id` = " + build_id + " AND " + 
-                //         " JOB.`deleted` = false AND " + 
-                //         " JOB.`olderBuild` = false END "
-            
-                // var promise = new Promise(function (resolve, reject) {
-                //     _query(bucket, strToQuery(Q)).then(function(res){
-                //         console.log("updated succeesfully")
-                //     })})
-                // return promise   
+            const jobs = await _getmulti("greenboard", [jobs_key]).then(jobs => jobs[jobs_key].value);
+            let triage_history;
+            try {
+                triage_history = await _getmulti("triage_history", [triage_history_key]).then(triage_history => triage_history[triage_history_key].value);
+            } catch(e) {
+                triage_history = null;
             }
-            return doUpdate(type, bucket,claim,os,comp,name,build_id,version)
+            const newbuildjobs = []
+            const buildjobs = jobs["os"][os][comp][name]
+            buildjobs.forEach(function (d) {
+                if(d["build_id"] == build_id) {
+                    if (type === "bugs") {
+                        d.bugs = claim
+                    } else if (type === "triage") {
+                        d.triage = claim
+                    }
+                }
+                newbuildjobs.push(d)    
+            })
+            jobs["os"][os][comp][name] = newbuildjobs
+            console.log(jobs["os"][os][comp][name])
+            await _upsert("greenboard", jobs_key, jobs);
+
+            const build = parseInt(version.split("-")[1]);
+            if (isNaN(build)) {
+                throw Error("invalid build")
+            }
+            if (triage_history) {
+                // overwrite with new build, reset other field to default
+                if (build > triage_history.build) {
+                    triage_history.build = build;
+                    if (type === "bugs") {
+                        triage_history.bugs = claim;
+                        triage_history.triage = "";
+                    } else if (type === "triage") {
+                        triage_history.triage = claim;
+                        triage_history.bugs = []
+                    }
+                }
+                // update existing build
+                else if (build === triage_history.build) {
+                    if (type === "bugs") {
+                        triage_history.bugs = claim;
+                    } else if (type === "triage") {
+                        triage_history.triage = claim;
+                    }
+                }
+            } else {
+                triage_history = {
+                    bugs: type === "bugs" ? claim : [],
+                    triage: type === "triage" ? claim : "",
+                    build
+                }
+            }
+
+            await doUpsert("triage_history", triage_history_key, triage_history);
+            // update cache
+            if (version in buildsResponseCache) {
+                const jobToUpdate = buildsResponseCache[version].find(job => job.build_id === parseInt(build_id) && job.os === os && job.component === comp);
+                if (jobToUpdate) {
+                    if (type === "bugs") {
+                        jobToUpdate.bugs = claim;
+                    } else if (type === "triage") {
+                        jobToUpdate.triage = claim;
+                    }
+                }
+            }
         },
         getBuildSummary: function (buildId) {
             function getBuildDetails() {

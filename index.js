@@ -127,7 +127,8 @@ app.post('/claim/:bucket/:name/:build_id', function (req, res) {
     .then(function(jobs){
       res.send('POST request to the homepage');
     }).catch(function(err){
-      res.send({err: err})
+		console.error(err);
+      res.status(500).send({err: err.message})
     })
 
 });
