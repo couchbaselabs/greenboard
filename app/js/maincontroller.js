@@ -1,4 +1,4 @@
-var jiraPrefixes = ["MB", "CBQE", "CBIT", "CBD"]
+var jiraPrefixes = ["MB", "CBQE", "CBIT", "CBD", "CBSP"]
 
 formatClaim = function(claim) {
     var claimHtml = claim
@@ -191,6 +191,8 @@ angular.module('app.main', ['vs-repeat'])
                         name = "Test bugs (CBQE)"
                     } else if (prefix === "IT") {
                         name = "IT bugs (CBIT/CBD)"
+                    } else if (prefix === "CBSP") {
+                        name = "Support bugs (CBSP)"
                     }
                     return { 
                         name: name,
@@ -198,6 +200,9 @@ angular.module('app.main', ['vs-repeat'])
                         percent: totalClaims == 0 ? 0 : ((jiraCount[1]/totalClaims)*100).toFixed(0),
                         unique: uniqueBugs[prefix].length
                     }
+                })
+                .filter(function(jiraCount) {
+                    return jiraCount.count > 0;
                 })
                 $scope.claimSummary = claims;
                 $scope.totalClaims = totalClaims
@@ -553,12 +558,12 @@ angular.module('app.main', ['vs-repeat'])
                 scope.scope = {
                     bugsText: scope.job.bugs.join(", "),
                     saveClaim: function() {
-                        var bugs = this.bugsText.trim()
+                        var bugs = this.bugsText
                         var validBugs = true;
                         if (bugs === "") {
                             bugs = []
                         } else {
-                           bugs = bugs.split(",")
+                           bugs = bugs.split(",").map(function (bug) { return bug.trim() })
                            _.forEach(bugs, function(bug) {
                                 console.log(bug)
                                 var validBug = false;
