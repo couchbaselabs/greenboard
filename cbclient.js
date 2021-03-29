@@ -299,7 +299,7 @@ module.exports = function () {
                             if (!_.has(jobs['os'][os], component)){
                                 jobs['os'][os][component] = {};
                             }
-                            if (!_.has(jobs['os'][os][component], job) &&
+                            if (bucket != "operator" && !_.has(jobs['os'][os][component], job) &&
                                 ((name.hasOwnProperty('jobs_in')) &&
                                     (name['jobs_in'].indexOf(version) > -1))) {
                                 var pendJob = {}
