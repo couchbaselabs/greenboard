@@ -315,6 +315,8 @@ module.exports = function () {
                                 pendJob['olderBuild'] = false
                                 pendJob['duration'] = 0
                                 pendJob['color'] = ''
+                                pendJob['bugs'] = []
+                                pendJob['triage'] = ''
                                 if(name.hasOwnProperty('server_version')){
                                     pendJob['server_version'] = name.server_version
                                 }
@@ -413,6 +415,8 @@ module.exports = function () {
                                 pendJob['olderBuild'] = false
                                 pendJob['duration'] = 0
                                 pendJob['color'] = ''
+                                pendJob['bugs'] = []
+                                pendJob['triage'] = ''
                                 if(existingJobs.hasOwnProperty('server_version')){
                                     pendJob['server_version'] = existingJobs.server_version
                                 }
