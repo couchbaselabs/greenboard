@@ -65,7 +65,7 @@
               <tbody>
                 <tr ng-repeat="job in panelTabs[activePanel].jobs | orderBy:predicate:reverse | limitTo:jobsPerPage:(jobsPage*jobsPerPage)">
                   <td id="job-name"><a style="cursor:pointer;" ng-click="onselect(job.name,job.os,job.component)" data-toggle="modal" data-target="#exampleModalCenter">{{job.name}}</a></td>
-                  <td><rerun-button ng-if="job.result!='SUCCESS'&&job.url.includes('test_suite_executor')" job="job"></rerun-button></td>
+                  <td><rerun-button ng-if="job.result!='SUCCESS'&&job.url.includes('test_suite_executor')&&job.os!='WIN'" job="job"></rerun-button></td>
                   <td><span class={{job.result}}>{{job.result}}</span></td>
                   <td>{{job.totalCount - job.failCount - job.skipCount}}</td>
                   <td>{{job.skipCount}}</td>
