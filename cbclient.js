@@ -299,7 +299,8 @@ module.exports = function () {
                             if (!_.has(jobs['os'][os], component)){
                                 jobs['os'][os][component] = {};
                             }
-                            if (bucket != "operator" && !_.has(jobs['os'][os][component], job) &&
+                            if ((name.deleted === undefined || !name.deleted.includes(version)) &&
+                                 bucket != "operator" && !_.has(jobs['os'][os][component], job) &&
                                 ((name.hasOwnProperty('jobs_in')) &&
                                     (name['jobs_in'].indexOf(version) > -1))) {
                                 var pendJob = {}
@@ -398,6 +399,9 @@ module.exports = function () {
                             })
                             if (all_deleted) {
                                 const existingJobName = existingJobs[os][component][jobName];
+                                if (existingJobName.deleted && existingJobName.deleted.includes(version)) {
+                                    return;
+                                }
                                 let pendJob = {};
                                 pendJob['build'] = cleaned.build;
                                 pendJob['name'] = jobName;
