@@ -318,6 +318,7 @@ module.exports = function () {
                                 pendJob['color'] = ''
                                 pendJob['bugs'] = []
                                 pendJob['triage'] = ''
+                                pendJob['servers'] = []
                                 if(name.hasOwnProperty('server_version')){
                                     pendJob['server_version'] = name.server_version
                                 }
@@ -340,6 +341,9 @@ module.exports = function () {
                                     }
                                     if (run["triage"] === undefined) {
                                         run["triage"] = ""
+                                    }
+                                    if (run["servers"] === undefined) {
+                                        run["servers"] = []
                                     }
                                 }
 
@@ -421,6 +425,7 @@ module.exports = function () {
                                 pendJob['color'] = ''
                                 pendJob['bugs'] = []
                                 pendJob['triage'] = ''
+                                pendJob['servers'] = []
                                 if(existingJobs.hasOwnProperty('server_version')){
                                     pendJob['server_version'] = existingJobs.server_version
                                 }

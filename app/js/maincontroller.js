@@ -231,6 +231,8 @@ angular.module('app.main', ['vs-repeat'])
                 }
             }
 
+            $scope.targetBy = Data.getCurrentTarget();
+
             $scope.jobsPerPage = Data.getJobsPerPage();
             $scope.jobsPage = Data.getJobsPage();
             $scope.$watch(function() { return Data.getJobsPage() }, function(jobsPage) {
