@@ -399,7 +399,7 @@ function getPercOfVal(stats, val, includeSkipped){
         denom += stats.skipped
     }
     if(denom == 0){ return 0; }
-    return Math.floor(100*((val/denom).toFixed(2)));
+    return (100*(val/denom)).toFixed(1);
 }
 
 function getPercOfValStr(stats, val, includeSkipped){
@@ -415,7 +415,7 @@ function getItemPerc(stats){
     var denom = total + stats.pending;
     if(denom == 0){ return 0; }
 
-    return Math.floor(100*((total/denom).toFixed(2)));
+    return (100*(total/denom)).toFixed(1);
 }
 
 function getItemPercStr(stats){
