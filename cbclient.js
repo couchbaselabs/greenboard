@@ -359,6 +359,7 @@ module.exports = function () {
                         _.forEach(jobNames, function (jobs, jobName) {
 
                             var all_deleted = true;
+                            const totalDuration = jobs.map(run => run.duration).reduce((a, b) => a + b)
                             _.forEach(jobs, function (jobDetail, job) {
                                 if(!jobDetail['deleted']) {
                                     all_deleted = false;
@@ -378,6 +379,7 @@ module.exports = function () {
                                     tempJob["servers"] = []
                                 }
                                 tempJob["runCount"] = jobs.length;
+                                tempJob["totalDuration"] = totalDuration
                                 if (tempJob["displayName"] === undefined) {
                                     tempJob["displayName"] = jobName
                                 }

@@ -766,10 +766,12 @@ angular.module('app.main', [])
 
 // https://coderwall.com/p/wkdefg/converting-milliseconds-to-hh-mm-ss-mmm
 function msToTime(duration) {
-    var milliseconds = parseInt((duration%1000)/100)
-        , seconds = parseInt((duration/1000)%60)
-        , minutes = parseInt((duration/(1000*60))%60)
-        , hours = parseInt((duration/(1000*60*60))%24);
+    var milliseconds = duration % 1000;
+    duration = (duration - milliseconds) / 1000;
+    var seconds = duration % 60;
+    duration = (duration - seconds) / 60;
+    var minutes = duration % 60;
+    var hours = (duration - minutes) / 60;
 
     hours = (hours < 10) ? "0" + hours : hours;
     minutes = (minutes < 10) ? "0" + minutes : minutes;
