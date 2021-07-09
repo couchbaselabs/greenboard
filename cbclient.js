@@ -67,10 +67,9 @@ module.exports = function () {
         return db
     }
 
-    function strToQuery(queryStr, adhoc) {
+    function strToQuery(queryStr) {
         console.log(new Date(), "QUERY:", queryStr)
-        adhoc = adhoc ? true : false
-        return couchbase.N1qlQuery.fromString(queryStr).adhoc(adhoc)
+        return couchbase.N1qlQuery.fromString(queryStr)
     }
 
     function _query(bucket, q) {
@@ -287,8 +286,9 @@ module.exports = function () {
                 var existingJobs
                 var version = buildId.split('-')[0]
 
+                console.log(jobs)
+
                 existingJobs = allJobs[bucket]
-               
                 countt = 0
                 _.forEach(existingJobs, function (components, os) {
                     _.forEach(components, function (jobNames, component) {
@@ -299,8 +299,12 @@ module.exports = function () {
                             if (!_.has(jobs['os'][os], component)){
                                 jobs['os'][os][component] = {};
                             }
+
+                            // pending if job with name or display name doesn't exist
+                            const isPending = jobs['os'][os][component][job] === undefined && Object.values(jobs['os'][os][component]).find(runs => runs[0].displayName === job) === undefined
+
                             if ((name.deleted === undefined || !name.deleted.includes(version)) &&
-                                 bucket != "operator" && !_.has(jobs['os'][os][component], job) &&
+                                 bucket != "operator" && isPending &&
                                 ((name.hasOwnProperty('jobs_in')) &&
                                     (name['jobs_in'].indexOf(version) > -1))) {
                                 var pendJob = {}
@@ -326,44 +330,6 @@ module.exports = function () {
                                 countt = countt+1
                                 
                                 }
-                            if (jobs['os'][os][component][job] && jobs['os'][os][component][job].length > 0) {
-                                // find the best run: higher totalCount is better, lower failCount is better, higher build_id is better
-                                // set all but best run as olderBuild
-                                const runs = jobs['os'][os][component][job]
-
-                                // add skipCount if missing
-                                for (const run of runs) {
-                                    if (run["skipCount"] === undefined) {
-                                        run["skipCount"] = 0
-                                    }
-                                    if (run["bugs"] === undefined) {
-                                        run["bugs"] = []
-                                    }
-                                    if (run["triage"] === undefined) {
-                                        run["triage"] = ""
-                                    }
-                                    if (run["servers"] === undefined) {
-                                        run["servers"] = []
-                                    }
-                                }
-
-                                // runs[0]["olderBuild"] = true
-                                // const sorted = [...runs].sort((a, b) => {
-                                //     if (a.totalCount !== b.totalCount) {
-                                //         return b.totalCount - a.totalCount;
-                                //     } else if (a.skipCount !== b.skipCount) {
-                                //         return a.skipCount - b.skipCount;
-                                //     } else if (a.failCount !== b.failCount) {
-                                //         return a.failCount - b.failCount;
-                                //     } else {
-                                //         return b.build_id - a.build_id;
-                                //     }
-                                // })
-                                // sorted[0]["olderBuild"] = false
-                                for (const run of runs) {
-                                    run["runCount"] = runs.length;
-                                }
-                            }
                         })
                     })
                 })
@@ -383,40 +349,62 @@ module.exports = function () {
 
                     return _.isObject(el) ? internalClean(el) : el;
                 }
-                
+
+
                 var cleaned =  jobs
                 var toReturn = new Array()
                 _.forEach(cleaned.os, function (components, os) {
                     _.forEach(components, function (jobNames, component) {
                         _.forEach(jobNames, function (jobs, jobName) {
+
                             var all_deleted = true;
                             _.forEach(jobs, function (jobDetail, job) {
                                 if(!jobDetail['deleted']) {
                                     all_deleted = false;
                                 }
                                 var tempJob = _.cloneDeep(jobDetail)
+
+                                if (tempJob["skipCount"] === undefined) {
+                                    tempJob["skipCount"] = 0
+                                }
+                                if (tempJob["bugs"] === undefined) {
+                                    tempJob["bugs"] = []
+                                }
+                                if (tempJob["triage"] === undefined) {
+                                    tempJob["triage"] = ""
+                                }
+                                if (tempJob["servers"] === undefined) {
+                                    tempJob["servers"] = []
+                                }
+                                tempJob["runCount"] = jobs.length;
+                                if (tempJob["displayName"] === undefined) {
+                                    tempJob["displayName"] = jobName
+                                }
+
                                 tempJob['build'] = cleaned.build
                                 tempJob['name'] = jobName
+                                tempJob['displayName'] = tempJob['displayName'] || jobName
                                 tempJob['component'] = component
                                 tempJob['os'] = os
                                 toReturn[toReturn.length] = tempJob
                             })
                             if (all_deleted) {
-                                const existingJobName = existingJobs[os][component][jobName];
-                                if (existingJobName.deleted && existingJobName.deleted.includes(version)) {
+                                if (jobName.deleted && jobName.deleted.includes(version)) {
                                     return;
                                 }
+
+
                                 let pendJob = {};
                                 pendJob['build'] = cleaned.build;
                                 pendJob['name'] = jobName;
                                 pendJob['component'] = component;
                                 pendJob['os'] = os;
-                                pendJob['pending'] = existingJobName.totalCount
+                                pendJob['pending'] = jobName.totalCount
                                 pendJob['totalCount'] = 0
                                 pendJob['failCount'] = 0
                                 pendJob['result'] = "PENDING"
-                                pendJob['priority'] = existingJobName.priority
-                                pendJob['url'] = existingJobName.url
+                                pendJob['priority'] = jobName.priority
+                                pendJob['url'] = jobName.url
                                 pendJob['build_id'] = ""
                                 pendJob['claim'] = ""
                                 pendJob['deleted'] = false
@@ -429,8 +417,8 @@ module.exports = function () {
                                 if(existingJobs.hasOwnProperty('server_version')){
                                     pendJob['server_version'] = existingJobs.server_version
                                 }
-                                if(existingJobName.hasOwnProperty('jobs_in')
-                                    && existingJobName['jobs_in'].indexOf(version) > -1) {
+                                if(jobName.hasOwnProperty('jobs_in')
+                                    && jobName['jobs_in'].indexOf(version) > -1) {
                                     toReturn[toReturn.length] = pendJob
                                 }
                             }

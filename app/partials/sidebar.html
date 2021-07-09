@@ -15,7 +15,7 @@
     <div class="nav-header">
       <h3>CB Server Versions</h3>
       <a ng-click="toggleAll('serverVersions')" href="">
-        <i class="fa" ng-class="{'fa-check-square-o': !disabledServerVersions, 'fa-square-o': disabledServerVersions}"></i> all
+        <i class="fa" ng-class="{'fa-check-square-o': !disabled.serverVersions, 'fa-square-o': disabled.serverVersions}"></i> all
       </a>
     </div>
     <div ng-repeat="key in sidebarItems.serverVersions">
@@ -28,11 +28,26 @@
     <div class="nav-header">
       <h3>Platforms</h3>
       <a ng-click="toggleAll('platforms')" href="">
-          <i class="fa" ng-class="{'fa-check-square-o': !disablePlatforms, 'fa-square-o': disablePlatforms}"></i> all
+          <i class="fa" ng-class="{'fa-check-square-o': !disabled.platforms, 'fa-square-o': disabled.platforms}"></i> all
       </a>
     </div>
     <div ng-repeat="key in sidebarItems.platforms | orderBy:key">
       <sidebar-item key="{{key}}" type="platforms"  show-perc="showPerc" />
+    </div>
+  </div>
+
+  <!-- variants -->
+  <div ng-repeat="variant in sidebarItemsVariants">
+    <div ng-if="targetBy === 'server'" class="nav nav-sidebar">
+      <div class="nav-header">
+          <h3>{{ variantName(variant) }}</h3>
+          <a ng-click="toggleAll(variant)" href="">
+            <i class="fa" ng-class="{'fa-check-square-o': !disabled[variant], 'fa-square-o': disabled[variant]}"></i> all
+          </a>
+      </div>
+      <div ng-repeat="key in sidebarItems[variant] | orderBy:key">
+        <sidebar-item key="{{key}}" type="{{variant}}"  show-perc="showPerc" />
+      </div>
     </div>
   </div>
 
@@ -46,7 +61,7 @@
         <h3>Kubernetes version</h3>
       </dif>
       <a ng-click="toggleAll('features')" href="">
-          <i class="fa" ng-class="{'fa-check-square-o': !disableFeatures, 'fa-square-o': disableFeatures}"></i> all
+          <i class="fa" ng-class="{'fa-check-square-o': !disabled.features, 'fa-square-o': disabled.features}"></i> all
       </a>
     </div>
     <div ng-repeat="key in sidebarItems.features | orderBy:key">

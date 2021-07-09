@@ -287,17 +287,15 @@ angular.module('app.main', [])
             
 
                 $scope.onselect = 
-                    function(jobname,os,comp){
+                    function(jobname,os,comp,variants){
                         var activeJobs = Data.getActiveJobs()
                         var target = Data.getCurrentTarget()
                         // activeJobs = _.reject(activeJobs, "olderBuild", true)
                         activeJobs = _.reject(activeJobs, "deleted", true)
                         
-                        var filters = {"name":jobname,"os":os,"component":comp}
-                        var requiredJobs = activeJobs
-                        _.forEach(filters, function(value, key) {
-                            requiredJobs = _.filter(requiredJobs, [key,value]);
-                        });
+                        var requiredJobs = activeJobs.filter(function(job) {
+                            return job.name === jobname && job.os === os && job.component === comp
+                        })
 
                         $scope.model = {};
                         $scope.model.bestRun = requiredJobs.find(function(job) { return job.olderBuild === false; }).build_id.toString();
@@ -320,7 +318,7 @@ angular.module('app.main', [])
                             // requiredJobs = _.filter(activeJobs,["name",jobname,"os"])
                             $scope.len = requiredJobs.length
                             $scope.selectedjobdetails = requiredJobs
-                            $scope.selectedjobname = jobname
+                            $scope.selectedjobname = requiredJobs[0].displayName
                             $scope.selectedbuild = requiredJobs[0].build
                     }
                 
@@ -371,6 +369,29 @@ angular.module('app.main', [])
                     {title: "Jobs Skipped", jobs: jobsSkip},
                     {title: "Jobs Pending", jobs: jobsPending},
                 ]                
+
+                $scope.variantNames = []
+                _.forEach(jobs, function(job) {
+                    if (job.variants) {
+                        _.forEach(job.variants, function(_, variant) {
+                            if (!$scope.variantNames.includes(variant)) {
+                                $scope.variantNames.push(variant)
+                            }
+                        })
+                    }
+                })
+                // sort variant names, ignore case
+                $scope.variantNames.sort(function(a, b) { 
+                    var ia = a.toLowerCase();
+                    var ib = b.toLowerCase();
+                    return ia < ib ? -1 : ia > ib ? 1 : 0;
+                })
+
+                $scope.variantName = function(name) {
+                    return name.split("_").map(function(part) {
+                        return part[0].toUpperCase() + part.slice(1)
+                    }).join(" ")
+                }
 
                 getClaimSummary(jobs)
                 if (reset) {
@@ -479,12 +500,32 @@ angular.module('app.main', [])
                 .map(function(k){
                     return {key: k, disabled: false}
                 })
-            var allVersions = _.uniq(_.map(buildJobs, "server_version"))
+            var allVersions = _.uniq(_.map(_.filter(buildJobs, function(job) { return job.server_version !== undefined }), "server_version"))
                 .map(function (k) {
-                    return k ? {key: k, disabled: false}: null
+                    return {key: k, disabled: false}
                 })
 
-            Data.setSideBarItems({platforms: allPlatforms, features: allFeatures, serverVersions: allVersions});
+            var sidebarItems = {platforms: allPlatforms, features: allFeatures, serverVersions: allVersions }
+            var allVariants = []
+
+            _.forEach(jobs, function(job) {
+                if (job.variants) {
+                    _.forEach(Object.keys(job.variants), function(variant) {
+                        if (!allVariants.includes(variant)) {
+                            allVariants.push(variant)
+                        }
+                    })
+                }
+            })
+
+            _.forEach(allVariants, function(variant) {
+                sidebarItems[variant] = _.uniq(_.map(_.filter(jobs, function(job) { return job.variants && job.variants[variant] !== undefined }), "variants."+variant))
+                .map(function (k) {
+                    return {key: k, disabled: false}
+                })
+            })
+
+            Data.setSideBarItems(sidebarItems);
 
 
 

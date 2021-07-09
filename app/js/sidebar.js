@@ -8,27 +8,21 @@ angular.module('app.sidebar', [])
 	  		link: function(scope, elem, attrs){
 
 	  		  scope.showPerc = false
-	  		  scope.disablePlatforms = false
-	  		  scope.disableFeatures = false
-			  scope.disabledServerVersions = false
+			  scope.disabled = {}
+
               scope.buildVersion = Data.getBuild()
 			  scope.targetBy = Data.getCurrentTarget()
 
 	  		  scope.toggleAll = function(type){
-	  		  	var isDisabled;
-	  		  	
-	  		  	if(type=="platforms"){
-	  		  		isDisabled = !scope.disablePlatforms
-		  		  	scope.disablePlatforms = isDisabled
-				 } else if(type=="features"){
-					isDisabled = !scope.disableFeatures
-					scope.disableFeatures = isDisabled
-		  		 } else if(type=="serverVersions"){
-					isDisabled = !scope.disabledServerVersions
-					scope.disabledServerVersions = isDisabled
-				}
+	  		  	var isDisabled = !scope.disabled[type];
+				scope.disabled[type] = isDisabled
 	  		  	Data.toggleAllSidebarItems(type, isDisabled)
 	  		  }
+			  scope.variantName = function(name) {
+				return name.split("_").map(function(part) {
+					return part[0].toUpperCase() + part.slice(1)
+				}).join(" ")
+			  }
 			  
 			  // Detect when build has changed
 			  scope.$watch(function(){ return Data.getSideBarItems() }, 
@@ -39,22 +33,37 @@ angular.module('app.sidebar', [])
 					// only update sidebar items on build change
 					// if(items.buildVersion != last.buildVersion){
 						scope.buildVersion = items.buildVersion
-					    scope.sidebarItems = {
-					        platforms: _.map(items["platforms"], "key"),
-							features: _.map(items["features"], "key"),
-							serverVersions: _.map(items["serverVersions"], "key")
-						}
+					    scope.sidebarItems = {}
+						_.forEach(items, function(values, name) {
+							if (name === "buildVersion") {
+								return;
+							}
+							scope.sidebarItems[name] = _.map(values, "key")
+							if (scope.disabled[name] === undefined) {
+								scope.disabled[name] = false
+							}
+						})
+						// variants are any filters that are not the default
+						// sort variant names, ignore case
+						scope.sidebarItemsVariants = Object.keys(scope.sidebarItems).filter(function(item) {
+							return !["platforms", "features", "serverVersions"].includes(item);
+						}).sort(function(a, b) { 
+							var ia = a.toLowerCase();
+							var ib = b.toLowerCase();
+							return ia < ib ? -1 : ia > ib ? 1 : 0;
+						})
 						
 					// }
 
 					// if all sidebar items of a type selected
 					// enable all checkmark
-					var noPlatformsDisabled = !_.some(_.map(items["platforms"], "disabled"))
-					var noFeaturesDisabled = !_.some(_.map(items["features"], "disabled"))
-					var noServerVersionsDisabled = !_.some(_.map(items["serverVersions"], "disabled"))
-					scope.disablePlatforms = !noPlatformsDisabled
-					scope.disableFeatures = !noFeaturesDisabled
-					scope.disabledServerVersions = !noServerVersionsDisabled
+					_.forEach(items, function(values, name) {
+						if (name === "buildVersion") {
+							return;
+						}
+						noDisabled = !_.some(_.map(values, "disabled"))
+						scope.disabled[name] = !noDisabled
+					})
 
 				}, true)
 

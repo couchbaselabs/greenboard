@@ -13,13 +13,18 @@ angular.module('svc.data', [])
             _targetVersions = {}
             _buildJobs = []
             _buildJobsActive = []
-            _sideBarItems = []
+            _sideBarItems = {}
             _filterBy = DEFAULT_FILTER_BY
             _buildsFilterBy = DEFAULT_BUILDS_FILTER_BY
             _initUrlParams = null
             _buildInfo = {}
             _jobsPage = 0;
             _jobsPerPage = 20;
+            _availableFilters = {
+                features: "component",
+                platforms: "os",
+                serverVersions: "server_version"
+            }
 
             function updateLocationUrl(type, key, disabled){
                 var typeArgs = $location.search()[type]
@@ -63,12 +68,12 @@ angular.module('svc.data', [])
 
             function disableItem(key, type){
 
-                var jobtype = type == "platforms" ? "os" : "component"
-                jobtype = type == "serverVersions" ? "server_version" : jobtype
+
+                var jobtype = _availableFilters[type]
 
                 // diabling item: remove from active list of build jobs
                 _buildJobsActive = _.reject(_buildJobsActive, function(job){
-                    return job[jobtype] == key
+                    return job[jobtype] == key || job.variants && job.variants[jobtype] === key
                 })
                 updateSidebarItemState(type, key, true)
 
@@ -76,26 +81,31 @@ angular.module('svc.data', [])
 
             function enableItem(key, type){
 
-                var jobtype = type == "platforms" ? "os" : "component"
-                jobtype = type == "serverVersions" ? "server_version" : jobtype
+                
+                var jobtype = _availableFilters[type]
 
                 // enabling item so include in active list of build jobs
                 var includeJobs = _.filter(_buildJobs, function(job){
 
                     // detect if job matches included key
-                    if(job[jobtype] == key){
-
-                        // get alternate of current type..
-                        // ie... so if we are adding back an os key
-                        // then get the component listed for this job
-                        var altTypes = jobtype == "os" ? ["features", "component", "serverVersions"] : ["platforms", "os", "server_version"]
-                        var sideBarItem = _.find(_sideBarItems[altTypes[0]], {"key":job[altTypes[1]]})
-
+                    // show jobs not matching variant if all variants selected
+                    if(job[jobtype] == key || (job.variants && job.variants[jobtype] === key)){
+                        // filter out jobs if it matches another filter that is disabled
+                        for (var map_key in _availableFilters) {
+                            if (type === map_key) {
+                                continue
+                            }
+                            var map_value = _availableFilters[map_key]
+                            var sideBarItem = _sideBarItems[map_key].find(function(item) {
+                                return item.key === job[map_value] || (job.variants && job.variants[map_value] === item.key);
+                            })
+                            if (sideBarItem && sideBarItem.disabled) {
+                                return false
+                            }
+                        }
                         // only include this job if it's alternate type isn't disabled
                         // ie.. do not add back goxdcr if os is centos and centos is disabled
-                        if (!sideBarItem.disabled){
-                            return true
-                        }
+                        return true
                     }
                 })
                 _buildJobsActive = _buildJobsActive.concat(includeJobs)
@@ -229,6 +239,13 @@ angular.module('svc.data', [])
                 },
                 setSideBarItems: function(items){
                     _sideBarItems = items
+
+                    for (var item in items) {
+                        if (!_availableFilters[item]) {
+                            _availableFilters[item] = item
+                        }
+                    }
+
                     _sideBarItems['buildVersion'] = buildNameWithVersion()
 
                     // default behavior is to initialize sideBarItems
@@ -251,7 +268,7 @@ angular.module('svc.data', [])
                         // only enable urlParams
                         _.mapKeys(_initUrlParams, function(values, type){
 
-                            if(["platforms", "features", "serverVersions"].indexOf(type) != -1){
+                            if(Object.keys(_availableFilters).indexOf(type) != -1){
                                 var keys = values.split(",")
                                 keys.forEach(function(k){
                                     enableItem(k, type)
@@ -272,17 +289,15 @@ angular.module('svc.data', [])
                     // enabled build jobs
 
                     // filter out just jobs with this key
-                    var jobtype = type == "platforms" ? "os" : "component"
-                    jobtype = type == "serverVersions" ? "server_version" : jobtype
+                    var jobtype = _availableFilters[type]
                     var subset = _buildJobsActive
                     if (type != "build"){
                         subset = _.filter(_buildJobsActive, function(job){
-                            return job[jobtype] == key
+                            return job[jobtype] == key || job.variants && job.variants[jobtype] == key
                         })
                     }
-		    subset = _.reject(subset, "olderBuild", true)
+		            subset = _.reject(subset, "olderBuild", true)
                     subset = _.reject(subset, "deleted", true)
-                    subset = _.uniqBy(subset, "name")
 
                     // calculate absolute stats
                     var absTotal = _.sum(_.map(_.uniq(subset), "totalCount"))
