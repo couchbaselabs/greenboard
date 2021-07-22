@@ -535,6 +535,13 @@ angular.module('app.main', [])
             }
 
             $scope.msToTime = msToTime
+            $scope.timestampToDate = function(timestmap) {
+                if (timestmap) {
+                    return new Date(timestmap).toLocaleString()
+                } else {
+                    return ""
+                }
+            }
             $scope.$watch(function(){ return Data.getActiveJobs() },
                 function(activeJobs){
                     if(activeJobs){

@@ -56,6 +56,7 @@
                   <th><a href="" ng-click="predicate = 'totalCount - failCount - skipCount'; reverse=!reverse">Passed</a></th>
                   <th><a href="" ng-click="predicate = 'skipCount || 0'; reverse=!reverse">Skipped</a></th>
                   <th><a href="" ng-click="predicate = 'pending || totalCount'; reverse=!reverse">Total</a></th>
+                  <th><a href="" ng-click="predicate = 'timestamp'; reverse=!reverse">Start Time</a></th>
                   <th><a href="" ng-click="predicate = 'duration'; reverse=!reverse">Duration</a></th>
                   <th><a href="" ng-click="predicate = 'runCount'; reverse=!reverse">Runs</a></th>
                   <th ng-show="targetBy==='server'"><a href="" ng-click="predicate = 'servers.length'; reverse=!reverse">Servers</a></th>
@@ -73,6 +74,7 @@
                   <td>{{job.totalCount - job.failCount - job.skipCount}}</td>
                   <td>{{job.skipCount}}</td>
                   <td>{{job.pending || job.totalCount}}</td>
+                  <td>{{timestampToDate(job.timestamp)}}</td>
                   <td>{{msToTime(job.duration)}}</td>
                   <td>{{job.runCount}}</td>
                   <td ng-show="targetBy==='server'">{{job.servers.length}}</td>
@@ -111,6 +113,7 @@
                   <th scope="col" class="text-center">Passed Count</th>
                   <th scope="col" class="text-center">Skipped</th>
                   <th scope="col" class="text-center">Total Count</th>
+                  <th scope="col" class="text-center">Start Time</th>
                   <th scope="col" class="text-center">Duration</th>
       
                 </tr>
@@ -127,6 +130,7 @@
                   <td>{{selectedjob.totalCount - selectedjob.failCount - selectedjob.skipCount}}</td>
                   <td>{{selectedjob.skipCount}}</td>
                   <td>{{selectedjob.totalCount}}</td>
+                  <td>{{timestampToDate(selectedjob.timestamp)}}</td>
                   <td>{{msToTime(selectedjob.duration)}}</td>
                 </tr>
               </tbody>
