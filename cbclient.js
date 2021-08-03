@@ -4,6 +4,7 @@ var config = require('./config.js')
 var _ = require('lodash');
 
 const createJenkins = require('jenkins')
+const URL = require('url').URL;
 
 let jenkinsCredentials;
 try {
