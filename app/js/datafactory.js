@@ -246,6 +246,14 @@ angular.module('svc.data', [])
                         }
                     }
 
+                    // remove any filters that no longer apply (e.g. after switching builds)
+                    _.forEach(_availableFilters, function(_, filterName) {
+                        if (!_sideBarItems[filterName]) {
+                            delete _availableFilters[filterName]
+                        }
+
+                    })
+
                     _sideBarItems['buildVersion'] = buildNameWithVersion()
 
                     // default behavior is to initialize sideBarItems
