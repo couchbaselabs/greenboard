@@ -284,6 +284,9 @@ angular.module('app.main', [])
                     $scope.jobsPerPage = $scope.panelTabs[$scope.activePanel].jobs.length;
                 }
             }
+
+            $scope.predicate = "name";
+            $scope.reverse = false;
             
 
                 $scope.onselect = 
