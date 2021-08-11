@@ -301,7 +301,8 @@ angular.module('svc.data', [])
                     var subset = _buildJobsActive
                     if (type != "build"){
                         subset = _.filter(_buildJobsActive, function(job){
-                            return job[jobtype] == key || job.variants && job.variants[jobtype] == key
+                            // include in stat if jobtype matches, jobtype is a variant and no variants or jobtype is a variant and variant matches
+                            return job[jobtype] == key || (!job[jobtype] && !job.variants) || (job.variants && job.variants[jobtype] == key)
                         })
                     }
 		            subset = _.reject(subset, "olderBuild", true)
