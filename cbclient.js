@@ -384,6 +384,18 @@ module.exports = function () {
                                     tempJob["displayName"] = jobName
                                 }
 
+                                if (tempJob.variants) {
+                                    if (tempJob.variants.bucket_storage === "COUCHSTORE") {
+                                        tempJob.variants.bucket_storage = "COUCH"
+                                    }
+                                    if (tempJob.variants.GSI_type === "UNDEFINED") {
+                                        tempJob.variants.GSI_type = "N/A"
+                                    }
+                                    if (tempJob.variants.GSI_type === "MEMORY_OPTIMIZED") {
+                                        tempJob.variants.GSI_type = "MOI"
+                                    }
+                                }
+
                                 tempJob['build'] = cleaned.build
                                 tempJob['name'] = jobName
                                 tempJob['displayName'] = tempJob['displayName'] || jobName

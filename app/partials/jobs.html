@@ -56,12 +56,9 @@
                   <th><a href="" ng-click="predicate = 'totalCount - failCount - skipCount'; reverse=!reverse">Passed</a></th>
                   <th><a href="" ng-click="predicate = 'skipCount || 0'; reverse=!reverse">Skipped</a></th>
                   <th><a href="" ng-click="predicate = 'pending || totalCount'; reverse=!reverse">Total</a></th>
-                  <th><a href="" ng-click="predicate = 'timestamp'; reverse=!reverse">Start Time</a></th>
-                  <th><a href="" ng-click="predicate = 'duration'; reverse=!reverse">Single Run Duration</a></th>
-                  <th><a href="" ng-click="predicate = 'totalDuration || 0'; reverse=!reverse">All Runs Duration</a></th>
+                  <th><a href="" ng-click="predicate = 'totalDuration || 0'; reverse=!reverse">Duration</a></th>
                   <th><a href="" ng-click="predicate = 'runCount'; reverse=!reverse">Runs</a></th>
                   <th ng-show="targetBy==='server'"><a href="" ng-click="predicate = 'servers.length'; reverse=!reverse">Servers</a></th>
-                  <th><a href="" ng-click="predicate = 'bugs'; reverse=!reverse">Bugs</a></th>
                   <th><a href="" ng-click="predicate = 'bugs'; reverse=!reverse">Manual Triage</a></th>
                   <th class="claim-col"><a href="" ng-click="predicate = 'claim'; reverse=!reverse">Auto Triage</a></th>
                 </tr>
@@ -75,12 +72,9 @@
                   <td>{{job.totalCount - job.failCount - job.skipCount}}</td>
                   <td>{{job.skipCount}}</td>
                   <td>{{job.pending || job.totalCount}}</td>
-                  <td>{{timestampToDate(job.timestamp)}}</td>
-                  <td>{{msToTime(job.duration)}}</td>
                   <td>{{msToTime(job.totalDuration)}}</td>
                   <td>{{job.runCount}}</td>
                   <td ng-show="targetBy==='server'">{{job.servers.length}}</td>
-                  <td><claim-cell job="job"></claim-cell></td>
                   <td><triage-cell job="job"></claim-cell></td>
                   <td><claim-test jobName="job.name" claim="job.claim"></claim></td>
                 </tr>
@@ -115,7 +109,6 @@
                   <th scope="col" class="text-center">Passed Count</th>
                   <th scope="col" class="text-center">Skipped</th>
                   <th scope="col" class="text-center">Total Count</th>
-                  <th scope="col" class="text-center">Start Time</th>
                   <th scope="col" class="text-center">Duration</th>
                 </tr>
               </thead>
@@ -131,13 +124,12 @@
                   <td>{{selectedjob.totalCount - selectedjob.failCount - selectedjob.skipCount}}</td>
                   <td>{{selectedjob.skipCount}}</td>
                   <td>{{selectedjob.totalCount}}</td>
-                  <td>{{timestampToDate(selectedjob.timestamp)}}</td>
                   <td>{{msToTime(selectedjob.duration)}}</td>
                 </tr>
               </tbody>
               <tr>
-                <th class="text-right" colspan="8">Total Duration</td>
-                <td colspan="9" class="text-center">{{ msToTime(selectedjobdetails[0].totalDuration) }}</td>
+                <th class="text-right" colspan="7">Total Duration</td>
+                <td colspan="8" class="text-center">{{ msToTime(selectedjobdetails[0].totalDuration) }}</td>
               </tr>
             </table>
           </div>

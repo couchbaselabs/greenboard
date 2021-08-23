@@ -483,3 +483,39 @@ input#search {
   opacity: 0.65;
   cursor: not-allowed;
 }
+
+	
+.table-responsive {
+	
+  width: 100%;
+	
+  margin-bottom: 15px;
+	
+  overflow-y: hidden;
+	
+  -ms-overflow-style: -ms-autohiding-scrollbar;
+	
+}
+	
+	
+.table-responsive > .table {
+	
+  margin-bottom: 0;
+	
+}
+	
+	
+.table-responsive > .table > thead > tr > th,
+	
+.table-responsive > .table > tbody > tr > th,
+	
+.table-responsive > .table > tfoot > tr > th,
+	
+.table-responsive > .table > thead > tr > td,
+	
+.table-responsive > .table > tbody > tr > td,
+	
+.table-responsive > .table > tfoot > tr > td {
+	
+  white-space: nowrap;
+}

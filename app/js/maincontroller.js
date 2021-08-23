@@ -211,7 +211,7 @@ angular.module('app.main', [])
             }
 
             $scope.jiraCounts = []
-            $scope.showAnalysis = true
+            $scope.showAnalysis = false
             $scope.changeShowAnalysis = function() {
                 $scope.showAnalysis = !$scope.showAnalysis
             }
@@ -585,7 +585,8 @@ angular.module('app.main', [])
             link: function(scope) {
                 var jobName = scope.$parent.job.name;
                 scope.formatClaim = formatClaim
-                scope.shortClaim = (scope.claim.length < 100) ? scope.claim : scope.claim.split('<br><br>')[0].slice(0, 100) + '...'
+                var linesToShow = 50;
+                scope.shortClaim = (scope.claim.length < linesToShow) ? scope.claim : scope.claim.split('<br><br>')[0].slice(0, linesToShow) + '...'
                 scope.scope = {
                     showFullClaim: scope.$parent.$parent.openClaims.has(jobName),
                     changeShowFullClaim: function() {
