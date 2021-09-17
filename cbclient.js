@@ -740,6 +740,9 @@ module.exports = function () {
 
             delete dispatcherParams.dispatcher_url;
 
+            // Use the first server pool if there are multiple (see CBQE-7223)
+            dispatcherParams.serverPoolId = dispatcherParams.serverPoolId.split(",")[0];
+
             await jenkins.job.build({ name: dispatcherName, parameters: dispatcherParams });
             
         }
