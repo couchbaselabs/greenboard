@@ -37,7 +37,7 @@ app.config(['$stateProvider', '$urlRouterProvider',
     function($stateProvider, $urlRouterProvider){
 
         // TODO: external bootstrap with now testing build!
-        $urlRouterProvider.otherwise("/server/7.0.1/latest");
+        $urlRouterProvider.otherwise("/server/7.1.0/latest");
         $stateProvider              
             .state('target', {
                 url: "/:target",
