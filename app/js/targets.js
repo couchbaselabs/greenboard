@@ -170,10 +170,10 @@ angular.module('app.target', [])
         }])
 
 
-    .factory('ViewTargets', ['COUCHBASE_TARGET', 'SDK_TARGET', 'SG_TARGET', 'CBLITE_TARGET', 'CBO_TARGET','CAPELLA_TARGET',
-  	function (COUCHBASE_TARGET, SDK_TARGET, SG_TARGET, CBLITE_TARGET, CBO_TARGET, CAPELLA_TARGET){
+    .factory('ViewTargets', ['COUCHBASE_TARGET', 'SDK_TARGET', 'SG_TARGET', 'CBLITE_TARGET', 'CBO_TARGET','CAPELLA_TARGET','SERVERLESS_TARGET',
+  	function (COUCHBASE_TARGET, SDK_TARGET, SG_TARGET, CBLITE_TARGET, CBO_TARGET, CAPELLA_TARGET, SERVERLESS_TARGET){
 
-      var viewTargets = [COUCHBASE_TARGET, SDK_TARGET, SG_TARGET, CBLITE_TARGET, CBO_TARGET, CAPELLA_TARGET]
+      var viewTargets = [COUCHBASE_TARGET, SDK_TARGET, SG_TARGET, CBLITE_TARGET, CBO_TARGET, CAPELLA_TARGET, SERVERLESS_TARGET]
       var targetMap = {} // reverse lookup map
 
       // allow reverse lookup by bucket
@@ -235,6 +235,13 @@ angular.module('app.target', [])
          "key": "abspassed",
          "value": 0,
          "options": [0, 50, 100, 500]
+  })
+  .value('SERVERLESS_TARGET', {
+        "title": "Serverless",
+        "bucket": "serverless",
+        "key": "abspassed",
+        "value": 0,
+        "options": [0, 50, 100, 500]
   })
 ;
 

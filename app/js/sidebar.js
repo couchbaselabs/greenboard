@@ -46,7 +46,7 @@ angular.module('app.sidebar', [])
 						// variants are any filters that are not the default
 						// sort variant names, ignore case
 						scope.sidebarItemsVariants = Object.keys(scope.sidebarItems).filter(function(item) {
-							return !["platforms", "features", "serverVersions"].includes(item);
+							return !["platforms", "features", "serverVersions", "dapiVersions", "nebulaVersions", "envVersions"].includes(item);
 						}).sort(function(a, b) { 
 							var ia = a.toLowerCase();
 							var ib = b.toLowerCase();

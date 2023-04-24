@@ -507,8 +507,19 @@ angular.module('app.main', [])
                 .map(function (k) {
                     return {key: k, disabled: false}
                 })
-
-            var sidebarItems = {platforms: allPlatforms, features: allFeatures, serverVersions: allVersions }
+            var allDapi = _.uniq(_.map(_.filter(buildJobs, function(job) { return job.dapi !== undefined }), "dapi"))
+                .map(function (k) {
+                    return {key: k, disabled: false}
+                })
+            var allNebula = _.uniq(_.map(_.filter(buildJobs, function(job) { return job.dni !== undefined }), "dni"))
+                .map(function (k) {
+                    return {key: k, disabled: false}
+                })
+            var allEnv = _.uniq(_.map(_.filter(buildJobs, function(job) { return job.env !== undefined }), "env"))
+                .map(function (k) {
+                    return {key: k, disabled: false}
+                })
+            var sidebarItems = {platforms: allPlatforms, features: allFeatures, serverVersions: allVersions, dapiVersions: allDapi, nebulaVersions: allNebula, envVersions: allEnv }
             var allVariants = []
 
             _.forEach(jobs, function(job) {
@@ -538,6 +549,7 @@ angular.module('app.main', [])
             }
 
             $scope.msToTime = msToTime
+            $scope.msToDate = msToDate
             $scope.timestampToDate = function(timestmap) {
                 if (timestmap) {
                     return new Date(timestmap).toLocaleString()
@@ -560,6 +572,7 @@ angular.module('app.main', [])
                     $scope.openClaims = []
                     
                     $scope.msToTime = msToTime
+                    $scope.msToDate = msToDate
                     var jobname = $stateParams.jobName
                     
                     $scope.$watch(function(){
@@ -781,3 +794,10 @@ function msToTime(duration) {
     return hours + ":" + minutes + ":" + seconds;
 }
 
+
+function msToDate(duration) {
+    var obj = new Date(duration);
+    var time = obj.getUTCHours() + ":" + obj.getUTCMinutes();
+    var date = obj.getDate() + "/" + (obj.getMonth() + 1) + "/" + obj.getFullYear();
+    return date + " - " + time;
+}

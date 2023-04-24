@@ -23,6 +23,42 @@
     </div>
   </div>
 
+  <div ng-if="sidebarItems.dapiVersions && sidebarItems.dapiVersions[0] != null" class="nav nav-sidebar">
+    <div class="nav-header">
+      <h3>DAPI Versions</h3>
+      <a ng-click="toggleAll('dapiVersions')" href="">
+        <i class="fa" ng-class="{'fa-check-square-o': !disabled.dapiVersions, 'fa-square-o': disabled.dapiVersions}"></i> all
+      </a>
+    </div>
+    <div ng-repeat="key in sidebarItems.dapiVersions">
+      <sidebar-item key="{{key}}" type="dapiVersions" show-perc="showPerc"/>
+    </div>
+  </div>
+
+  <div ng-if="sidebarItems.nebulaVersions && sidebarItems.nebulaVersions[0] != null" class="nav nav-sidebar">
+    <div class="nav-header">
+      <h3>Direct Nebula Versions</h3>
+      <a ng-click="toggleAll('nebulaVersions')" href="">
+        <i class="fa" ng-class="{'fa-check-square-o': !disabled.nebulaVersions, 'fa-square-o': disabled.nebulaVersions}"></i> all
+      </a>
+    </div>
+    <div ng-repeat="key in sidebarItems.nebulaVersions">
+      <sidebar-item key="{{key}}" type="nebulaVersions" show-perc="showPerc"/>
+    </div>
+  </div>
+
+  <div ng-if="sidebarItems.envVersions && sidebarItems.envVersions[0] != null" class="nav nav-sidebar">
+    <div class="nav-header">
+      <h3>Environment</h3>
+      <a ng-click="toggleAll('envVersions')" href="">
+        <i class="fa" ng-class="{'fa-check-square-o': !disabled.envVersions, 'fa-square-o': disabled.envVersions}"></i> all
+      </a>
+    </div>
+    <div ng-repeat="key in sidebarItems.envVersions">
+      <sidebar-item key="{{key}}" type="envVersions" show-perc="showPerc"/>
+    </div>
+  </div>
+
   <!-- platforms -->
   <div class="nav nav-sidebar">
     <div class="nav-header">

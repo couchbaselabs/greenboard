@@ -23,7 +23,10 @@ angular.module('svc.data', [])
             _availableFilters = {
                 features: "component",
                 platforms: "os",
-                serverVersions: "server_version"
+                serverVersions: "server_version",
+                dapiVersions: "dapi",
+                nebulaVersions: "dni",
+                envVersions: "env"
             }
 
             function updateLocationUrl(type, key, disabled){

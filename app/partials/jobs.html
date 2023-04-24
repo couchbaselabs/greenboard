@@ -57,6 +57,7 @@
                   <th><a href="" ng-click="predicate = 'skipCount || 0'; reverse=!reverse">Skipped</a></th>
                   <th><a href="" ng-click="predicate = 'pending || totalCount'; reverse=!reverse">Total</a></th>
                   <th><a href="" ng-click="predicate = 'totalDuration || 0'; reverse=!reverse">Duration</a></th>
+                  <th><a href="" ng-click="predicate = 'timestamp || 0'; reverse=!reverse">Run Date (UTC)</a></th>
                   <th><a href="" ng-click="predicate = 'runCount'; reverse=!reverse">Runs</a></th>
                   <th ng-show="targetBy==='server'"><a href="" ng-click="predicate = 'servers.length'; reverse=!reverse">Servers</a></th>
                   <th><a href="" ng-click="predicate = 'bugs'; reverse=!reverse">Manual Triage</a></th>
@@ -73,6 +74,7 @@
                   <td>{{job.skipCount}}</td>
                   <td>{{job.pending || job.totalCount}}</td>
                   <td>{{msToTime(job.totalDuration)}}</td>
+                  <td>{{msToDate(job.timestamp)}}</td>
                   <td>{{job.runCount}}</td>
                   <td ng-show="targetBy==='server'">{{job.servers.length}}</td>
                   <td><triage-cell job="job"></claim-cell></td>
@@ -110,6 +112,7 @@
                   <th scope="col" class="text-center">Skipped</th>
                   <th scope="col" class="text-center">Total Count</th>
                   <th scope="col" class="text-center">Duration</th>
+                  <th scope="col" class="text-center">Run Date (UTC)</th>
                 </tr>
               </thead>
               <tbody ng-repeat="selectedjob in selectedjobdetails">
@@ -125,6 +128,7 @@
                   <td>{{selectedjob.skipCount}}</td>
                   <td>{{selectedjob.totalCount}}</td>
                   <td>{{msToTime(selectedjob.duration)}}</td>
+                  <td>{{msToDate(selectedjob.timestamp)}}</td>
                 </tr>
               </tbody>
               <tr>
