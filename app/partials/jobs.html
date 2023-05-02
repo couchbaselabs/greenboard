@@ -53,6 +53,7 @@
                   <th ng-show="panelTabs[activePanel].title!=='Jobs Pending'" ng-repeat="variant in variantNames"><a href="" ng-click="$parent.predicate = 'variants.'+variant; $parent.reverse=!$parent.reverse">{{ variantName(variant) }}</a></th>
                   <th><a href="" ng-click="">Rerun</a></th>
                   <th><a href="" ng-click="predicate = 'result'; reverse=!reverse">Result</a></th>
+                  <th ng-if="panelTabs[activePanel].jobs[0].cp_version!==undefined"><a href="" ng-click="predicate = 'cp_version'; reverse=!reverse">CP Version</a></th>
                   <th><a href="" ng-click="predicate = 'totalCount - failCount - skipCount'; reverse=!reverse">Passed</a></th>
                   <th><a href="" ng-click="predicate = 'skipCount || 0'; reverse=!reverse">Skipped</a></th>
                   <th><a href="" ng-click="predicate = 'pending || totalCount'; reverse=!reverse">Total</a></th>
@@ -70,6 +71,7 @@
                   <td ng-show="job.result!=='PENDING'" ng-repeat="variant in variantNames">{{ job.variants[variant] }}</td>
                   <td><rerun-button ng-if="job.pending===undefined&&job.result!='SUCCESS'&&job.url.includes('test_suite_executor')" job="job"></rerun-button></td>
                   <td><span class={{job.result}}>{{job.result}}</span></td>
+                  <td ng-if="job.cp_version!==undefined">{{job.cp_version}}</td>
                   <td>{{job.totalCount - job.failCount - job.skipCount}}</td>
                   <td>{{job.skipCount}}</td>
                   <td>{{job.pending || job.totalCount}}</td>
@@ -108,6 +110,7 @@
                   <th scope="col" class="text-center">#</th>
                   <th scope="col" class="text-center">Job Url</th>
                   <th scope="col" class="text-center">Result</th>
+                  <th ng-ig="selectedjobdetails[0].cp_version!==undefined" scope="col" class="text-center">CP Version</th>
                   <th scope="col" class="text-center">Passed Count</th>
                   <th scope="col" class="text-center">Skipped</th>
                   <th scope="col" class="text-center">Total Count</th>
@@ -124,6 +127,7 @@
                           Link
                       </a></td>
                   <td><span class={{selectedjob.result}}>{{selectedjob.result}}</span></td>
+                  <td ng-if="selectedjob.cp_version!==undefined">{{selectedjob.cp_version}}</td>
                   <td>{{selectedjob.totalCount - selectedjob.failCount - selectedjob.skipCount}}</td>
                   <td>{{selectedjob.skipCount}}</td>
                   <td>{{selectedjob.totalCount}}</td>
