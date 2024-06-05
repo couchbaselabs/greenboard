@@ -7,12 +7,22 @@ var express = require('express');
 var client = require('./cbclient.js')
 var config = require('./config.js')
 var bodyParser = require('body-parser')
+const https = require('https');
+const path = require('path');
 
 var app = express();
 app.use(express.static('app'));
 app.use(bodyParser.json());
 
-app.get('/versions/:bucket?', function(req, res){
+const httpsOptions = {
+	cert: realFs.readFileSync(config.Certificate),
+	key: realFs.readFileSync(config.PrivateKey)
+}
+https.createServer(httpsOptions, app).listen(config.httpsPort, () => {
+	console.log('Server listening on port %s', config.httpsPort);
+});
+
+app.get('/versions/:bucket?', function(req,  res){
   var bucket = req.params.bucket
   var versions = []
   client.queryVersions(bucket)

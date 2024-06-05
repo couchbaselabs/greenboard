@@ -7,3 +7,6 @@ exports.AuthPassword = ''
 exports.Buckets = []
 exports.httpListen = '127.0.0.1'
 exports.httpPort = 8205
+exports.httpsPort = 443
+exports.Certificate = ''
+exports.PrivateKey = ''
